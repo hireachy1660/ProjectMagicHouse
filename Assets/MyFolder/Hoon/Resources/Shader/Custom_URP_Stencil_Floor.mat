@@ -26,7 +26,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Brightness: 1
-    - _StencilComp: 3
+    - _StencilComp: 8
     m_Colors:
     - _BaseColor: {r: 0.29803923, g: 0.80392164, b: 0.32941177, a: 1}
   m_BuildTextureStacks: []
