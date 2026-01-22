@@ -1,0 +1,126 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
+using VRPortalToolkit.Rendering.Universal;
+using VRPortalToolkit.Rendering;
+using VRPortalToolkit.Utilities;
+
+namespace VRPortalToolkit.Rendering
+{
+    /// <summary>
+    /// Render pass that generates a depth and normals texture for portals.
+    /// </summary>
+    public class PortalDepthNormalsPass : PortalRenderPass
+    {
+        /// <summary>
+        /// The shader property ID for the portal depth normals texture.
+        /// </summary>
+        public static readonly int PortalDepthNormalsTexture = Shader.PropertyToID("_PortalDepthNormalsTexture");
+
+        private static Material depthNormalsMaterial;
+
+        private DrawingSettings _drawingSettings;
+        /// <summary>
+        /// The drawing settings to use for rendering objects.
+        /// </summary>
+        public DrawingSettings drawingSettings { get => _drawingSettings; set => _drawingSettings = value; }
+
+        private FilteringSettings _filteringSettings;
+        /// <summary>
+        /// The filtering settings to use for determining which objects to render.
+        /// </summary>
+        public FilteringSettings filteringSettings { get => _filteringSettings; set => _filteringSettings = value; }
+
+        //public PortalRenderer portalRenderer { get; set; }
+
+        private ShaderTagId _shaderTagId = new ShaderTagId("DepthOnly");
+
+        private RenderTexture _depthNormalsTexture;
+
+        /// <summary>
+        /// Initializes a new instance of the PortalDepthNormalsPass class.
+        /// </summary>
+        /// <param name="renderPassEvent">When this render pass should execute during rendering.</param>
+        public PortalDepthNormalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent)
+        {
+            if (!depthNormalsMaterial)
+                depthNormalsMaterial = CoreUtils.CreateEngineMaterial("Hidden/Internal-DepthNormalsTexture");
+        }
+
+        /// <inheritdoc/>
+        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
+        {
+            //RenderTextureDescriptor descriptor = new RenderTextureDescriptor(cameraTextureDescriptor.width, cameraTextureDescriptor.height, RenderTextureFormat.ARGB32, 32);
+            //descriptor.dimension = TextureDimension.Tex2DArray;
+
+            cameraTextureDescriptor.msaaSamples = 1;
+            cameraTextureDescriptor.depthBufferBits = 32;
+            cameraTextureDescriptor.dimension = TextureDimension.Tex2DArray;
+            cameraTextureDescriptor.colorFormat = RenderTextureFormat.ARGB32;
+
+            _depthNormalsTexture = RenderTexture.GetTemporary(cameraTextureDescriptor);
+            ConfigureTarget(RTHandles.Alloc(PortalPassStack.Current.colorTarget));
+            ConfigureClear(ClearFlag.All, Color.black);
+        }
+
+        /// <inheritdoc/>
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        {
+            CommandBuffer cmd = CommandBufferPool.Get();
+
+            // TODO: This shouldn't be neccessary, but it is and I don't know why
+            /*cmd.SetViewProjectionMatrices(PortalPassStack.Parent.renderNode.worldToCameraMatrix, PortalPassStack.Current.renderNode.projectionMatrix);
+
+            if (PortalPassStack.Current.renderNode.isStereo)
+            {
+                cmd.SetStereoViewProjectionMatrices(PortalPassStack.Parent.renderNode.GetStereoViewMatrix(0), PortalPassStack.Current.renderNode.GetStereoProjectionMatrix(0),
+                    PortalPassStack.Parent.renderNode.GetStereoViewMatrix(1), PortalPassStack.Current.renderNode.GetStereoProjectionMatrix(1));
+            }
+
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+
+            if (portalRenderer.enabled)
+                portalRenderer.Render(renderingData.cameraData.camera, PortalPassStack.Current.renderNode, cmd, depthNormalsMaterial);
+            else
+            {
+                portalRenderer.enabled = true;
+                portalRenderer.Render(renderingData.cameraData.camera, PortalPassStack.Current.renderNode, cmd, depthNormalsMaterial);
+                portalRenderer.enabled = false;
+            }*/
+
+            PortalPassStack.Current.SetViewAndProjectionMatrices(cmd, true);
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+
+            DrawingSettings drawSettings = _drawingSettings;
+
+            drawSettings.sortingSettings = new SortingSettings(renderingData.cameraData.camera)
+            { criteria = renderingData.cameraData.defaultOpaqueSortFlags };
+
+            drawSettings.SetShaderPassName(0, _shaderTagId);
+            drawSettings.perObjectData = PerObjectData.None;
+
+            drawSettings.overrideMaterial = depthNormalsMaterial;
+
+            context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref _filteringSettings, ref PortalPassStack.Current.stateBlock);
+
+            cmd.SetGlobalTexture(PortalDepthNormalsTexture, _depthNormalsTexture);
+
+            context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
+        }
+
+        /// <inheritdoc/>
+        public override void FrameCleanup(CommandBuffer cmd)
+        {
+            if (_depthNormalsTexture)
+            {
+                RenderTexture.ReleaseTemporary(_depthNormalsTexture);
+                _depthNormalsTexture = null;
+            }
+        }
+    }
+}
