@@ -31,6 +31,7 @@ namespace VRPortalToolkit.Rendering.Universal
         public BeginTexturePortalPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent) { }
 
         /// <inheritdoc/>
+        [System.Obsolete]
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
             RenderPortalsBuffer buffer = RenderPortalsBuffer.GetBuffer(portalPassNode.renderNode);
@@ -49,6 +50,7 @@ namespace VRPortalToolkit.Rendering.Universal
         }
 
         /// <inheritdoc/>
+        [System.Obsolete]
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             if (portalPassNode == null || portalPassNode.renderNode == null || portalPassNode.renderNode.parent == null)

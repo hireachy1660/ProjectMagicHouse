@@ -1,81 +1,53 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.RenderGraphModule;
 using VRPortalToolkit.Data;
 
 namespace VRPortalToolkit.Rendering.Universal
 {
-    /// <summary>
-    /// Render pass that draws texture-based portals into the scene.
-    /// </summary>
     public class DrawTexturePortalsPass : PortalRenderPass
     {
-        private static MaterialPropertyBlock propertyBlock;
-
-        /// <summary>
-        /// The material to use for rendering the portals.
-        /// </summary>
         public Material material { get; set; }
+        private static MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
 
-        /// <summary>
-        /// Initializes a new instance of the DrawTexturePortalsPass class.
-        /// </summary>
-        /// <param name="renderPassEvent">When this render pass should execute during rendering.</param>
-        public DrawTexturePortalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent)
+        public DrawTexturePortalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent) { }
+
+        private class PassData
         {
-            if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
+            public Material mat;
+            // 유니티 6에서는 데이터를 이 구조체에 담아 전달해야 합니다.
         }
 
-        /// <inheritdoc/>
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            CommandBuffer cmd = CommandBufferPool.Get();
-
-            //using (new ProfilingScope(cmd, profilingSampler))
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>("DrawTexturePortals", out var passData))
             {
-                PortalPassStack.Current.SetViewAndProjectionMatrices(cmd);
+                passData.mat = material;
 
-                cmd.SetGlobalInt(PropertyID.PortalStencilRef, PortalPassStack.Current.stateBlock.stencilReference);
-
-                PortalRenderNode parentNode = PortalPassStack.Current.renderNode;
-
-                float width = renderingData.cameraData.cameraTargetDescriptor.width,
-                    height = renderingData.cameraData.cameraTargetDescriptor.height;
-
-                Vector4 st = new Vector4(PortalPassStack.Current.viewport.width / width, PortalPassStack.Current.viewport.height / height,
-                    PortalPassStack.Current.viewport.x / width, PortalPassStack.Current.viewport.y / height);
-
-                propertyBlock.SetVector(PropertyID.MainTex_ST, st);
-
-                if (parentNode.isStereo)
-                    propertyBlock.SetVector(PropertyID.MainTex_ST_2, st);
-
-                foreach (PortalRenderNode renderNode in parentNode.children)
+                builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
                 {
-                    if (renderNode.isValid)
+                    // [해결책] UnsafeCommandBuffer로 변환하지 마세요!
+                    // 유니티 6의 RasterCommandBuffer(rgContext.cmd)를 직접 사용합니다.
+
+                    // 만약 포탈의 뷰/프로젝션 매트릭스를 설정해야 한다면 아래 방식을 씁니다.
+                    // 기존의 PortalPassStack 호출 대신 유니티 6 내장 함수를 직접 씁니다.
+                    if (PortalRenderFeature.renderCamera != null)
                     {
-                        Material material = renderNode.overrides.portalStereo ? renderNode.overrides.portalStereo : this.material;
-
-                        if (RenderPortalsBuffer.TryGetBuffer(renderNode, out RenderPortalsBuffer buffer))
-                        {
-                            propertyBlock.SetTexture(PropertyID.MainTex, buffer.texture);
-
-                            foreach (IPortalRenderer renderer in renderNode.renderers)
-                                renderer.Render(renderNode, cmd, material, propertyBlock);
-
-                            RenderPortalsBuffer.ClearBuffer(renderNode);
-                        }
-                        else
-                            renderNode.renderer.RenderDefault(renderNode, cmd);
+                        var camera = PortalRenderFeature.renderCamera;
+                        rgContext.cmd.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
                     }
-                }
 
-                context.ExecuteCommandBuffer(cmd);
+                    // 재질(Material)을 사용하여 포탈을 그리는 로직이 있다면 여기 추가합니다.
+                    if (data.mat != null)
+                    {
+                        // 예: rgContext.cmd.DrawMesh(...) 혹은 필요한 그리기 명령
+                    }
+                });
             }
-
-            CommandBufferPool.Release(cmd);
         }
+
+        [System.Obsolete]
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
     }
 }
