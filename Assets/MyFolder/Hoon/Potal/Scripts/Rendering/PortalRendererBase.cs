@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using VRPortalToolkit.Data;
 
 namespace VRPortalToolkit.Rendering
@@ -21,7 +19,7 @@ namespace VRPortalToolkit.Rendering
 
         /// <inheritdoc/>
         public abstract IPortal Portal { get; }
-        
+
         protected virtual void OnEnable()
         {
             PortalRendering.RegisterPortalRenderer(this);
@@ -43,18 +41,23 @@ namespace VRPortalToolkit.Rendering
         }
 
         /// <inheritdoc/>
-        public virtual void PreCull(PortalRenderNode renderNode) {}
+        public virtual void PreCull(PortalRenderNode renderNode) { }
 
         /// <inheritdoc/>
         public virtual void PostCull(PortalRenderNode renderNode) { }
 
-        /// <inheritdoc/>
-        public abstract void Render(PortalRenderNode renderNode, CommandBuffer commandBuffer, Material material, MaterialPropertyBlock properties = null);
+        // --- [핵심] 유니티 6용 RasterCommandBuffer 버전만 남깁니다 ---
 
         /// <inheritdoc/>
-        public abstract void RenderDefault(PortalRenderNode renderNode, CommandBuffer commandBuffer);
+        public abstract void Render(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer, Material material, MaterialPropertyBlock properties = null);
 
         /// <inheritdoc/>
-        public virtual void PostRender(PortalRenderNode renderNode) {}
+        public abstract void RenderDefault(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer);
+
+        /// <inheritdoc/>
+        public virtual void PostRender(PortalRenderNode renderNode) { }
+
+        // [삭제] 기존에 에러를 일으키던 'IPortalRenderer.Render(..., CommandBuffer ...)' 형태의 
+        // 명시적 구현(Explicit implementation)들을 모두 제거했습니다.
     }
 }

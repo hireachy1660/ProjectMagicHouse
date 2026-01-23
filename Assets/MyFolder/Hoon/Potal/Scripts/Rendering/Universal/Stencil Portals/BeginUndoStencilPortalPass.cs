@@ -1,115 +1,111 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
-using UnityEngine.Rendering.Universal.Internal;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
-using VRPortalToolkit.Rendering.Universal;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.RenderGraphModule; // 필수 추가
 using VRPortalToolkit.Rendering;
 
 namespace VRPortalToolkit.Rendering.Universal
 {
-    /// <summary>
-    /// This is for the very specific use case where one eye of a stereo camera has passed through a portal.
-    /// Handles the special stencil portal rendering required for this transition case.
-    /// </summary>
-    public class BeginUndoStencilPortalPass : PortalRenderPass
+    public class BeginUndoStencilPortalPass : ScriptableRenderPass
     {
-        /// <summary>
-        /// The material used to increase the stencil value for portal rendering.
-        /// </summary>
         public Material increaseMaterial { get; set; }
-
-        /// <summary>
-        /// The material used to clear the depth buffer for portal rendering.
-        /// </summary>
         public Material clearDepthMaterial { get; set; }
-
-        /// <summary>
-        /// The portal pass node associated with this pass.
-        /// </summary>
         public PortalPassNode passNode { get; set; }
 
         private static MaterialPropertyBlock propertyBlock;
 
-        /// <summary>
-        /// Initializes a new instance of the BeginUndoStencilPortalPass class.
-        /// </summary>
-        /// <param name="renderPassEvent">When this render pass should execute during rendering.</param>
-        public BeginUndoStencilPortalPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent)
+        // 렌더 그래프 데이터 전달용 클래스
+        private class PassData
         {
+            public PortalPassNode passNode;
+            public Material increaseMaterial;
+            public Material clearDepthMaterial;
+        }
+
+        public BeginUndoStencilPortalPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques)
+        {
+            this.renderPassEvent = renderPassEvent;
             if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
         }
 
-        /// <inheritdoc/>
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            if (passNode == null || passNode.renderNode == null || passNode.renderNode.parent == null)
+            UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+            UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
+
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>("BeginUndoStencilPortalPass", out var passData))
             {
-                Debug.LogError(nameof(BeginStencilPortalPass) + "' passGroup is invalid!");
-                return;
-            }
+                passData.passNode = passNode;
+                passData.increaseMaterial = increaseMaterial;
+                passData.clearDepthMaterial = clearDepthMaterial;
 
-            CommandBuffer cmd = CommandBufferPool.Get();
+                // 렌더 타겟 설정
+                builder.UseTexture(resourceData.activeColorTexture, AccessFlags.Write);
+                builder.UseTexture(resourceData.activeDepthTexture, AccessFlags.Write);
 
-            //using (new ProfilingScope(cmd, profilingSampler))
-            {
-                // TODO: This should be important
-                PortalPassNode parent = PortalPassStack.Parent;
-
-                // Pass Group
-                PortalPassStack.Push(passNode);
-                PortalRenderNode renderNode = passNode.renderNode;
-
-                Material increaseMaterial = renderNode.overrides.portalIncrease ? renderNode.overrides.portalIncrease : this.increaseMaterial,
-                    clearDepthMaterial = renderNode.overrides.portalClearDepth ? renderNode.overrides.portalClearDepth : this.clearDepthMaterial;
-
-                PortalPassStack.Parent.SetViewAndProjectionMatrices(cmd);
-
-                // Masking
-                cmd.SetGlobalInt(PropertyID.PortalStencilRef, renderNode.depth - 1);
-
-                if (increaseMaterial)
+                builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
                 {
+                    if (data.passNode == null || data.passNode.renderNode == null) return;
+
+                    var cmd = context.cmd;
+                    PortalPassNode parent = PortalPassStack.Parent;
+
+                    // Pass Group 시작
+                    PortalPassStack.Push(data.passNode);
+                    PortalRenderNode renderNode = data.passNode.renderNode;
+
+                    Material incMat = renderNode.overrides.portalIncrease ? renderNode.overrides.portalIncrease : data.increaseMaterial;
+                    Material clearMat = renderNode.overrides.portalClearDepth ? renderNode.overrides.portalClearDepth : data.clearDepthMaterial;
+
+                    // 1. 매트릭스 설정
+                    PortalPassStack.Parent.SetViewAndProjectionMatrices(cmd);
+
+                    // 2. 스텐실 마스킹 로직
+                    cmd.SetGlobalInt(PropertyID.PortalStencilRef, renderNode.depth - 1);
+
+                    if (incMat != null)
+                    {
+                        foreach (IPortalRenderer renderer in renderNode.renderers)
+                            renderer?.Render(renderNode, cmd, incMat);
+                    }
+
+                    cmd.SetGlobalInt(PropertyID.PortalStencilRef, renderNode.depth);
+
+                    if (clearMat != null)
+                    {
+                        foreach (IPortalRenderer renderer in renderNode.renderers)
+                            renderer?.Render(renderNode, cmd, clearMat);
+                    }
+
+                    // 3. 프리 렌더 및 컬링 이벤트
+                    PortalRendering.onPreRender?.Invoke(renderNode);
                     foreach (IPortalRenderer renderer in renderNode.renderers)
-                        renderer?.Render(renderNode, cmd, increaseMaterial);
-                }
+                        renderer?.PreCull(renderNode);
 
-                cmd.SetGlobalInt(PropertyID.PortalStencilRef, renderNode.depth);
+                    // 4. 뷰포트 설정
+                    float width = cameraData.cameraTargetDescriptor.width;
+                    float height = cameraData.cameraTargetDescriptor.height;
+                    Rect rect = renderNode.cullingWindow.GetRect();
+                    data.passNode.viewport = new Rect(rect.x * width, rect.y * height, rect.width * width, rect.height * height);
 
-                if (clearDepthMaterial)
-                {
+                    // 5. 상태 복구 (RestoreState)
+                    // Note: 유니티 6에서는 렌더링 데이터를 직접 넘기기보다 CommandBuffer를 통한 상태 제어를 권장합니다.
+                    if (parent != null)
+                    {
+                        // 기존의 ref renderingData를 사용하던 방식 대신 cmd를 활용하는 방식으로 호출
+                        // RestoreState 내부 구현도 RasterCommandBuffer를 지원하도록 수정되어야 할 수 있습니다.
+                        parent.RestoreState(cmd);
+                    }
+
+                    // 6. 포스트 컬링 이벤트
                     foreach (IPortalRenderer renderer in renderNode.renderers)
-                        renderer?.Render(renderNode, cmd, clearDepthMaterial);
-                }
-
-                context.Submit(); // Needs to be submitted so global shaders are updated (for shadows and lighting etc.), would like to remove this some time down the line
-                PortalPassStack.Parent.StoreState(ref renderingData);//
-
-                // Pre Render events
-                PortalRendering.onPreRender?.Invoke(renderNode);
-                foreach (IPortalRenderer renderer in renderNode.renderers)
-                    renderer?.PreCull(renderNode);
-
-                // 
-                float width = renderingData.cameraData.cameraTargetDescriptor.width,
-                    height = renderingData.cameraData.cameraTargetDescriptor.height;
-
-                Rect rect = renderNode.cullingWindow.GetRect();
-                passNode.viewport = new Rect(rect.x * width, rect.y * height, rect.width * width, rect.height * height);
-
-                // Restore using root portal pass node
-                if (parent != null) parent.RestoreState(cmd, ref renderingData);
-
-                // Post Cull events
-                foreach (IPortalRenderer renderer in renderNode.renderers)
-                    renderer?.PostCull(renderNode);
-
-                forwardLights.Setup(context, ref renderingData);
-                context.ExecuteCommandBuffer(cmd);
+                        renderer?.PostCull(renderNode);
+                });
             }
-
-            CommandBufferPool.Release(cmd);
         }
+
+        [Obsolete]
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
     }
 }

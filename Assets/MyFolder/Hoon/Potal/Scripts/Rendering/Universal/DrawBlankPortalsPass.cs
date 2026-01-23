@@ -1,102 +1,107 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.UIElements;
+using UnityEngine.Rendering.RenderGraphModule; // 추가 필수
 using VRPortalToolkit.Data;
 
 namespace VRPortalToolkit.Rendering.Universal
 {
-    /// <summary>
-    /// Render pass that draws blank or placeholder portals when a portal is invalid or render limit is reached.
-    /// </summary>
-    public class DrawBlankPortalsPass : PortalRenderPass
+    public class DrawBlankPortalsPass : ScriptableRenderPass
     {
         private static MaterialPropertyBlock propertyBlock;
-
-        /// <summary>
-        /// The material to use for rendering blank portals.
-        /// </summary>
         public Material material { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the DrawBlankPortalsPass class.
-        /// </summary>
-        /// <param name="renderPassEvent">When this render pass should execute during rendering.</param>
-        public DrawBlankPortalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent)
+        // 렌더 그래프용 데이터 전달 구조체
+        private class PassData
         {
+            public PortalRenderNode parentNode;
+            public Material material;
+            public bool hasFrameBuffer;
+            public FrameBuffer currentFrameBuffer;
+        }
+
+        public DrawBlankPortalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques)
+        {
+            this.renderPassEvent = renderPassEvent;
             if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
         }
 
-        /// <inheritdoc/>
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            CommandBuffer cmd = CommandBufferPool.Get();
+            UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
 
-            //using (new ProfilingScope(cmd, profilingSampler))
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>("DrawBlankPortalsPass", out var passData))
             {
-                PortalRenderNode parentNode = PortalPassStack.Current.renderNode;
+                // 현재 데이터 세팅
+                passData.parentNode = PortalPassStack.Current?.renderNode;
+                passData.material = material;
+                passData.currentFrameBuffer = FrameBuffer.current;
+                passData.hasFrameBuffer = passData.currentFrameBuffer != null && passData.currentFrameBuffer.texture;
 
-                bool hasFrameBuffer = FrameBuffer.current != null && FrameBuffer.current.texture;
+                // 렌더 타겟 설정
+                builder.UseTexture(resourceData.activeColorTexture, AccessFlags.Write);
+                builder.UseTexture(resourceData.activeDepthTexture, AccessFlags.Write);
 
-                PortalPassStack.Current.SetViewAndProjectionMatrices(cmd);
-
-                cmd.SetGlobalInt(PropertyID.PortalStencilRef, PortalPassStack.Current.stateBlock.stencilReference);
-                if (hasFrameBuffer) propertyBlock.SetTexture(PropertyID.MainTex, FrameBuffer.current.texture);
-
-                foreach (PortalRenderNode renderNode in parentNode.children)
+                builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
                 {
-                    if (!renderNode.isValid)
-                    {
-                        if (hasFrameBuffer && TryFindAncestorNode(renderNode, FrameBuffer.current.rootNode, out PortalRenderNode originalNode))
-                        {
-                            Material material = renderNode.overrides.portalStereo ? renderNode.overrides.portalStereo : this.material;
+                    if (data.parentNode == null) return;
 
-                            if (renderNode.isStereo)
+                    var cmd = context.cmd; // RasterCommandBuffer 사용
+
+                    // 1. 매트릭스 및 스텐실 설정
+                    PortalPassStack.Current.SetViewAndProjectionMatrices(cmd);
+                    cmd.SetGlobalInt(PropertyID.PortalStencilRef, PortalPassStack.Current.stateBlock.stencilReference);
+
+                    if (data.hasFrameBuffer)
+                        propertyBlock.SetTexture(PropertyID.MainTex, data.currentFrameBuffer.texture);
+
+                    // 2. 자식 노드 순회하며 그리기
+                    foreach (PortalRenderNode renderNode in data.parentNode.children)
+                    {
+                        if (!renderNode.isValid)
+                        {
+                            if (data.hasFrameBuffer && TryFindAncestorNode(renderNode, data.currentFrameBuffer.rootNode, out PortalRenderNode originalNode))
                             {
-                                UpdateScaleAndTranslation(GetWindow(parentNode.GetStereoViewMatrix(0), parentNode.GetStereoProjectionMatrix(0), renderNode),
-                                    originalNode.GetStereoWindow(0), PropertyID.MainTex_ST);
-                                UpdateScaleAndTranslation(GetWindow(parentNode.GetStereoViewMatrix(1), parentNode.GetStereoProjectionMatrix(1), renderNode),
-                                    originalNode.GetStereoWindow(1), PropertyID.MainTex_ST_2);
+                                Material targetMat = renderNode.overrides.portalStereo ? renderNode.overrides.portalStereo : data.material;
+
+                                // 윈도우 계산 (기존 로직 유지)
+                                if (renderNode.isStereo)
+                                {
+                                    UpdateScaleAndTranslation(GetWindow(data.parentNode.GetStereoViewMatrix(0), data.parentNode.GetStereoProjectionMatrix(0), renderNode),
+                                        originalNode.GetStereoWindow(0), PropertyID.MainTex_ST);
+                                    UpdateScaleAndTranslation(GetWindow(data.parentNode.GetStereoViewMatrix(1), data.parentNode.GetStereoProjectionMatrix(1), renderNode),
+                                        originalNode.GetStereoWindow(1), PropertyID.MainTex_ST_2);
+                                }
+                                else
+                                {
+                                    UpdateScaleAndTranslation(GetWindow(data.parentNode.worldToCameraMatrix, data.parentNode.projectionMatrix, renderNode),
+                                        originalNode.window, PropertyID.MainTex_ST);
+                                }
+
+                                // [수정 핵심] RasterCommandBuffer를 지원하는 Render 호출
+                                foreach (IPortalRenderer renderer in renderNode.renderers)
+                                    renderer?.Render(renderNode, cmd, targetMat, propertyBlock);
                             }
                             else
-                                UpdateScaleAndTranslation(GetWindow(parentNode.worldToCameraMatrix, parentNode.projectionMatrix, renderNode),
-                                    originalNode.window, PropertyID.MainTex_ST);
-
-                            // This is the old way, that didnt take perspective into account
-
-                            //if (renderNode.isStereo)
-                            //{
-                            //    UpdateScaleAndTranslation(renderNode.GetStereoWindow(0), originalNext.parent.GetStereoWindow(0), feature.portalStereo, PropertyID.MainTex_ST);
-                            //    UpdateScaleAndTranslation(renderNode.GetStereoWindow(1), originalNext.parent.GetStereoWindow(1), feature.portalStereo, PropertyID.MainTex_ST_2);
-                            //}
-                            //else
-                            //    UpdateScaleAndTranslation(renderNode.window, originalNext.parent.window, feature.portalStereo, PropertyID.MainTex_ST);
-
-                            foreach (IPortalRenderer renderer in renderNode.renderers)
-                                renderer.Render(renderNode, cmd, material, propertyBlock);
-                        }
-                        else
-                        {
-                            foreach (IPortalRenderer renderer in renderNode.renderers)
-                                renderer.RenderDefault(renderNode, cmd);
+                            {
+                                // 기본 렌더링 호출
+                                foreach (IPortalRenderer renderer in renderNode.renderers)
+                                    renderer?.RenderDefault(renderNode, cmd);
+                            }
                         }
                     }
-                }
-
-                context.ExecuteCommandBuffer(cmd);
+                });
             }
-
-            CommandBufferPool.Release(cmd);
         }
 
-        /// <summary>
-        /// Updates scale and translation properties in the property block for portal rendering.
-        /// </summary>
-        /// <param name="window">The current portal window.</param>
-        /// <param name="parentWindow">The parent portal window.</param>
-        /// <param name="scaleTranslateID">The shader property ID for the scale and translation vector.</param>
+        [Obsolete]
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
+
+        // --- 이하 헬퍼 함수들은 원본과 동일하게 유지 ---
+
         private static void UpdateScaleAndTranslation(ViewWindow window, ViewWindow parentWindow, int scaleTranslateID)
         {
             if (parentWindow.xMin < 0f) parentWindow.xMin = 0f;
@@ -104,7 +109,6 @@ namespace VRPortalToolkit.Rendering.Universal
             if (parentWindow.xMax > 1f) parentWindow.xMax = 1f;
             if (parentWindow.yMax > 1f) parentWindow.yMax = 1f;
 
-            // Get current position
             Vector2 size = new Vector2(window.xMax - window.xMin, window.yMax - window.yMin),
                 parentSize = new Vector2(parentWindow.xMax - parentWindow.xMin, parentWindow.yMax - parentWindow.yMin),
                 finalTiling = new Vector2(parentSize.x / size.x, parentSize.y / size.y);
@@ -116,13 +120,6 @@ namespace VRPortalToolkit.Rendering.Universal
             ));
         }
 
-        /// <summary>
-        /// Tries to find an ancestor node in the portal render tree.
-        /// </summary>
-        /// <param name="target">The target render node to find an ancestor for.</param>
-        /// <param name="root">The root node to start searching from.</param>
-        /// <param name="nextNode">The output ancestor node if found.</param>
-        /// <returns>True if an ancestor node was found, false otherwise.</returns>
         protected virtual bool TryFindAncestorNode(PortalRenderNode target, PortalRenderNode root, out PortalRenderNode nextNode)
         {
             PortalRenderNode current = root;
@@ -131,10 +128,9 @@ namespace VRPortalToolkit.Rendering.Universal
 
             foreach (PortalRenderNode originalNode in GetPath(target))
             {
-                if (!TryGetChildWithPortal(current, originalNode.portal, out current)) // TODO: clipping might make this different
+                if (!TryGetChildWithPortal(current, originalNode.portal, out current))
                 {
-                    // Try cycling back
-                    if (current != null && current.portal == originalNode.portal) // TODO: clipping might make this different
+                    if (current != null && current.portal == originalNode.portal)
                         current = lastValid;
                     else
                     {
@@ -142,14 +138,10 @@ namespace VRPortalToolkit.Rendering.Universal
                         return false;
                     }
                 }
-
-                if (current.portal == target.portal) // TODO: clipping might make this different
-                    lastValid = current;
-
+                if (current.portal == target.portal) lastValid = current;
                 if (current.parent.portal == target.portal && current.portal != null)
                     nextNode = current;
             }
-
             return nextNode != null;
         }
 
@@ -159,14 +151,9 @@ namespace VRPortalToolkit.Rendering.Universal
             {
                 foreach (PortalRenderNode childNode in parent.children)
                 {
-                    if (childNode.portal == portal)
-                    {
-                        child = childNode;
-                        return true;
-                    }
+                    if (childNode.portal == portal) { child = childNode; return true; }
                 }
             }
-
             child = null;
             return false;
         }
@@ -175,40 +162,21 @@ namespace VRPortalToolkit.Rendering.Universal
         {
             if (node != null && node.parent != null)
             {
-                foreach (PortalRenderNode parent in GetPath(node.parent))
-                    yield return parent;
-
+                foreach (PortalRenderNode parent in GetPath(node.parent)) yield return parent;
                 yield return node;
             }
         }
 
-        // Assumes view and proj are from the parent, not the node
         private ViewWindow GetWindow(Matrix4x4 view, Matrix4x4 proj, PortalRenderNode node)
         {
             if (node.portal.connected != null)
             {
-                // These haven't been calculated because the node is invalid
                 Matrix4x4 localToWorld = node.portal.teleportMatrix * node.parent.localToWorldMatrix;
                 view = view * node.portal.connected.teleportMatrix;
-
-                // TODO: Needs to get the window of all portals?
                 node.renderer.TryGetWindow(node, localToWorld.GetColumn(3), view, proj, out ViewWindow window);
                 return window;
             }
-
             return default;
-        }
-
-        private IEnumerable<PortalRenderNode> GetLoop(PortalRenderNode current, IPortal portal)
-        {
-            if (current != null && current.parent != null && current.parent.parent != null)
-            {
-                if (current.parent.portal != portal)
-                    foreach (PortalRenderNode parent in GetLoop(current.parent, portal))
-                        yield return parent;
-
-                yield return current.parent;
-            }
         }
     }
 }

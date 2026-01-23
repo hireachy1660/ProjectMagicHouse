@@ -382,6 +382,10 @@ namespace VRPortalToolkit.Rendering
             }
         }
 
+        public PortalRenderNode()
+        {
+        }
+
         public Matrix4x4 GetStereoViewMatrix(int index)
         {
             if (index < 0 || index > 1) throw new IndexOutOfRangeException();

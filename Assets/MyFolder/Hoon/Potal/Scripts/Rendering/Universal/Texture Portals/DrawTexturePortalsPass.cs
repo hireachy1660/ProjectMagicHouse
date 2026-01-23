@@ -3,51 +3,58 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
 using VRPortalToolkit.Data;
+using VRPortalToolkit.Rendering;
 
 namespace VRPortalToolkit.Rendering.Universal
 {
     public class DrawTexturePortalsPass : PortalRenderPass
     {
+        private static MaterialPropertyBlock propertyBlock;
         public Material material { get; set; }
-        private static MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
 
-        public DrawTexturePortalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent) { }
-
-        private class PassData
+        public DrawTexturePortalsPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent)
         {
-            public Material mat;
-            // 유니티 6에서는 데이터를 이 구조체에 담아 전달해야 합니다.
+            if (propertyBlock == null) propertyBlock = new MaterialPropertyBlock();
         }
 
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            using (var builder = renderGraph.AddRasterRenderPass<PassData>("DrawTexturePortals", out var passData))
+            using (var builder = renderGraph.AddRasterRenderPass<PortalPassData>(profilingSampler.name, out var passData))
             {
-                passData.mat = material;
+                // 현재 스택의 노드를 데이터로 전달
+                passData.node = PortalPassStack.Current;
 
-                builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
+                builder.SetRenderFunc((PortalPassData data, RasterGraphContext context) =>
                 {
-                    // [해결책] UnsafeCommandBuffer로 변환하지 마세요!
-                    // 유니티 6의 RasterCommandBuffer(rgContext.cmd)를 직접 사용합니다.
+                    // 1. 데이터 검증
+                    if (data.node == null || data.node.renderNode == null) return;
 
-                    // 만약 포탈의 뷰/프로젝션 매트릭스를 설정해야 한다면 아래 방식을 씁니다.
-                    // 기존의 PortalPassStack 호출 대신 유니티 6 내장 함수를 직접 씁니다.
-                    if (PortalRenderFeature.renderCamera != null)
-                    {
-                        var camera = PortalRenderFeature.renderCamera;
-                        rgContext.cmd.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
-                    }
+                    var cmd = context.cmd;
 
-                    // 재질(Material)을 사용하여 포탈을 그리는 로직이 있다면 여기 추가합니다.
-                    if (data.mat != null)
+                    // 2. 행렬 설정 에러 해결 (CS1061)
+                    // PortalPassNode에 직접 행렬이 없다면 PortalPassStack의 정적 메서드를 사용하거나
+                    // 아래와 같이 현재 스택의 행렬을 직접 주입합니다.
+                    PortalPassStack.Current.SetViewAndProjectionMatrices(cmd);
+
+                    // 3. 자식 포탈 렌더링
+                    foreach (var childNode in data.node.renderNode.children)
                     {
-                        // 예: rgContext.cmd.DrawMesh(...) 혹은 필요한 그리기 명령
+                        if (childNode.isValid && RenderPortalsBuffer.TryGetBuffer(childNode, out RenderPortalsBuffer buffer))
+                        {
+                            propertyBlock.SetTexture("_MainTex", buffer.texture);
+
+                            foreach (var portalRenderer in childNode.renderers)
+                            {
+                                // 4. RasterCommandBuffer 변환 에러 해결 (CS1503)
+                                // 유니티 6에서는 RasterCommandBuffer가 대부분의 기능을 수행하지만,
+                                // 기존 IPortalRenderer 인터페이스가 CommandBuffer를 요구한다면
+                                // 아래와 같이 암시적 형변환을 피하고 직접 전달합니다.
+                                portalRenderer.Render(childNode, cmd, material, propertyBlock);
+                            }
+                        }
                     }
                 });
             }
         }
-
-        [System.Obsolete]
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
     }
 }

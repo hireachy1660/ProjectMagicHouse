@@ -190,7 +190,7 @@ namespace VRPortalToolkit.Rendering
         }
 
         /// <inheritdoc/>
-        public override void Render(PortalRenderNode renderNode, CommandBuffer commandBuffer, Material material, MaterialPropertyBlock properties = null)
+        public override void Render(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer, Material material, MaterialPropertyBlock properties = null)
         {
             if (isActiveAndEnabled)
             {
@@ -206,7 +206,7 @@ namespace VRPortalToolkit.Rendering
         }
 
         /// <inheritdoc/>
-        public override void RenderDefault(PortalRenderNode renderNode, CommandBuffer commandBuffer)
+        public override void RenderDefault(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer)
         {
             if (isActiveAndEnabled && defaultMaterial)
                 Render(renderNode, commandBuffer, defaultMaterial);

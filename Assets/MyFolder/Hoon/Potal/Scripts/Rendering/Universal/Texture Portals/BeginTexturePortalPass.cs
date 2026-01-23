@@ -129,7 +129,7 @@ namespace VRPortalToolkit.Rendering.Universal
                 foreach (IPortalRenderer renderer in renderNode.renderers)
                     renderer?.PostCull(renderNode);
 
-                forwardLights.Setup(context, ref renderingData);
+                //forwardLights.Setup(context, ref renderingData);
                 context.ExecuteCommandBuffer(cmd);
             }
 

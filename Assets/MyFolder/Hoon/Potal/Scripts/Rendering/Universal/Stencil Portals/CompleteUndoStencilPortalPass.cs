@@ -1,77 +1,68 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace VRPortalToolkit.Rendering.Universal
 {
-    /// <summary>
-    /// This render pass is specifically designed for the case where one eye of a stereo camera has passed through a portal.
-    /// Handles the special stencil portal rendering required for this transition case.
-    /// </summary>
-    public class CompleteUndoStencilPortalPass : PortalRenderPass
+    public class CompleteUndoStencilPortalPass : ScriptableRenderPass
     {
-        /// <summary>
-        /// The material used to decrease the stencil value for portal rendering.
-        /// </summary>
         public Material decreaseMaterial { get; set; }
+        public PortalPassNode passNode { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the CompleteUndoStencilPortalPass class.
-        /// </summary>
-        /// <param name="renderPassEvent">When this render pass should execute during rendering.</param>
-        public CompleteUndoStencilPortalPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent) { }
-
-        /// <inheritdoc/>
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        private class PassData
         {
-            CommandBuffer cmd = CommandBufferPool.Get();
-
-            //using (new ProfilingScope(cmd, profilingSampler))
-            {
-                PortalPassNode passNode = PortalPassStack.Pop();
-                PortalRenderNode renderNode = passNode.renderNode;
-
-                // Release shadow textures
-                if (passNode.mainLightShadowCasterPass != null)
-                    passNode.mainLightShadowCasterPass.OnPortalCleanup(cmd);
-
-                if (passNode.additionalLightsShadowCasterPass != null)
-                    passNode.additionalLightsShadowCasterPass.OnPortalCleanup(cmd);
-
-                // Trigger Post Render
-                foreach (IPortalRenderer renderer in renderNode.renderers)
-                    renderer?.PostRender(renderNode);
-                PortalRendering.onPostRender?.Invoke(renderNode);
-
-                PortalPassGroupPool.Release(passNode);
-
-                PortalPassStack.Current.RestoreState(cmd, ref renderingData);
-                PortalPassStack.Current.SetViewAndProjectionMatrices(cmd);
-
-                Material decreaseMaterial = renderNode.overrides.portalDecrease ? renderNode.overrides.portalDecrease : this.decreaseMaterial;
-
-                // Unmask
-                if (decreaseMaterial)
-                {
-                    foreach (IPortalRenderer renderer in renderNode.renderers)
-                        renderer.Render(renderNode, cmd, decreaseMaterial);
-                }
-
-                cmd.SetGlobalInt(PropertyID.PortalStencilRef, renderNode.depth - 1);
-                
-                // Decrease twice so that it now acts like the normal world
-                if (decreaseMaterial)
-                {
-                    foreach (IPortalRenderer renderer in renderNode.renderers)
-                        renderer.Render(renderNode, cmd, decreaseMaterial);
-                }
-
-                context.ExecuteCommandBuffer(cmd);
-            }
-
-            CommandBufferPool.Release(cmd);
+            public PortalPassNode passNode;
+            public Material decreaseMaterial;
         }
+
+        public CompleteUndoStencilPortalPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques)
+        {
+            this.renderPassEvent = renderPassEvent;
+        }
+
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+        {
+            UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>("CompleteUndoStencilPortalPass", out var passData))
+            {
+                passData.passNode = passNode;
+                passData.decreaseMaterial = decreaseMaterial;
+
+                builder.UseTexture(resourceData.activeColorTexture, AccessFlags.Write);
+                builder.UseTexture(resourceData.activeDepthTexture, AccessFlags.Write);
+
+                builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
+                {
+                    if (data.passNode == null || data.passNode.renderNode == null) return;
+
+                    var cmd = context.cmd;
+                    PortalRenderNode renderNode = data.passNode.renderNode;
+
+                    // 부모 노드 기준 매트릭스 설정 (Undo이므로 부모로 돌아감)
+                    if (PortalPassStack.Parent != null)
+                        PortalPassStack.Parent.SetViewAndProjectionMatrices(cmd);
+
+                    // 스텐실 감소 로직
+                    cmd.SetGlobalInt(PropertyID.PortalStencilRef, renderNode.depth);
+                    Material decMat = renderNode.overrides.portalDecrease ? renderNode.overrides.portalDecrease : data.decreaseMaterial;
+
+                    if (decMat != null)
+                    {
+                        foreach (IPortalRenderer renderer in renderNode.renderers)
+                            renderer?.Render(renderNode, cmd, decMat);
+                    }
+
+                    // 스택 팝 및 상태 복구
+                    PortalPassStack.Pop();
+                    if (PortalPassStack.Current != null)
+                        PortalPassStack.Current.RestoreState(cmd);
+                });
+            }
+        }
+
+        [System.Obsolete]
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
     }
 }

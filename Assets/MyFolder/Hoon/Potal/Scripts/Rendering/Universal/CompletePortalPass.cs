@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
@@ -9,14 +10,13 @@ namespace VRPortalToolkit
     {
         public CompletePortalPass(RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingOpaques) : base(renderPassEvent) { }
 
-        private class PassData { }
-
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            using (var builder = renderGraph.AddRasterRenderPass<PassData>("CompletePortalPass", out var passData))
+            using (var builder = renderGraph.AddRasterRenderPass<PortalPassData>(profilingSampler.name, out var passData))
             {
-                builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
+                builder.SetRenderFunc((PortalPassData data, RasterGraphContext context) =>
                 {
+                    // 렌더링 종료 후 스택 클리어
                     PortalPassStack.Clear();
                 });
             }
