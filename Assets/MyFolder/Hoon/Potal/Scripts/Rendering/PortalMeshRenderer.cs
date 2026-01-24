@@ -5,150 +5,82 @@ using VRPortalToolkit.Data;
 
 namespace VRPortalToolkit.Rendering
 {
-    /// <summary>
-    /// Renders a portal using a mesh from a MeshFilter component.
-    /// </summary>
     [RequireComponent(typeof(MeshFilter)), ExecuteInEditMode]
     public class PortalMeshRenderer : PortalRendererBase
     {
         [SerializeField] private Portal _portal;
-        /// <summary>
-        /// The portal this renderer is associated with.
-        /// </summary>
-        public Portal portal
-        {
-            get => _portal;
-            set => _portal = value;
-        }
+        public Portal portal { get => _portal; set => _portal = value; }
         public override IPortal Portal => _portal;
 
         [SerializeField] private PortalMeshRenderer _connectedRenderer;
-        /// <summary>
-        /// The connected portal mesh renderer.
-        /// </summary>
-        public PortalMeshRenderer connectedRenderer {
-            get => _connectedRenderer;
-            set => _connectedRenderer = value;
-        }
+        public PortalMeshRenderer connectedRenderer { get => _connectedRenderer; set => _connectedRenderer = value; }
 
         private MeshFilter _filter;
-        /// <summary>
-        /// The filter for the portal mesh.
-        /// </summary>
         public MeshFilter filter => _filter ? _filter : _filter = GetComponent<MeshFilter>();
 
         [SerializeField] private Transform _clippingPlane;
-        /// <summary>
-        /// The transform used for clipping plane calculations.
-        /// </summary>
-        public Transform clippingPlane {
-            get => _clippingPlane;
-            set => _clippingPlane = value;
-        }
+        public Transform clippingPlane { get => _clippingPlane; set => _clippingPlane = value; }
 
         [SerializeField] private ClippingMode _clippingMode;
-        /// <summary>
-        /// The clipping mode used for the portal.
-        /// </summary>
-        public ClippingMode clippingMode {
-            get => _clippingMode;
-            set => _clippingMode = value;
-        }
+        public ClippingMode clippingMode { get => _clippingMode; set => _clippingMode = value; }
 
-        /// <summary>
-        /// Defines how the portal mesh should be clipped.
-        /// </summary>
-        public enum ClippingMode
-        {
-            /// <summary>No clipping is applied.</summary>
-            None = 0,
-            
-            /// <summary>Portal is only visible from one side.</summary>
-            OneSided = 1,
-            
-            /// <summary>Portal is visible from both sides.</summary>
-            DoubleSided = 2,
-        }
+        public enum ClippingMode { None = 0, OneSided = 1, DoubleSided = 2 }
 
         [SerializeField] private CullMode _cullMode = CullMode.Back;
-        /// <summary>
-        /// The culling mode used for the portal mesh.
-        /// </summary>
-        public CullMode cullMode {
-            get => _cullMode;
-            set => _cullMode = value;
-        }
+        public CullMode cullMode { get => _cullMode; set => _cullMode = value; }
 
         [SerializeField] private float _clippingOffset = 0.001f;
-        /// <summary>
-        /// The offset used for the clipping plane to prevent z-fighting.
-        /// </summary>
-        public float clippingOffset {
-            get => _clippingOffset;
-            set => _clippingOffset = value;
-        }
+        public float clippingOffset { get => _clippingOffset; set => _clippingOffset = value; }
 
         [SerializeField] private Material _defaultMaterial;
-        /// <summary>
-        /// The default material used when rendering the portal.
-        /// </summary>
-        public Material defaultMaterial {
-            get => _defaultMaterial;
-            set => _defaultMaterial = value;
-        }
+        public Material defaultMaterial { get => _defaultMaterial; set => _defaultMaterial = value; }
 
         [SerializeField] private PortalRendererSettings _overrides;
-        /// <summary>
-        /// Override settings for portal rendering.
-        /// </summary>
-        public PortalRendererSettings overrides
-        {
-            get => _overrides;
-            set => _overrides = value;
-        }
+        public PortalRendererSettings overrides { get => _overrides; set => _overrides = value; }
         public override PortalRendererSettings Overrides => _overrides;
 
-        /// <summary>
-        /// Event triggered before the portal is culled.
-        /// </summary>
         public UnityAction<PortalRenderNode> preCull;
-        
-        /// <summary>
-        /// Event triggered after the portal is culled.
-        /// </summary>
         public UnityAction<PortalRenderNode> postCull;
-        
-        /// <summary>
-        /// Event triggered after the portal is rendered.
-        /// </summary>
         public UnityAction<PortalRenderNode> postRender;
 
         protected virtual void Reset()
         {
             _portal = GetComponentInChildren<Portal>(true);
-
             if (!_portal) _portal = GetComponentInParent<Portal>();
-
             _clippingPlane = transform;
         }
 
         protected virtual void OnDrawGizmos()
         {
+            // 1. 기존 메쉬 가이드 표시
             if (filter && _filter.sharedMesh)
             {
                 Gizmos.matrix = transform.localToWorldMatrix;
-
-                // Should be able to click on portals now
-                if (portal && portal.connected)
-                    Gizmos.color = Color.clear;
-                else
-                    Gizmos.color = Color.grey;
-
+                Gizmos.color = (portal && portal.connected) ? Color.clear : new Color(0.5f, 0.5f, 0.5f, 0.2f);
                 Gizmos.DrawMesh(_filter.sharedMesh);
+            }
+
+            // 2. [가상 카메라 시각화] 씬 뷰에서 보라색 구체로 카메라 위치 표시
+            if (portal != null && portal.connected != null)
+            {
+                Camera mainCam = Camera.main;
+                if (mainCam != null)
+                {
+                    // 상대 행렬 계산: 내 포탈 -> 상대 포탈로의 시점 변환
+                    Matrix4x4 m = portal.connected.transform.localToWorldMatrix * portal.transform.worldToLocalMatrix * mainCam.transform.localToWorldMatrix;
+                    Vector3 virtualPos = m.GetColumn(3);
+
+                    Gizmos.matrix = Matrix4x4.identity;
+                    Gizmos.color = Color.magenta; // 보라색
+                    Gizmos.DrawWireSphere(virtualPos, 0.3f); // 가상 카메라 위치
+                    Gizmos.DrawLine(virtualPos, portal.connected.transform.position); // 연결선
+
+                    // 시선 방향 표시
+                    Gizmos.DrawRay(virtualPos, m.rotation * Vector3.forward * 1.0f);
+                }
             }
         }
 
-        /// <inheritdoc/>
         public override bool TryGetWindow(PortalRenderNode renderNode, Vector3 cameraPosition, Matrix4x4 view, Matrix4x4 proj, out ViewWindow innerWindow)
         {
             if (!isActiveAndEnabled || !filter || !_filter.sharedMesh)
@@ -157,18 +89,13 @@ namespace VRPortalToolkit.Rendering
                 return false;
             }
 
-            // If one side, it shouldn't display from certain sides
             if (_clippingPlane && _clippingMode == ClippingMode.OneSided && !IsOnFrontSide(cameraPosition))
             {
                 innerWindow = default;
                 return false;
             }
 
-            if (_clippingPlane && _clippingMode == ClippingMode.DoubleSided && !IsOnFrontSide(cameraPosition))
-                innerWindow = ViewWindow.GetWindow(view, proj, _filter.sharedMesh.bounds, transform.localToWorldMatrix); // TODO: Should flip by clipping plane
-            else
-                innerWindow = ViewWindow.GetWindow(view, proj, _filter.sharedMesh.bounds, transform.localToWorldMatrix);
-
+            innerWindow = ViewWindow.GetWindow(view, proj, _filter.sharedMesh.bounds, transform.localToWorldMatrix);
             return true;
         }
 
@@ -177,48 +104,39 @@ namespace VRPortalToolkit.Rendering
             return Vector3.Dot(position - _clippingPlane.position, _clippingPlane.forward) > 0f;
         }
 
-        /// <inheritdoc/>
-        public override void PreCull(PortalRenderNode renderNode)
-        {
-            preCull?.Invoke(renderNode);
-        }
+        public override void PreCull(PortalRenderNode renderNode) => preCull?.Invoke(renderNode);
+        public override void PostCull(PortalRenderNode renderNode) => postCull?.Invoke(renderNode);
 
-        /// <inheritdoc/>
-        public override void PostCull(PortalRenderNode renderNode)
-        {
-            postCull?.Invoke(renderNode);
-        }
-
-        /// <inheritdoc/>
+        // PortalMeshRenderer.cs 내부 수정
         public override void Render(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer, Material material, MaterialPropertyBlock properties = null)
         {
-            if (isActiveAndEnabled)
+            if (material == null) material = _defaultMaterial;
+            if (material == null) return;
+
+            // 로그가 찍히는 걸 확인했으니 이 부분은 정상 작동 중입니다.
+            Debug.Log($"[Portal Render] {gameObject.name} 그리는 중... 머티리얼: {material.name}");
+
+            if (isActiveAndEnabled && filter && filter.sharedMesh)
             {
-                commandBuffer.SetGlobalInt(PropertyID.PortalCullMode, (int)_cullMode);
                 Matrix4x4 localToWorld = transform.localToWorldMatrix;
+                Mesh mesh = filter.sharedMesh;
 
-                // TODO: flip if required
-
-                if (filter && _filter.sharedMesh)
-                    for (int i = 0; i < _filter.sharedMesh.subMeshCount; i++)
-                        commandBuffer.DrawMesh(_filter.sharedMesh, localToWorld, material, i, -1, properties);
+                for (int i = 0; i < mesh.subMeshCount; i++)
+                {
+                    // shaderPass를 0으로 명시하고, submesh 인덱스 i를 정확히 전달
+                    commandBuffer.DrawMesh(mesh, localToWorld, material, i, 0, properties);
+                }
             }
         }
 
-        /// <inheritdoc/>
         public override void RenderDefault(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer)
         {
             if (isActiveAndEnabled && defaultMaterial)
                 Render(renderNode, commandBuffer, defaultMaterial);
         }
 
-        /// <inheritdoc/>
-        public override void PostRender(PortalRenderNode renderNode)
-        {
-            postRender?.Invoke(renderNode);
-        }
+        public override void PostRender(PortalRenderNode renderNode) => postRender?.Invoke(renderNode);
 
-        /// <inheritdoc/>
         public override bool TryGetClippingPlane(PortalRenderNode renderNode, out Vector3 clippingPlaneCentre, out Vector3 clippingPlaneNormal)
         {
             if (_clippingPlane)
@@ -231,9 +149,7 @@ namespace VRPortalToolkit.Rendering
                 clippingPlaneCentre = _clippingPlane.transform.position + clippingPlaneNormal * _clippingOffset;
                 return true;
             }
-
-            clippingPlaneCentre = default;
-            clippingPlaneNormal = default;
+            clippingPlaneCentre = clippingPlaneNormal = default;
             return false;
         }
     }

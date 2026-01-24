@@ -38,15 +38,26 @@ namespace VRPortalToolkit.Rendering.Universal
                 builder.UseRendererList(rendererList);
 
                 // 4. 실제 렌더링 명령 예약
+                // 4. 실제 렌더링 명령 예약
                 builder.SetRenderFunc((PortalPassData data, RasterGraphContext context) =>
                 {
-                    // 포탈 매트릭스 설정 (기존 로직 유지)
-                    if (PortalPassStack.Current != null)
-                    {
-                        PortalPassStack.Current.SetViewAndProjectionMatrices(context.cmd);
-                    }
+                    // 스택이 비어있으면 렌더링을 스킵합니다.
+                    if (PortalPassStack.Current == null) return;
 
-                    // RendererList를 그립니다 (DrawRenderers 대체)
+                    var cmd = context.cmd;
+                    var currentNode = PortalPassStack.Current;
+
+                    // 매트릭스 설정 (포탈 시점으로 뷰 변환)
+                    currentNode.SetViewAndProjectionMatrices(cmd);
+
+                    // 스텐실 참조값 설정
+                    // 현재 포탈의 depth를 스텐실 값으로 사용하여, 이전 패스(BeginStencil)에서 그려진 영역에만 그립니다.
+                    cmd.SetGlobalInt("_PortalStencilRef", currentNode.renderNode.depth);
+
+                    // [추가 제안] 뷰포트 설정
+                    // PortalPassNode에 저장된 viewport가 있다면 적용하여 렌더링 범위를 제한할 수 있습니다.
+                    // cmd.SetViewport(currentNode.viewport); 
+
                     context.cmd.DrawRendererList(rendererList);
                 });
             }

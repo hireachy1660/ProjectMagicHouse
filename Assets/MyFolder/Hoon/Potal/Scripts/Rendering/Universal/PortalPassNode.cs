@@ -102,14 +102,27 @@ namespace VRPortalToolkit.Rendering.Universal
         }
 
         // --- RasterCommandBuffer용 메서드 ---
-        public void SetViewAndProjectionMatrices(RasterCommandBuffer cmd, bool setViewport = true)
+        // PortalPassNode 클래스 내부의 SetViewAndProjectionMatrices 메서드를 아래 내용으로 교체하세요.
+
+        public void SetViewAndProjectionMatrices(RasterCommandBuffer cmd, bool isDepthNormals = false)
         {
             if (renderNode == null) return;
-            cmd.SetGlobalMatrix(_unityMatrixV, renderNode.worldToCameraMatrix);
-            cmd.SetGlobalMatrix(_unityMatrixP, renderNode.projectionMatrix);
-            Matrix4x4 viewProj = renderNode.projectionMatrix * renderNode.worldToCameraMatrix;
-            cmd.SetGlobalMatrix(_unityMatrixVP, viewProj);
-            if (setViewport) cmd.SetViewport(viewport);
+
+            Matrix4x4 viewMatrix = renderNode.worldToCameraMatrix;
+            Matrix4x4 projectionMatrix = renderNode.projectionMatrix;
+
+            Debug.Log($"<color=yellow>[Portal Matrix]</color> Depth: {renderNode.depth}, CamPos: {renderNode.worldToCameraMatrix.inverse.GetColumn(3)}");
+
+            // 유니티 6 표준 행렬 설정
+            cmd.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+
+            // [중요] 쉐이더 내부 변수 강제 동기화
+            cmd.SetGlobalMatrix("_MatrixV", viewMatrix);
+            cmd.SetGlobalMatrix("_MatrixVP", projectionMatrix * viewMatrix);
+
+            // 월드 카메라 좌표 갱신
+            Vector3 portalCameraPos = renderNode.localToWorldMatrix.GetColumn(3);
+            cmd.SetGlobalVector("_WorldSpaceCameraPos", portalCameraPos);
         }
 
         public void RestoreState(RasterCommandBuffer cmd)

@@ -14,30 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRPortalToolkit.Rendering.Universal.PortalRenderFeature
   m_Active: 1
   _renderMode: 0
-  _algorithm: 1
-  _opaqueLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  _transparentLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  _minDepth: 1
   _maxDepth: 32
-  _maxRenders: 32
-  _maxShadowDepth: 16
-  _portalResolution: 1
-  _bufferResolution: 1
-  _editorMinDepth: 0
-  _editorMaxDepth: 16
-  _editorMaxRenders: 16
-  _editorMaxShadowDepth: 16
-  _editorPortalResolution: 1
-  _editorBufferResolution: 1
-  _portalStereo: {fileID: 2100000, guid: 5b4b59fca78fdd54ea72d3b37270eb85, type: 2}
+  _portalLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   _portalIncrease: {fileID: 2100000, guid: b37df06b0d97d3c439b9960600476bf5, type: 2}
   _portalDecrease: {fileID: 2100000, guid: 1610932ed2cb46d4a89736052e6d551a, type: 2}
-  _portalClearDepth: {fileID: 2100000, guid: 341ceec8b7a572c4a8e3b4271af4f049, type: 2}
-  _portalDepthOnly: {fileID: 2100000, guid: 733b792f0cd776f47b9541770721d1b8, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

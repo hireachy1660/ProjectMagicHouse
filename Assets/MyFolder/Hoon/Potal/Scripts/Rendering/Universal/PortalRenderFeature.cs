@@ -4,177 +4,180 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.RenderGraphModule;
+using VRPortalToolkit.Data;
+// [중요] PortalMeshRenderer를 인식하기 위해 네임스페이스 추가
+using VRPortalToolkit.Rendering;
 
 namespace VRPortalToolkit.Rendering.Universal
 {
     public partial class PortalRenderFeature : ScriptableRendererFeature
     {
-        public enum PortalRenderMode { Stencil, StencilEarly, RenderTexture }
-
-        public static Camera renderCamera;
+        public enum RenderMode { RenderTexture = 0, StencilEarly = 1, Stencil = 2, StencilLate = 3 }
 
         [Header("Portal Settings")]
-        [SerializeField] private PortalRenderMode _renderMode = PortalRenderMode.Stencil;
-        [SerializeField] private int _maxDepth = 2;
+        [SerializeField] private RenderMode _renderMode = RenderMode.Stencil;
+        [SerializeField] private int _maxDepth = 8;
         [SerializeField] private LayerMask _portalLayerMask = -1;
 
-        private PortalBeginPass beginPass;
-        private PortalEndPass endPass;
-        private List<PortalRenderPass> pool = new List<PortalRenderPass>();
-        private int poolIndex;
-        private bool _isDirty = true;
+        [Header("Required Materials")]
+        [SerializeField] private Material _portalIncrease;
+        [SerializeField] private Material _portalDecrease;
+
+        private PortalBeginPass _beginPass;
+        private PortalEndPass _endPass;
+        private List<PortalStepPass> _stepPool = new List<PortalStepPass>();
+        private int _poolIndex;
+
+        public static Camera renderCamera;
 
         public override void Create()
         {
             if (renderCamera == null)
             {
-                GameObject go = new GameObject("Portal Render Camera") { hideFlags = HideFlags.HideAndDontSave };
+                GameObject go = new GameObject("[Portal Render Camera]") { hideFlags = HideFlags.HideAndDontSave };
                 renderCamera = go.AddComponent<Camera>();
                 renderCamera.enabled = false;
+                renderCamera.clearFlags = CameraClearFlags.SolidColor;
+                renderCamera.backgroundColor = new Color(0, 0, 0, 0);
             }
 
-            beginPass = new PortalBeginPass { renderPassEvent = RenderPassEvent.BeforeRenderingOpaques };
-            endPass = new PortalEndPass { renderPassEvent = RenderPassEvent.AfterRenderingTransparents };
-            _isDirty = false;
+            _beginPass = new PortalBeginPass { renderPassEvent = RenderPassEvent.BeforeRenderingOpaques };
+            _endPass = new PortalEndPass { renderPassEvent = RenderPassEvent.AfterRenderingTransparents };
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             var cameraData = renderingData.cameraData;
-            Camera camera = cameraData.camera;
+            if (cameraData.cameraType == CameraType.Preview || cameraData.cameraType == CameraType.Reflection) return;
 
-            if (camera.cameraType == CameraType.Preview || camera.cameraType == CameraType.Reflection) return;
-            if (_isDirty) Create();
+            var allRenderers = PortalRendering.GetAllPortalRenderers();
 
-            // [STEP 1] 시스템 진입 확인
-            Debug.Log($"<color=cyan>[Portal]</color> AddRenderPasses 시작 (카메라: {camera.name})");
+            // 알고리즘 트리를 생성하여 렌더링할 포탈 노드들을 계산
+            PortalRenderNode rootNode = PortalAlgorithms.GetTree(
+                cameraData.camera,
+                cameraData.camera.transform.localToWorldMatrix,
+                cameraData.camera.worldToCameraMatrix,
+                cameraData.camera.projectionMatrix,
+                cameraData.camera.cullingMask,
+                0, _maxDepth, 32,
+                allRenderers
+            );
 
-            PortalRenderNode rootNode = PortalRenderNode.Get(camera);
-            rootNode.worldToCameraMatrix = camera.worldToCameraMatrix;
-            rootNode.projectionMatrix = camera.projectionMatrix;
-            rootNode.cullingMask = camera.cullingMask;
+            if (rootNode == null || rootNode.validChildCount == 0) return;
 
-            var allRenderers = GameObject.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-            bool portalFound = false;
+            renderer.EnqueuePass(_beginPass);
+            _poolIndex = 0;
+            EnqueueRecursive(renderer, rootNode);
+            renderer.EnqueuePass(_endPass);
+        }
 
-            renderer.EnqueuePass(beginPass);
-
-            foreach (var mono in allRenderers)
+        private void EnqueueRecursive(ScriptableRenderer renderer, PortalRenderNode parent)
+        {
+            foreach (var child in parent.children)
             {
-                if (mono is IPortalRenderer portalRenderer && ((1 << mono.gameObject.layer) & _portalLayerMask) != 0)
+                if (!child.isValid) continue;
+
+                if (_poolIndex >= _stepPool.Count) _stepPool.Add(new PortalStepPass());
+                var pass = _stepPool[_poolIndex++];
+
+                pass.node = child;
+                pass.increaseMaterial = _portalIncrease;
+                pass.decreaseMaterial = _portalDecrease;
+                pass.renderPassEvent = RenderPassEvent.BeforeRenderingOpaques;
+
+                renderer.EnqueuePass(pass);
+
+                if (child.validChildCount > 0)
+                    EnqueueRecursive(renderer, child);
+            }
+        }
+
+        private class PortalStepPass : ScriptableRenderPass
+        {
+            public PortalRenderNode node;
+            public Material increaseMaterial;
+            public Material decreaseMaterial;
+
+            private class PassData
+            {
+                public PortalRenderNode node;
+                public Material incMat;
+                public Material decMat;
+                public Matrix4x4 originalView;
+                public Matrix4x4 originalProj;
+            }
+
+            public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+            {
+                if (node == null || node.renderer == null) return;
+
+                var resourceData = frameData.Get<UniversalResourceData>();
+                var cameraData = frameData.Get<UniversalCameraData>();
+
+                using (var builder = renderGraph.AddRasterRenderPass<PassData>($"Portal_Step_D{node.depth}", out var passData))
                 {
-                    // [STEP 2] 포탈 오브젝트 탐지 확인
-                    Debug.Log($"<color=yellow>[Portal Found]</color> '{mono.name}' 오브젝트를 포탈로 인식했습니다.");
+                    passData.node = node;
+                    passData.incMat = increaseMaterial;
+                    passData.decMat = decreaseMaterial;
 
-                    var childNode = rootNode.GetOrAddChild(portalRenderer);
-                    if (childNode != null)
+                    // 현재 카메라의 원래 행렬 저장
+                    passData.originalView = cameraData.GetViewMatrix();
+                    passData.originalProj = cameraData.GetProjectionMatrix();
+
+                    builder.SetRenderAttachment(resourceData.activeColorTexture, 0, AccessFlags.Write);
+                    builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture, AccessFlags.Write);
+
+                    // [중요] 포탈 면이 화면 구석에 있어도 강제로 렌더링하도록 설정
+                    builder.AllowPassCulling(false);
+                    builder.AllowGlobalStateModification(true);
+
+                    // PortalRenderFeature.cs 내부의 PortalStepPass 수정
+                    builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
                     {
-                        childNode.isValid = true;
-                        childNode.ComputeMaskAndMatrices();
-                        portalFound = true;
+                        var cmd = context.cmd;
+                        var meshRenderer = data.node.renderer as PortalMeshRenderer;
 
-                        poolIndex = 0;
-                        if (_renderMode == PortalRenderMode.RenderTexture)
+                        if (meshRenderer != null && meshRenderer.filter != null)
                         {
-                            EnqueueRenderNodes(renderer, ref renderingData, childNode);
-                        }
-                        else
-                        {
-                            int stencilOrder = (_renderMode == PortalRenderMode.StencilEarly) ? 1 : 0;
-                            EnqueueStencilNodes(renderer, ref renderingData, childNode, stencilOrder);
-                        }
+                            // 1. 스텐실 참조값 설정 (원본의 PropertyID 사용 권장)
+                            cmd.SetGlobalInt("_PortalStencilRef", data.node.depth);
 
-                        // [STEP 3] 패스 등록 확인
-                        Debug.Log($"<color=green>[Portal Pass Enqueued]</color> {mono.name}에 대한 렌더 패스가 등록되었습니다 (Depth: {childNode.depth})");
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"<color=orange>[Portal Warning]</color> {mono.name}의 노드 생성에 실패했습니다 (Culling 또는 Window 문제)");
-                    }
+                            // 2. 포탈 입구 마스크 생성 (Increase)
+                            if (data.incMat != null)
+                            {
+                                cmd.SetGlobalInt("_PortalStencilRef", data.node.depth - 1);
+                                cmd.DrawMesh(meshRenderer.filter.sharedMesh, meshRenderer.transform.localToWorldMatrix, data.incMat);
+                            }
+
+                            // 3. 내부 물체 렌더링 전 시점 전환
+                            cmd.SetViewProjectionMatrices(data.node.worldToCameraMatrix, data.node.projectionMatrix);
+                            cmd.SetGlobalInt("_PortalStencilRef", data.node.depth);
+
+                            // [핵심] 4. 원본 셰이더가 스텐실을 인식하도록 강제 설정
+                            // 만약 Default Clippable 셰이더가 _StencilComp 등을 사용한다면 여기서 설정해줘야 합니다.
+
+                            data.node.renderer.Render(data.node, cmd, null);
+
+                            // 5. 복구
+                            if (data.decMat != null)
+                            {
+                                cmd.DrawMesh(meshRenderer.filter.sharedMesh, meshRenderer.transform.localToWorldMatrix, data.decMat);
+                            }
+                            cmd.SetViewProjectionMatrices(data.originalView, data.originalProj);
+                        }
+                    });
                 }
             }
-
-            if (!portalFound)
-            {
-                // 포탈을 못 찾은 이유가 레이어 마스크 때문일 수 있으므로 힌트 출력
-                Debug.Log("<color=white>[Portal Info]</color> 현재 씬에서 유효한 포탈을 찾지 못했습니다. 레이어 마스크 설정을 확인하세요.");
-                rootNode.Dispose();
-            }
-
-            renderer.EnqueuePass(endPass);
         }
-
-        private void EnqueueRenderNodes(ScriptableRenderer renderer, ref RenderingData renderingData, PortalRenderNode node)
-        {
-            var pass = GetOrCreatePass();
-            pass.node = node;
-            renderer.EnqueuePass(pass);
-        }
-
-        private void EnqueueStencilNodes(ScriptableRenderer renderer, ref RenderingData renderingData, PortalRenderNode node, int order)
-        {
-            var pass = GetOrCreatePass();
-            pass.node = node;
-            renderer.EnqueuePass(pass);
-        }
-
-        private PortalRenderPass GetOrCreatePass()
-        {
-            if (poolIndex < pool.Count) return pool[poolIndex++];
-            var pass = new PortalRenderPass();
-            pool.Add(pass);
-            poolIndex++;
-            return pass;
-        }
-
-        // --- 내부 패스 클래스 (Render Graph 대응) ---
 
         private class PortalBeginPass : ScriptableRenderPass
         {
-            private class PassData { }
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
-                using (var builder = renderGraph.AddRasterRenderPass<PassData>("Portal_Begin", out _))
+                using (var builder = renderGraph.AddRasterRenderPass<NoData>("Portal_Setup_Begin", out _))
                 {
-                    builder.SetRenderFunc((PassData data, RasterGraphContext context) => { });
-                }
-            }
-            [Obsolete] public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
-        }
-
-        private class PortalRenderPass : ScriptableRenderPass
-        {
-            public PortalRenderNode node;
-            private class PassData { public PortalRenderNode node; }
-
-            public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
-            {
-                var resourceData = frameData.Get<UniversalResourceData>();
-                string debugName = $"Portal_Step_Depth_{node?.depth ?? 0}";
-
-                using (var builder = renderGraph.AddRasterRenderPass<PassData>(debugName, out var passData))
-                {
-                    passData.node = node;
-
-                    // 텍스처 사용 등록
-                    builder.UseTexture(resourceData.activeColorTexture, AccessFlags.Write);
-                    builder.UseTexture(resourceData.activeDepthTexture, AccessFlags.Write);
-
-                    builder.SetRenderFunc((PassData data, RasterGraphContext context) =>
-                    {
-                        // [DEBUG] 실제 렌더링 명령 시점 로그
-                        Debug.Log($"<color=green>[Portal Draw]</color> Render 호출 (Depth: {data.node?.depth})");
-
-                        if (data.node != null && data.node.renderer != null)
-                        {
-                            // [핵심] context.cmd는 RasterCommandBuffer입니다.
-                            // IPortalRenderer.Render가 RasterCommandBuffer를 받도록 수정되었으므로 에러가 나지 않습니다.
-                            data.node.renderer.Render(data.node, context.cmd, null);
-                        }
-                        else
-                        {
-                            Debug.LogWarning("<color=yellow>[Portal Warning]</color> 노드가 비어있거나 렌더러가 없습니다.");
-                        }
+                    builder.SetRenderFunc((NoData data, RasterGraphContext context) => {
+                        Shader.SetGlobalInt("_PortalStencilRef", 0);
                     });
                 }
             }
@@ -183,16 +186,19 @@ namespace VRPortalToolkit.Rendering.Universal
 
         private class PortalEndPass : ScriptableRenderPass
         {
-            private class PassData { }
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
-                using (var builder = renderGraph.AddRasterRenderPass<PassData>("Portal_End", out _))
+                using (var builder = renderGraph.AddRasterRenderPass<NoData>("Portal_Cleanup_End", out _))
                 {
-                    builder.SetRenderFunc((PassData data, RasterGraphContext context) => { });
+                    builder.SetRenderFunc((NoData data, RasterGraphContext context) => {
+                        Shader.SetGlobalInt("_PortalStencilRef", 0);
+                    });
                 }
             }
             [Obsolete] public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
         }
+
+        private class NoData { }
 
         protected override void Dispose(bool disposing)
         {

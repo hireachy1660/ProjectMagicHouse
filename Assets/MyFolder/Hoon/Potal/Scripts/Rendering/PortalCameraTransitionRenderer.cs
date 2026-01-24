@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -36,7 +36,7 @@ namespace VRPortalToolkit.Rendering
         public void PreCull(PortalRenderNode renderNode) { }
         public void PostCull(PortalRenderNode renderNode) { }
 
-        // --- ÇÙ½É ¼öÁ¤: RasterCommandBuffer Àû¿ë ¹× ±âÁ¸ ·ÎÁ÷ ÅëÇÕ ---
+        // --- í•µì‹¬ ìˆ˜ì •: RasterCommandBuffer ì ìš© ë° ê¸°ì¡´ ë¡œì§ í†µí•© ---
         public void Render(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer, Material material, MaterialPropertyBlock properties = null)
         {
             if (renderNode.depth > 1 || transition == null) return;
@@ -60,7 +60,7 @@ namespace VRPortalToolkit.Rendering
 
         public void RenderDefault(PortalRenderNode renderNode, RasterCommandBuffer commandBuffer)
         {
-            // ÀÇµµÀûÀ¸·Î ºñ¿öµÒ (CS0535 ÇØ°á)
+            // ì˜ë„ì ìœ¼ë¡œ ë¹„ì›Œë‘  (CS0535 í•´ê²°)
         }
 
         public void PostRender(PortalRenderNode renderNode) { }
@@ -85,8 +85,8 @@ namespace VRPortalToolkit.Rendering
 
         private static bool TryGetMesh(Vector3 transitionCentre, Vector3 transitionNormal, in Matrix4x4 view, in Matrix4x4 projection, ref Mesh mesh)
         {
-            // Note: PortalRenderFeature.renderCamera´Â Á¤Àû º¯¼ö¿©¾ß ÇÏ¸ç, 
-            // À¯´ÏÆ¼ 6 ·»´õ ±×·¡ÇÁ ÀüÈ¯ ½Ã ÀÌ ºÎºĞÀÇ ÀÇÁ¸¼ºÀ» Ã¼Å©ÇØ¾ß ÇÒ ¼öµµ ÀÖ½À´Ï´Ù.
+            // Note: PortalRenderFeature.renderCameraëŠ” ì •ì  ë³€ìˆ˜ì—¬ì•¼ í•˜ë©°, 
+            // ìœ ë‹ˆí‹° 6 ë Œë” ê·¸ë˜í”„ ì „í™˜ ì‹œ ì´ ë¶€ë¶„ì˜ ì˜ì¡´ì„±ì„ ì²´í¬í•´ì•¼ í•  ìˆ˜ë„ ìˆìŠµë‹ˆë‹¤.
             PortalRenderFeature.renderCamera.worldToCameraMatrix = view;
             PortalRenderFeature.renderCamera.projectionMatrix = projection;
             PortalRenderFeature.renderCamera.nearClipPlane = -projection.m23 * 0.5001f;
@@ -136,7 +136,7 @@ namespace VRPortalToolkit.Rendering
             return false;
         }
 
-        // --- ¼öÇĞ °è»ê ÇïÆÛ ÇÔ¼öµé (±âÁ¸ ·ÎÁ÷ À¯Áö) ---
+        // --- ìˆ˜í•™ ê³„ì‚° í—¬í¼ í•¨ìˆ˜ë“¤ (ê¸°ì¡´ ë¡œì§ ìœ ì§€) ---
 
         private static bool TryIntersects(Vector2 lineStart, Vector2 lineEnd, Vector2 rayOrigin, Vector2 rayDirection, out Vector2 intersection)
         {
