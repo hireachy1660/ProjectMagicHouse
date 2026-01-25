@@ -114,7 +114,7 @@ namespace VRPortalToolkit.Rendering
             if (material == null) return;
 
             // 로그가 찍히는 걸 확인했으니 이 부분은 정상 작동 중입니다.
-            Debug.Log($"[Portal Render] {gameObject.name} 그리는 중... 머티리얼: {material.name}");
+            //Debug.Log($"[Portal Render] {gameObject.name} 그리는 중... 머티리얼: {material.name}");
 
             if (isActiveAndEnabled && filter && filter.sharedMesh)
             {

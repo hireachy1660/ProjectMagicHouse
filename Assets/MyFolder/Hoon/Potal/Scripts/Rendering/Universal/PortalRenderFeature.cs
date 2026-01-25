@@ -136,35 +136,31 @@ namespace VRPortalToolkit.Rendering.Universal
                     {
                         var cmd = context.cmd;
                         var meshRenderer = data.node.renderer as PortalMeshRenderer;
+                        if (meshRenderer == null) return;
 
-                        if (meshRenderer != null && meshRenderer.filter != null)
+                        // 1. 전역 변수 일치화 (매우 중요)
+                        cmd.SetGlobalInt("_PortalStencilRef", data.node.depth);
+
+                        // 2. 포탈 입구 영역 마킹 (Stencil 값을 1, 2, 3... 으로 올림)
+                        if (data.incMat != null)
                         {
-                            // 1. 스텐실 참조값 설정 (원본의 PropertyID 사용 권장)
-                            cmd.SetGlobalInt("_PortalStencilRef", data.node.depth);
-
-                            // 2. 포탈 입구 마스크 생성 (Increase)
-                            if (data.incMat != null)
-                            {
-                                cmd.SetGlobalInt("_PortalStencilRef", data.node.depth - 1);
-                                cmd.DrawMesh(meshRenderer.filter.sharedMesh, meshRenderer.transform.localToWorldMatrix, data.incMat);
-                            }
-
-                            // 3. 내부 물체 렌더링 전 시점 전환
-                            cmd.SetViewProjectionMatrices(data.node.worldToCameraMatrix, data.node.projectionMatrix);
-                            cmd.SetGlobalInt("_PortalStencilRef", data.node.depth);
-
-                            // [핵심] 4. 원본 셰이더가 스텐실을 인식하도록 강제 설정
-                            // 만약 Default Clippable 셰이더가 _StencilComp 등을 사용한다면 여기서 설정해줘야 합니다.
-
-                            data.node.renderer.Render(data.node, cmd, null);
-
-                            // 5. 복구
-                            if (data.decMat != null)
-                            {
-                                cmd.DrawMesh(meshRenderer.filter.sharedMesh, meshRenderer.transform.localToWorldMatrix, data.decMat);
-                            }
-                            cmd.SetViewProjectionMatrices(data.originalView, data.originalProj);
+                            // 셰이더가 사용하는 이름을 강제로 직접 설정
+                            data.incMat.SetInt("_PortalStencilRef", data.node.depth);
+                            data.incMat.SetInt("_StencilComp", (int)CompareFunction.Always);
+                            data.incMat.SetInt("_StencilOp", (int)StencilOp.Replace);
+                            cmd.DrawMesh(meshRenderer.filter.sharedMesh, meshRenderer.transform.localToWorldMatrix, data.incMat);
                         }
+
+                        // 3. 시점 전환
+                        cmd.SetViewProjectionMatrices(data.node.worldToCameraMatrix, data.node.projectionMatrix);
+
+                        // 4. 내부 렌더링 (Shader Graph 물체들이 스텐실을 무시할 경우를 대비)
+                        // 현재 Shader Graph는 스텐실을 지원하지 않으므로, 
+                        // 여기서 그리는 모든 물체는 스텐실 없이 허공에 보일 가능성이 큽니다.
+                        data.node.renderer.Render(data.node, cmd, null);
+
+                        // 5. 복구
+                        cmd.SetViewProjectionMatrices(data.originalView, data.originalProj);
                     });
                 }
             }

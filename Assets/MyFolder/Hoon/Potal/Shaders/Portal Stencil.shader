@@ -10,6 +10,8 @@ Shader "VRPortalToolkit/Portal Stencil"
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilOp("Stencil Operation", Float) = 0
         _StencilReadMask("Stencil Read Mask", Float) = 255
         _StencilWriteMask("Stencil Write Mask", Float) = 255
+        _PortalStencilRef("Portal Stencil Ref", Int) = 0 // 추가
+        _PortalCullMode("Cull Mode", Float) = 2 // 추가 (Back 가리기)
     }
 
         SubShader
