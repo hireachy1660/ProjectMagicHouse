@@ -27,7 +27,7 @@ public class myHandManager : MonoBehaviour
 
     private void shootRay()
     {
-        if (isGrabbed && currentHeldItem.gameObject.tag == "Bullet")
+        if (isGrabbed && currentHeldItem. == "Bullet")
         {
             var hit = myHandrayInterctor.Candidate;
             IMyIntertor target;
