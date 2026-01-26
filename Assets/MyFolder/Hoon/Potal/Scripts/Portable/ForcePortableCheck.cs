@@ -9,7 +9,7 @@ namespace VRPortalToolkit.Portables
     /// Forces a portal check for the attached transform during LateUpdate.
     /// Used to ensure objects are correctly teleported through portals.
     /// </summary>
-    [DefaultExecutionOrder(1000)]
+    [DefaultExecutionOrder(2000)]
     public class ForcePortableCheck : MonoBehaviour
     {
         /// <summary>

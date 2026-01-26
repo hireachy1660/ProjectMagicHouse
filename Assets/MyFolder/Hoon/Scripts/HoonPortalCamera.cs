@@ -1,28 +1,68 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
-public class HoonPortalCamera : MonoBehaviour
+public class HoonVRPortalCameraUnified : MonoBehaviour
 {
-    [Header("필수 설정")]
-    public Transform playerCamera;   // 내 진짜 눈 (Main Camera)
-    public Transform srcPortal;      // 이 카메라의 화면이 '보여질' 포탈 (입구)
-    public Transform dstPortal;      // 이 카메라가 실제로 '위치할' 포탈 (출구)
+    [Header("포탈 설정")]
+    public Transform srcPortal; // 입구
+    public Transform dstPortal; // 출구
 
+    [Header("플레이어 참조")]
+    public Camera mainPlayerCamera; // CenterEyeAnchor의 카메라
+
+    private Camera portalCam;
+
+    void Awake()
+    {
+        portalCam = GetComponent<Camera>();
+        // VR에서 양쪽 눈을 모두 렌더링하도록 설정
+        portalCam.stereoTargetEye = StereoTargetEyeMask.Both;
+    }
+
+    void OnEnable()
+    {
+        RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+    }
+
+    void OnDisable()
+    {
+        RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+    }
+
+    // 1. 물리적 위치 이동: 렌더링과 상관없이 매 프레임 위치를 동기화하여 조이스틱 렉 방지
     void LateUpdate()
     {
-        if (playerCamera == null || srcPortal == null || dstPortal == null) return;
+        if (mainPlayerCamera == null || srcPortal == null || dstPortal == null) return;
 
-        // 1. 플레이어 카메라의 위치를 srcPortal(입구) 기준으로 상대 좌표로 변환
-        Vector3 relativePos = srcPortal.InverseTransformPoint(playerCamera.position);
+        // [핵심 수정] 위치는 출구로 옮기되, 회전은 '절대' 건드리지 않습니다.
+        // 가상 카메라의 몸체는 항상 월드 좌표의 기본(0,0,0) 회전을 유지하게 둡니다.
+        portalCam.transform.position = dstPortal.position;
+        portalCam.transform.rotation = Quaternion.identity; // 회전 고정!
 
-        // 2. 포탈의 특성상 반대편을 비춰야 하므로 X와 Z축을 반전
-        relativePos = new Vector3(-relativePos.x, relativePos.y, -relativePos.z);
+        // 기본 속성 복사
+        portalCam.aspect = mainPlayerCamera.aspect;
+        portalCam.fieldOfView = mainPlayerCamera.fieldOfView;
+        portalCam.nearClipPlane = mainPlayerCamera.nearClipPlane;
+        portalCam.farClipPlane = mainPlayerCamera.farClipPlane;
+    }
 
-        // 3. dstPortal(출구) 기준으로 가상 카메라의 위치 결정
-        transform.position = dstPortal.TransformPoint(relativePos);
+    void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
+    {
+        if (camera != portalCam) return;
 
-        // 4. 회전값 계산: 플레이어가 보는 방향을 상대적으로 계산하여 반전 후 적용
-        Vector3 relativeForward = srcPortal.InverseTransformDirection(playerCamera.forward);
-        relativeForward = new Vector3(-relativeForward.x, relativeForward.y, -relativeForward.z);
-        transform.forward = dstPortal.TransformDirection(relativeForward);
+        // 1. 포탈 변환 행렬 (위치와 회전만 사용)
+        Matrix4x4 m_src = Matrix4x4.TRS(srcPortal.position, srcPortal.rotation, Vector3.one);
+        Matrix4x4 m_dst = Matrix4x4.TRS(dstPortal.position, dstPortal.rotation, Vector3.one);
+
+        // 입구에서 나가는 방향(180도)을 고려한 변환 행렬
+        Matrix4x4 portalMatrix = m_dst * Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * m_src.inverse;
+
+        // 2. 플레이어의 눈 행렬 주입 (여기서 모든 시야 회전이 결정됨)
+        // 몸체(Transform)가 회전하지 않으므로, 이 행렬값이 곧 순수한 시야가 됩니다.
+        portalCam.SetStereoViewMatrix(Camera.StereoscopicEye.Left, mainPlayerCamera.GetStereoViewMatrix(Camera.StereoscopicEye.Left) * portalMatrix.inverse);
+        portalCam.SetStereoViewMatrix(Camera.StereoscopicEye.Right, mainPlayerCamera.GetStereoViewMatrix(Camera.StereoscopicEye.Right) * portalMatrix.inverse);
+
+        portalCam.SetStereoProjectionMatrix(Camera.StereoscopicEye.Left, mainPlayerCamera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Left));
+        portalCam.SetStereoProjectionMatrix(Camera.StereoscopicEye.Right, mainPlayerCamera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Right));
     }
 }

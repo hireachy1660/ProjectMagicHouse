@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Bullet
+  - Target Camera
   layers:
   - Default
   - TransparentFX
@@ -18,7 +19,7 @@ TagManager:
   - OfficeLayer
   - PortalRenderer
   - Portal
-  - 
+  - Target Camera
   - 
   - 
   - 
