@@ -27,14 +27,14 @@ public class myHandManager : MonoBehaviour
 
     private void shootRay()
     {
-        if (isGrabbed && currentHeldItem. == "Bullet")
-        {
-            var hit = myHandrayInterctor.Candidate;
-            IMyIntertor target;
-            if(hit.gameObject.TryGetComponent<IMyIntertor>(out target))
-            {
-                target.OnRayHit()
-            }
-        }
+        //if (isGrabbed && currentHeldItem. == "Bullet")
+        //{
+        //    var hit = myHandrayInterctor.Candidate;
+        //    IMyIntertor target;
+        //    if(hit.gameObject.TryGetComponent<IMyIntertor>(out target))
+        //    {
+        //        //target.OnRayHit()
+        //    }
+        //}
     }
 }
