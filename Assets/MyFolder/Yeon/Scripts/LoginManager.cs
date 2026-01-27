@@ -14,6 +14,7 @@ public class LoginManager : MonoBehaviourPunCallbacks
     [Header("UI Panels")]
     public GameObject loginPanel;
     public GameObject lobbyPanel;
+    public GameObject roleSelectPanel;
 
     [Header("Login UI")]
     public TMP_InputField idInputField;
@@ -181,6 +182,13 @@ public class LoginManager : MonoBehaviourPunCallbacks
             roomName = "Room_" + Random.Range(100, 999);
         }
 
+        // 현재 상태가 방을 만들 수 있는지 상태 체크 방어 코드
+        if(!PhotonNetwork.IsConnectedAndReady)
+        {
+            Debug.LogWarning("아직 서버 준비가 안되었습니다.");
+            return;
+        }
+
         UpdateStatus($"방 생성 중: {roomName}");
         RoomOptions roomOptions = new RoomOptions { MaxPlayers = 2 };
         PhotonNetwork.CreateRoom(roomName, roomOptions);
@@ -195,13 +203,14 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log($"방 '{PhotonNetwork.CurrentRoom.Name}'입장 완료! 아바타를 생성합니다.");
-        UpdateStatus($"방 '{PhotonNetwork.CurrentRoom.Name}'입장 완료! 아바타를 생성합니다.");
+        
         // Resources 폴더에 있는 프리팹 이름을 "MyAvatar"라고 가정했을 때:
         // 생성 위치는 Vector3.zero, 회전은 기본값
-        PhotonNetwork.Instantiate("NetworkPrefabs/MyAvatar", Vector3.zero, Quaternion.identity);
+        //PhotonNetwork.Instantiate("NetworkPrefabs/MyAvatar", Vector3.zero, Quaternion.identity);
 
-        // 필요하다면 여기서 로비 패널을 끄거나 씬 전환
+        // 방선택에서 역할선택 전환
         lobbyPanel.SetActive(false);
+        roleSelectPanel.SetActive(true);
     }
 
     // 접속 실패 시 호출되는 콜백

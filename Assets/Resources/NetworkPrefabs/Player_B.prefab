@@ -172,8 +172,9 @@ GameObject:
   - component: {fileID: 3835099477656584405}
   - component: {fileID: 4804588319080606531}
   - component: {fileID: 3430449372793281993}
+  - component: {fileID: 5908397474392425319}
   m_Layer: 0
-  m_Name: MyAvatar
+  m_Name: Player_B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -237,6 +238,21 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &5908397474392425319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702697599280987983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b061e602a5465a45b2607bb93f84d7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AvatarSync
+  avatarHead: {fileID: 6232836412054820477}
+  avatarLeftHand: {fileID: 1424749457675188871}
+  avatarRightHand: {fileID: 5308801427004989527}
 --- !u!1 &2131014411964082513
 GameObject:
   m_ObjectHideFlags: 0
