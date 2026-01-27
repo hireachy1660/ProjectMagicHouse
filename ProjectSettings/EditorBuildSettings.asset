@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/MyFolder/Yeon/Scenes/GameScene.unity
     guid: d65a7f474d451e545aed50f885267ac3
   m_configObjects:
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: b6fe870337bbe9d4cb4d47610a5c5a86, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: f526bd350cad4d54eb2b5e9c6465396a, type: 2}
     xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: 84830887c2294df4faebe78f48107d6b, type: 2}
