@@ -3,7 +3,7 @@ using System.Net.Mail;
 using UnityEngine;
 using Photon.Pun;
 
-public class SimpleLockerReceiver : MonoBehaviour, IReceiver
+public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
 {
     [Header("Settings")]
     [SerializeField] private string _requiredKeyID; // 예: "Key_Locker"
@@ -15,7 +15,7 @@ public class SimpleLockerReceiver : MonoBehaviour, IReceiver
 
     private Vector3 _closedPosition;
     private Vector3 _openPosition;
-    private bool _isOpen = false;
+    private bool isOpen = false;
 
     private void Awake()
     {
@@ -30,15 +30,14 @@ public class SimpleLockerReceiver : MonoBehaviour, IReceiver
     // 인터페이스 구현: 아이템을 받았을 때
     public void OnReceiveItem(IItem _item)
     {
-        if (_isOpen) return; // 이미 열렸으면 패스
+        if (isOpen) return; // 이미 열렸으면 패스
 
         if (_item.ItemID == _requiredKeyID)
         {
             Debug.Log($" 사물함 잠금 해제! ({_item.ItemID})");
-            _isOpen = true; // 열림 상태로 전환 -> Update에서 문 이동함
 
-            _item.OnPlaced();
-            StartCoroutine(StartOpen(_item.Transform.parent.transform));
+            //StartCoroutine(StartOpen(_item.Transform.parent.transform));
+            photonView.RPC(nameof(StartOpenCouroutine), RpcTarget.AllBuffered, _item.PhotonViewID);
         }
         else
         {
@@ -47,18 +46,40 @@ public class SimpleLockerReceiver : MonoBehaviour, IReceiver
     }
 
     [PunRPC]
-    private IEnumerator StartOpen(Transform _itemTr)
+    private void StartOpenCouroutine(int _ViewID)
     {
-            // 상태에 따라 목표 위치 결정
-            if (_doorObject == null) yield break;
+        if( isOpen) return;
+
+        isOpen = true; // 열림 상태로 전환 -> 코루틴에서 문 이동함
+
+        StartCoroutine(StartOpen(_ViewID));
+
+
+    }
+
+    private IEnumerator StartOpen(int _ViewID)
+    {
+        // 상태에 따라 목표 위치 결정
+        if (_doorObject == null) yield break;
         // Vector3 targetPos = _isOpen ? _openPosition : _closedPosition;
 
-        _itemTr.transform.SetParent(attachPoint);
-        _itemTr.localPosition = Vector3.zero;
-        _itemTr.rotation = Quaternion.identity;
+        // 포톤 뷰 아이디에서 다시 아이템으로 변환
+        PhotonView targetView = PhotonView.Find(_ViewID);
+        if (targetView == null) yield break;
+        IItem item = targetView.GetComponent<IItem>();
+        if (item == null) yield break;
+
+        // 아이템의 상호작용 중지 메소드 호출
+        item.OnPlaced();
+
+        // 아이템을 어테치 포인트의 자식으로 지정 후 위치 조정
+        item.Transform.SetParent(attachPoint);
+        item.Transform.localPosition = Vector3.zero;
+        item.Transform.rotation = Quaternion.identity;
 
         float elapcedTime = 0f;
 
+        // 에니메이션 재생
         while ( elapcedTime <= _moveSpeed)
         {
             _doorObject.localPosition = Vector3.Lerp(_doorObject.localPosition, _openPosition, Time.deltaTime * _moveSpeed);
@@ -72,7 +93,7 @@ public class SimpleLockerReceiver : MonoBehaviour, IReceiver
     [PunRPC]
     public void OnActivate()
     {
-        if (!_isOpen)
+        if (!isOpen)
         {
             Debug.Log("잠겨있습니다. 덜컹덜컹.");
             // 여기에 '덜컹'거리는 효과음이나 살짝 움직이는 연출 추가 가능

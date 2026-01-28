@@ -16,4 +16,6 @@ public interface IItem
     { Other, Evidence, Door}
 
     Transform Transform { get; }
+
+    int PhotonViewID { get; }
 }

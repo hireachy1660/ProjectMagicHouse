@@ -45,12 +45,12 @@ public class CharacterSpawner : MonoBehaviour
             // 역할 이름에 따라 위치를 다르게 정한다.
             if (myRole == "Player_A") // 역할이름이 PlayerA일 때
             {
-                spawnPosition = (SpawnPoint1 == null) ? SpawnPoint1.position : new Vector3(-15f, 0f, 0f);
+                spawnPosition = (SpawnPoint1 == null) ? SpawnPoint1.position : new Vector3(0f, 0f, -4f);
                 //spawnPosition = new Vector3(-15f, 0f, 0f);    // 왼쪽 -15 지점
             }
             else if (myRole == "Player_B")   // 역할이름이 PlayerB일 때
             {
-                spawnPosition = (SpawnPoint2 == null) ? SpawnPoint1.position : new Vector3(15f, 0f, 0f);
+                spawnPosition = (SpawnPoint2 == null) ? SpawnPoint1.position : new Vector3(4f, 0f, -4f);
                 //spawnPosition = new Vector3(15f, 0f, 0f);    // 오른쪽 15 지점
             }
 
