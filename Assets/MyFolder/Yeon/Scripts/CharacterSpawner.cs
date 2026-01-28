@@ -7,10 +7,17 @@ public class CharacterSpawner : MonoBehaviour
     [Header("VR Rig 설정")]
     public GameObject ovrCameraRig;
 
-    [Header("VR 기기 위치 (OVRCameraRig의 Anchor들)")]
-    public Transform hmdAnchor;
-    public Transform leftHandAnchor;
-    public Transform rightHandAnchor;
+    [Header("SpawnPoint")]
+    [SerializeField]
+    private Transform SpawnPoint1 = null;
+    [SerializeField]
+    private Transform SpawnPoint2 = null;
+
+
+    //[Header("VR 기기 위치 (OVRCameraRig의 Anchor들)")]
+    //public Transform hmdAnchor;
+    //public Transform leftHandAnchor;
+    //public Transform rightHandAnchor;
 
     private IEnumerator Start()
     {
@@ -20,6 +27,12 @@ public class CharacterSpawner : MonoBehaviour
         {
             yield return new WaitForSeconds(0.1f);
             timer += 0.1f;
+
+            if(timer > 5f)
+            {
+                Debug.LogError("[CharaterSpawner] 캐릭터의 역할 정보를 불러오는데 실패");
+                yield break;
+            }
         }
 
         if(PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("MyRole",out object roleName))
@@ -32,11 +45,13 @@ public class CharacterSpawner : MonoBehaviour
             // 역할 이름에 따라 위치를 다르게 정한다.
             if (myRole == "Player_A") // 역할이름이 PlayerA일 때
             {
-                spawnPosition = new Vector3(-15f, 0f, 0f);    // 왼쪽 -15 지점
+                spawnPosition = (SpawnPoint1 == null) ? SpawnPoint1.position : new Vector3(-15f, 0f, 0f);
+                //spawnPosition = new Vector3(-15f, 0f, 0f);    // 왼쪽 -15 지점
             }
             else if (myRole == "Player_B")   // 역할이름이 PlayerB일 때
             {
-                spawnPosition = new Vector3(15f, 0f, 0f);    // 오른쪽 15 지점
+                spawnPosition = (SpawnPoint2 == null) ? SpawnPoint1.position : new Vector3(15f, 0f, 0f);
+                //spawnPosition = new Vector3(15f, 0f, 0f);    // 오른쪽 15 지점
             }
 
             // 인스펙터에서 넣어준 카메라 리그를 소환 위치로 이동
@@ -50,15 +65,16 @@ public class CharacterSpawner : MonoBehaviour
             // Resources/NetworkPrefabs
             GameObject player = PhotonNetwork.Instantiate("NetworkPrefabs/" + myRole, spawnPosition, Quaternion.identity);
 
-            // 소환된 게 내 거라면 VR 기기 정보를 꽂아준다.
-            if(player.GetComponent<PhotonView>().IsMine)
-            {
-                AvatarSync syncScripts = player.GetComponent<AvatarSync>();
-                if(syncScripts != null)
-                {
-                    syncScripts.SetTargets(hmdAnchor, leftHandAnchor, rightHandAnchor);
-                }
-            }
+            //// 소환된 게 내 거라면 VR 기기 정보를 꽂아준다.
+            //if(player.GetComponent<PhotonView>().IsMine)
+            //{
+            //    AvatarSync syncScripts = player.GetComponent<AvatarSync>();
+            //    if(syncScripts != null)
+            //    {
+            //        syncScripts.SetTargets(hmdAnchor, leftHandAnchor, rightHandAnchor);
+            //    }
+            //}
+            // 스포너가 넣어 주는 방식에서 싱글톤인 OVR메니저로 부터 직접 가져 오는 방식으로 변경
         }
         else
         {
