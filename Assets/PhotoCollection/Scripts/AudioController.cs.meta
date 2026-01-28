@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c12ea24b84eeeab4ab9b2c32cc963781
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305174
+  packageName: Dynamic Photo Camera mini
+  packageVersion: 1.0
+  assetPath: Assets/PhotoCollection/Scripts/AudioController.cs
+  uploadId: 730649

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7384c4e25fcdde242b99e7e9918ed6cb
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305174
+  packageName: Dynamic Photo Camera mini
+  packageVersion: 1.0
+  assetPath: Assets/PhotoCollection/Materials/PlayerPower.mat
+  uploadId: 730649
