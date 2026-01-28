@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ecdf41daa2b903e4481cabd47211761e
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305174
+  packageName: Dynamic Photo Camera mini
+  packageVersion: 1.0
+  assetPath: Assets/PhotoCollection/Scenes/DemoScene.unity
+  uploadId: 730649

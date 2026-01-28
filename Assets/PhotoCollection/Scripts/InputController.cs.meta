@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 90b2b99ffa5da3b4ea385e31ab35eddf
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305174
+  packageName: Dynamic Photo Camera mini
+  packageVersion: 1.0
+  assetPath: Assets/PhotoCollection/Scripts/InputController.cs
+  uploadId: 730649

@@ -26,30 +26,26 @@ public class HandManager : MonoBehaviour
         if (handInteractor.HasSelectedInteractable) // Meta SDK 기능 활용
         {
             // 잡은 물체의 인터페이스 추출
-            var grabbedObj = handInteractor.SelectedInteractable.gameObject;
-            currentItem = grabbedObj.GetComponent<IItem>();
-            Debug.Log("Current Grab Item Is :" + currentItem + grabbedObj.name);
-        }
-        else if(handInteractor.HasCandidate)
-        {
-            Debug.Log("[HandManager] curItem Is " + handInteractor.Candidate.name);
+            currentItem = handInteractor.SelectedInteractable.gameObject.transform.parent.GetComponent<IItem>();
+            Debug.Log("Current Grab Item Is :" + currentItem + currentItem.Transform.gameObject.name);
         }
         else
         {
             Debug.Log("[Hand Manager] Grab Interactor Can't Found Candidate and Selected Interactable ");
         }
 
-            // 2. [Select 될 때만 가져옴] 레이가 보고 있는 리시버 확인
-            IReceiver targetReceiver = null;
+        // 2. [Select 될 때만 가져옴] 레이가 보고 있는 리시버 확인
+        IReceiver targetReceiver = null;
         if (rayInteractor.HasSelectedInteractable)
         {
-            targetReceiver = rayInteractor.Interactable.gameObject.GetComponent<IReceiver>();
+            targetReceiver = rayInteractor.Interactable.gameObject.transform.parent.GetComponent<IReceiver>();
             Debug.Log("[Hand Manager] Ray Interactor Found Candidate and Selected Interactable " + rayInteractor.SelectedInteractable);
         }
         else
         { 
             Debug.Log("[Hand Manager] Ray Interactor Can't Found Candidate and Selected Interactable " + rayInteractor.HasSelectedInteractable);
         }
+
         // 3. [작동] 매니저가 리시버의 메소드를 직접 호출
         if (targetReceiver != null)
         {
