@@ -253,6 +253,9 @@ MonoBehaviour:
   avatarHead: {fileID: 6232836412054820477}
   avatarLeftHand: {fileID: 1424749457675188871}
   avatarRightHand: {fileID: 5308801427004989527}
+  vrHead: {fileID: 0}
+  vrLeftHand: {fileID: 0}
+  vrRightHand: {fileID: 0}
 --- !u!1 &2131014411964082513
 GameObject:
   m_ObjectHideFlags: 0

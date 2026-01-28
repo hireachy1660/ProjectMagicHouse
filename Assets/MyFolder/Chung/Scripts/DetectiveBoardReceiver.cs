@@ -1,8 +1,8 @@
+using Photon.Pun;
 using System.Collections.Generic;
 using UnityEngine;
-using static DetectiveBoardReceiver;
 
-public class DetectiveBoardReceiver : MonoBehaviour, IReceiver
+public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
 {
     [System.Serializable]
     public struct EvidenceSlot
@@ -35,8 +35,10 @@ public class DetectiveBoardReceiver : MonoBehaviour, IReceiver
         if (_item.ItemID == currentSlot.requiredItemID)
         {
             //  정답: 아이템을 보드에 부착
-            AttachEvidence(_item, currentSlot.placePoint);
-            _currentIndex++; // 다음 단계로 진행
+            int viewID = _item.PhotonViewID;
+
+            photonView.RPC(nameof(AttachEvidence), RpcTarget.AllBuffered, viewID, _currentIndex);
+            //AttachEvidence(viewID, _currentIndex);
 
             Debug.Log($" 증거 확보 완료! ({_currentIndex}/{evidenceSlots.Count})");
 
@@ -73,34 +75,55 @@ public class DetectiveBoardReceiver : MonoBehaviour, IReceiver
 
     // --- 내부 로직 ---  PunRPC 호출해줘야 함
 
-    private void AttachEvidence(IItem _item, Transform _point)
+    [PunRPC]
+    private void AttachEvidence(int _viewID, int _trIndex)
     {
-        _item.OnPlaced();
+        IItem item = PhotonView.Find(_viewID).gameObject.GetComponent<IItem>();
+        item.OnPlaced();
 
         // 인터페이스를 MonoBehaviour로 형변환하여 게임 오브젝트 제어
-        MonoBehaviour itemObj = _item as MonoBehaviour;
+        MonoBehaviour itemObj = item as MonoBehaviour;
         if (itemObj == null) return;
 
         // 3. 위치 및 회전 고정 (자식으로 넣기)
-        itemObj.transform.parent.SetParent(_point);
-        itemObj.transform.parent.localPosition = Vector3.zero;
-        itemObj.transform.parent.localRotation = Quaternion.identity;
+        //itemObj.transform.parent.SetParent(_point);
+        //itemObj.transform.parent.localPosition = Vector3.zero;
+        //itemObj.transform.parent.localRotation = Quaternion.identity;
+        itemObj.transform.SetParent(evidenceSlots[_trIndex].placePoint);
+        itemObj.transform.localPosition = Vector3.zero;
+        itemObj.transform.localRotation = Quaternion.identity;
+
+        _currentIndex++; // 다음 단계로 진행
+
     }
 
+    // [수정] 소각 로직을 RPC로 변경
     private void BurnEvidence(IItem _item)
     {
-        MonoBehaviour itemObj = _item as MonoBehaviour;
-        if (itemObj == null) return;
+        if (_item.Type != IItem.ItemType.Evidence) return;
+        // 인터페이스에서 ViewID를 가져와 RPC 전송
+        photonView.RPC(nameof(PunBurnEvidence), RpcTarget.All, _item.PhotonViewID);
+    }
 
-        // 1. 불타는 이펙트 재생 (아이템 위치에서)
+    [PunRPC]
+    private void PunBurnEvidence(int _viewID)
+    {
+        PhotonView targetView = PhotonView.Find(_viewID);
+        if (targetView == null) return;
+
+        // 1. 이펙트 재생 (모든 플레이어의 화면에서)
         if (burnEffect != null)
         {
-            ParticleSystem fx = Instantiate(burnEffect, itemObj.transform.position, Quaternion.identity);
+            ParticleSystem fx = Instantiate(burnEffect, targetView.transform.position, Quaternion.identity);
             fx.Play();
-            Destroy(fx.gameObject, 2.0f); // 이펙트는 2초 뒤 삭제
+            Destroy(fx.gameObject, 2.0f);
         }
 
-        // 2. 아이템 삭제 (소각)
-        Destroy(itemObj.gameObject.transform.parent);
+        // 2. 아이템 삭제 (네트워크 파괴)
+        // 소유자만 파괴할 수 있으므로, 마스터 클라이언트가 파괴를 주도하는 것이 안전합니다.
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Destroy(targetView.gameObject);
+        }
     }
 }

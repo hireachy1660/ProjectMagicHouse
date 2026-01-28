@@ -4499,6 +4499,8 @@ GameObject:
   - component: {fileID: 539196166}
   - component: {fileID: 539196165}
   - component: {fileID: 539196162}
+  - component: {fileID: 539196167}
+  - component: {fileID: 539196168}
   m_Layer: 0
   m_Name: '[BuildingBlock] Cube_Detective_Board'
   m_TagString: Untagged
@@ -4563,6 +4565,46 @@ Transform:
   - {fileID: 159610678}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 22.328, z: 0}
+--- !u!114 &539196167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539196161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2eba4e9d86758a478a158d7cffc153b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DetectiveBoardReceiver
+  evidenceSlots:
+  - requiredItemID: 201
+    placePoint: {fileID: 1762825089}
+  - requiredItemID: 202
+    placePoint: {fileID: 159610678}
+  burnEffect: {fileID: 0}
+--- !u!114 &539196168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539196161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 5
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &541097089
 GameObject:
   m_ObjectHideFlags: 0
@@ -5505,6 +5547,7 @@ GameObject:
   - component: {fileID: 700514880}
   - component: {fileID: 700514879}
   - component: {fileID: 700514878}
+  - component: {fileID: 700514887}
   m_Layer: 0
   m_Name: '[BuildingBlock] Cube_Evidence_1'
   m_TagString: Untagged
@@ -5713,6 +5756,22 @@ Transform:
   - {fileID: 1520119044}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &700514887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700514877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KeyObject
+  _itemID: 201
+  ItemType: 1
+  rigidbody: {fileID: 700514881}
+  collider: {fileID: 700514882}
 --- !u!1 &710173823
 GameObject:
   m_ObjectHideFlags: 0
@@ -6436,6 +6495,7 @@ GameObject:
   - component: {fileID: 854989170}
   - component: {fileID: 854989178}
   - component: {fileID: 854989177}
+  - component: {fileID: 854989179}
   m_Layer: 0
   m_Name: '[BuildingBlock] Cube_Key'
   m_TagString: Untagged
@@ -6644,6 +6704,22 @@ MonoBehaviour:
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &854989179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854989169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KeyObject
+  _itemID: 101
+  ItemType: 0
+  rigidbody: {fileID: 854989171}
+  collider: {fileID: 854989172}
 --- !u!1 &858603626
 GameObject:
   m_ObjectHideFlags: 0
@@ -8647,7 +8723,7 @@ Transform:
   m_GameObject: {fileID: 1143800615}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.14, y: -0.5, z: -3.99}
+  m_LocalPosition: {x: 0, y: 0, z: -3.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8909,7 +8985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bb5261d7cd290b4eacc0fd20e2db09f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactableView: {fileID: 1429851114}
+  _interactableView: {fileID: 1429851116}
   _renderer: {fileID: 1180993159}
   _normalColor: {r: 1, g: 0, b: 0, a: 1}
   _hoverColor: {r: 0, g: 0, b: 1, a: 1}
@@ -10184,7 +10260,6 @@ GameObject:
   - component: {fileID: 1353132367}
   - component: {fileID: 1353132366}
   - component: {fileID: 1353132365}
-  - component: {fileID: 1353132368}
   m_Layer: 0
   m_Name: '[BuildingBlock] HandGrabInstallationRoutine'
   m_TagString: Untagged
@@ -10291,22 +10366,6 @@ MonoBehaviour:
     _installationVariants:
     - _memberName: mode
       _value: '{"value__":0}'
---- !u!114 &1353132368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1353132363}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KeyObject
-  _itemID: 101
-  ItemType: 0
-  rigidbody: {fileID: 854989171}
-  collider: {fileID: 854989172}
 --- !u!1 &1354018588
 GameObject:
   m_ObjectHideFlags: 0
@@ -10421,7 +10480,7 @@ Transform:
   m_GameObject: {fileID: 1363339402}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 2.43, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11113,7 +11172,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1429851113}
   - component: {fileID: 1429851115}
-  - component: {fileID: 1429851114}
   - component: {fileID: 1429851116}
   m_Layer: 0
   m_Name: '[BuildingBlock] ISDK_RayInteraction'
@@ -11139,27 +11197,6 @@ Transform:
   - {fileID: 1363339403}
   m_Father: {fileID: 1565210273}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1429851114
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429851112}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb86ba9d4c5126e48bfef9b0c9550e9d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _interactorFilters: []
-  _maxInteractors: -1
-  _maxSelectingInteractors: -1
-  _data: {fileID: 0}
-  _pointableElement: {fileID: 0}
-  _surface: {fileID: 514722299}
-  _selectSurface: {fileID: 0}
-  _movementProvider: {fileID: 0}
-  _tiebreakerScore: 0
 --- !u!114 &1429851115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11187,14 +11224,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1429851112}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1196f05c2a090464ebcc1f6a65572295, type: 3}
+  m_Script: {fileID: 11500000, guid: bb86ba9d4c5126e48bfef9b0c9550e9d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SimpleLockerReceiver
-  _requiredKeyID: 101
-  _doorObject: {fileID: 2680750820366426083}
-  attachPoint: {fileID: 1717125685}
-  _moveOffset: {x: 0.5, y: 0, z: 0}
-  _moveSpeed: 2
+  m_EditorClassIdentifier: 
+  _interactorFilters: []
+  _maxInteractors: -1
+  _maxSelectingInteractors: -1
+  _data: {fileID: 0}
+  _pointableElement: {fileID: 0}
+  _surface: {fileID: 514722299}
+  _selectSurface: {fileID: 0}
+  _movementProvider: {fileID: 0}
+  _tiebreakerScore: 0
 --- !u!1 &1433221805
 GameObject:
   m_ObjectHideFlags: 0
@@ -11965,7 +12006,6 @@ GameObject:
   - component: {fileID: 1520119048}
   - component: {fileID: 1520119047}
   - component: {fileID: 1520119046}
-  - component: {fileID: 1520119045}
   m_Layer: 0
   m_Name: '[BuildingBlock] HandGrabInstallationRoutine'
   m_TagString: Untagged
@@ -11988,22 +12028,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 700514886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1520119045
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1520119043}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KeyObject
-  _itemID: 201
-  ItemType: 1
-  rigidbody: {fileID: 700514881}
-  collider: {fileID: 700514882}
 --- !u!114 &1520119046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12393,6 +12417,8 @@ GameObject:
   - component: {fileID: 1565210273}
   - component: {fileID: 1565210272}
   - component: {fileID: 1565210269}
+  - component: {fileID: 1565210275}
+  - component: {fileID: 1565210274}
   m_Layer: 0
   m_Name: '[BuildingBlock] Cube_Locker'
   m_TagString: Untagged
@@ -12456,6 +12482,45 @@ Transform:
   - {fileID: 6747083295252567980}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1565210274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565210268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 3
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
+--- !u!114 &1565210275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565210268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1196f05c2a090464ebcc1f6a65572295, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleLockerReceiver
+  _requiredKeyID: 101
+  _doorObject: {fileID: 2680750820366426083}
+  attachPoint: {fileID: 1717125685}
+  _moveOffset: {x: 0.5, y: 0, z: 0}
+  _moveSpeed: 2
 --- !u!1 &1573648538
 GameObject:
   m_ObjectHideFlags: 0
@@ -12623,7 +12688,6 @@ GameObject:
   - component: {fileID: 1602761469}
   - component: {fileID: 1602761471}
   - component: {fileID: 1602761470}
-  - component: {fileID: 1602761472}
   m_Layer: 0
   m_Name: '[BuildingBlock] ISDK_RayInteraction'
   m_TagString: Untagged
@@ -12688,24 +12752,6 @@ MonoBehaviour:
   installationRoutineCheckpoint:
     _installationRoutineId: 4a33ce4b-b595-477f-a346-d7cf7af0ef27
     _installationVariants: []
---- !u!114 &1602761472
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1602761468}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2eba4e9d86758a478a158d7cffc153b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DetectiveBoardReceiver
-  evidenceSlots:
-  - requiredItemID: 201
-    placePoint: {fileID: 1762825089}
-  - requiredItemID: 202
-    placePoint: {fileID: 159610678}
-  burnEffect: {fileID: 0}
 --- !u!1 &1619553180
 GameObject:
   m_ObjectHideFlags: 0
@@ -12762,7 +12808,7 @@ Transform:
   m_GameObject: {fileID: 1620934189}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.14, y: -0.5, z: -3.99}
+  m_LocalPosition: {x: 4.15, y: 0, z: -3.99}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13400,7 +13446,6 @@ GameObject:
   - component: {fileID: 1745206707}
   - component: {fileID: 1745206706}
   - component: {fileID: 1745206705}
-  - component: {fileID: 1745206704}
   m_Layer: 0
   m_Name: '[BuildingBlock] HandGrabInstallationRoutine'
   m_TagString: Untagged
@@ -13423,22 +13468,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1942707793}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1745206704
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1745206702}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KeyObject
-  _itemID: 202
-  ItemType: 1
-  rigidbody: {fileID: 1942707788}
-  collider: {fileID: 1942707789}
 --- !u!114 &1745206705
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15446,6 +15475,7 @@ GameObject:
   - component: {fileID: 1942707787}
   - component: {fileID: 1942707786}
   - component: {fileID: 1942707785}
+  - component: {fileID: 1942707794}
   m_Layer: 0
   m_Name: '[BuildingBlock] Cube_Evidence_2'
   m_TagString: Untagged
@@ -15654,6 +15684,22 @@ Transform:
   - {fileID: 1745206703}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1942707794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942707784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KeyObject
+  _itemID: 202
+  ItemType: 1
+  rigidbody: {fileID: 1942707788}
+  collider: {fileID: 1942707789}
 --- !u!1 &1963700697
 GameObject:
   m_ObjectHideFlags: 0
