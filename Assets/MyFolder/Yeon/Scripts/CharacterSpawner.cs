@@ -22,20 +22,24 @@ public class CharacterSpawner : MonoBehaviour
     private IEnumerator Start()
     {
         // 가방에 데이터가 들어올 때까지 최대 2초간 기다린다.
+        Debug.Log("[Spawner] 수사 시작: 역할 데이터를 기다립니다...");
         float timer = 0f;
+        float timeout = 10f; // [수정] 퀘스트 환경을 고려해 10초로 연장
+
         while (!PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("MyRole"))
         {
-            yield return new WaitForSeconds(0.1f);
-            timer += 0.1f;
+            yield return new WaitForSeconds(0.2f);
+            timer += 0.2f;
 
-            if(timer > 5f)
+            if (timer > timeout)
             {
-                Debug.LogError("[CharaterSpawner] 캐릭터의 역할 정보를 불러오는데 실패");
+                // [상세 로그 추가] 현재 접속 상태를 같이 출력하여 원인 파악
+                Debug.LogError($"[CharacterSpawner] 타임아웃! 접속상태: {PhotonNetwork.NetworkClientState}, 가방갯수: {PhotonNetwork.LocalPlayer.CustomProperties.Count}");
                 yield break;
             }
         }
 
-        if(PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("MyRole",out object roleName))
+        if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("MyRole",out object roleName))
         {
             string myRole = (string)roleName;
 
