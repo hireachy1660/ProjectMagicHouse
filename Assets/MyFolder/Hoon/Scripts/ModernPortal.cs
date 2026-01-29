@@ -45,6 +45,7 @@ public class ModernPortal : MonoBehaviour
 
 
 
+
         Vector3 eyeWorldPos = Camera.main.GetStereoViewMatrix(eye).inverse.GetColumn(3);
         Quaternion eyeWorldRot = mainCamTransform.rotation;
 
