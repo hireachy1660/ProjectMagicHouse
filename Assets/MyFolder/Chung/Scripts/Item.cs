@@ -39,5 +39,6 @@ public class ItemKey : MonoBehaviourPun, IItem
 
         rigidbody.isKinematic = true;
         collider.isTrigger = true;
+        rigidbody.useGravity = false;
     }
 }
