@@ -1,38 +1,48 @@
-using UnityEngine;
+ï»¿using UnityEngine;
+using System.Collections;
 
 public class Teleporter : MonoBehaviour
 {
-    [Header("Portal Settings")]
-    public Transform receiver;      // ¸ñÀûÁö Æ÷Å»
-    public Transform playerRig;     // ÇÃ·¹ÀÌ¾î ¸®µå(OVRRig µî)
-    public Transform mainCamera;    // ¸ŞÀÎ Ä«¸Ş¶ó (¸Ó¸®)
-    public Renderer playerRenderer; // Å¬¸®ÇÎÀ» Àû¿ëÇÒ ÇÃ·¹ÀÌ¾î ¸Ş½¬
+    public Transform receiver;
+    public Transform playerRig;
+    public Transform mainCamera;
+    public Renderer playerRenderer;
+
+    [Header("Settings")]
+    public float exitOffset = -0.01f;
+    public float cooldownTime = 0.5f; // [ì¶”ê°€] í…”ë ˆí¬íŠ¸ í›„ ì¬ë°œë™ ë°©ì§€ ì‹œê°„
 
     private bool playerIsOverlapping = false;
-    private bool isTeleportingJustNow = false;
+    private bool isLocked = false;
+    private bool inCooldown = false; // [ì¶”ê°€] ì¿¨íƒ€ì„ ì²´í¬
+    private float lastLocalZ = 0f;
 
     void Update()
     {
-        if (playerIsOverlapping)
+        // ì¿¨íƒ€ì„ ì¤‘ì´ë©´ ë¡œì§ ê±´ë„ˆëœ€
+        if (playerIsOverlapping && !inCooldown)
         {
-            // 1. Æ÷Å» ¸é ±âÁØ Ä«¸Ş¶óÀÇ ·ÎÄÃ À§Ä¡ °è»ê
             Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
 
-            // 2. ¸é µÚ(Z <= 0)·Î ³Ñ¾î°¬´ÂÁö ÆÇÁ¤
-            bool isBehindPlane = localCamPos.z <= 0f;
-
-            // 3. ÅÚ·¹Æ÷Æ® ½ÇÇà (¹æ±İ ÀÌµ¿ÇØ¿Â °Ô ¾Æ´Ò ¶§¸¸)
-            if (!isTeleportingJustNow && isBehindPlane)
+            if (isLocked)
             {
-                ExecuteTeleport();
-            }
-            // 4. ¸é ¾ÕÀ¸·Î °í°³¸¦ »©¸é ´Ù½Ã ÀÌµ¿ ÁØºñ »óÅÂ·Î ¸®¼Â
-            else if (!isBehindPlane)
-            {
-                isTeleportingJustNow = false;
+                if (Mathf.Abs(localCamPos.z) > exitOffset * 0.8f)
+                {
+                    isLocked = false;
+                    Debug.Log($"<color=cyan><b>[Lock í•´ì œ]</b> {gameObject.name}</color>");
+                }
             }
 
-            // ¼ÎÀÌ´õ Å¬¸®ÇÎ ¾÷µ¥ÀÌÆ® (°í°³ µéÀÌ¹Ğ ¶§ ¸ö ÀÚ¸£±â)
+            if (!isLocked)
+            {
+                if (Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z) && Mathf.Abs(lastLocalZ) < 0.5f)
+                {
+                    ExecuteTeleport();
+                    return;
+                }
+            }
+
+            lastLocalZ = localCamPos.z;
             UpdateClippingProperties();
         }
     }
@@ -41,61 +51,79 @@ public class Teleporter : MonoBehaviour
     {
         if (receiver == null || playerRig == null) return;
 
-        // [Portal.cs ½ºÅ¸ÀÏÀÇ »ó´ë ÁÂÇ¥ °è»ê]
-        // 1. ÇöÀç Æ÷Å» ±âÁØÀÇ »ó´ëÀû À§Ä¡¿Í È¸ÀüÀ» °è»ê
         Vector3 relativePos = transform.InverseTransformPoint(playerRig.position);
         Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * playerRig.rotation;
 
-        // 2. ¸ñÀûÁö Æ÷Å»ÀÇ ½ºÅ©¸³Æ® ÂüÁ¶
         var recScript = receiver.GetComponent<Teleporter>();
         if (recScript != null)
         {
             recScript.playerIsOverlapping = true;
-            recScript.isTeleportingJustNow = true; // ¹«ÇÑ ·çÇÁ(¹Ğ¾î³¿) ¹æÁö
+            recScript.isLocked = true;
+            recScript.lastLocalZ = exitOffset;
+            recScript.StartCooldown(); // [ì¶”ê°€] ë„ì°©ì§€ í¬íƒˆì— ì¿¨íƒ€ì„ ë¶€ì—¬
         }
 
-        // 3. ¸ñÀûÁö À§Ä¡·Î ÀÌµ¿ (»ó´ë ÁÂÇ¥¸¦ ¸ñÀûÁö ¿ùµå ÁÂÇ¥·Î º¯È¯)
-        // ¾ÆÁÖ ¹Ì¼¼ÇÑ ¿ÀÂ÷·Î ÀÎÇÑ ¹Ğ¾î³¿À» ¹æÁöÇÏ±â À§ÇØ forward ¹æÇâÀ¸·Î 0.01m ¿©À¯¸¦ µÓ´Ï´Ù.
-        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * 0.01f);
+        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
         playerRig.rotation = receiver.rotation * relativeRot;
 
         playerIsOverlapping = false;
-        Debug.Log("<color=lime>Çö´ë½Ä VR ÅÚ·¹Æ÷Æ® ¼º°ø!</color>");
+
+        if (playerRenderer != null)
+            playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
+    }
+
+    public void StartCooldown()
+    {
+        StartCoroutine(CooldownRoutine());
+    }
+
+    IEnumerator CooldownRoutine()
+    {
+        inCooldown = true;
+        yield return new WaitForSeconds(cooldownTime);
+        inCooldown = false;
     }
 
     void UpdateClippingProperties()
     {
         if (playerRenderer == null) return;
-
-        // ¼ÎÀÌ´õ¿¡°Ô ÇöÀç Æ÷Å» ¸éÀÇ À§Ä¡¿Í ¹æÇâÀ» Àü´Ş
-        // ¼ÎÀÌ´õ´Â ÀÌ Plane ±âÁØ µÚÂÊ ¸Ş½¬¸¦ Åõ¸íÇÏ°Ô Áö¿ö '°ø°£ ÀüÀÌ' ³¶¸¸À» ¸¸µì´Ï´Ù.
         playerRenderer.material.SetVector("_PlanePosition", transform.position);
         playerRenderer.material.SetVector("_PlaneNormal", transform.forward);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // Ä«¸Ş¶ó(¸Ó¸®)³ª ÇÃ·¹ÀÌ¾î ¸öÃ¼°¡ µé¾î¿À¸é ¿À¹ö·¦ ½ÃÀÛ
-        if (other.CompareTag("Player") || other.name.Contains("Camera"))
+        if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
         {
             playerIsOverlapping = true;
-
-            // ÁøÀÔ ½ÃÁ¡¿¡ ÀÌ¹Ì ¸é µÚ¿¡ ÀÖ´Ù¸é (¹æ±İ ÀÌµ¿ÇØ¿Â °æ¿ì) º¸È£¸· ÀÛµ¿
             Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
-            isTeleportingJustNow = localCamPos.z <= 0f;
+
+Â  Â  Â  Â  Â  Â  // [ê°œì„ ] ì§„ì… ì‹œì—ëŠ” ë¬´ì¡°ê±´ ë½ì„ ê±¸ì§€ ì•ŠìŠµë‹ˆë‹¤.Â 
+Â  Â  Â  Â  Â  Â  // ë½ì€ ì˜¤ì§ 'ë°˜ëŒ€í¸ì—ì„œ ë„˜ì–´ì™”ì„ ë•Œ'ë§Œ ê±¸ë ¤ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+Â  Â  Â  Â  Â  Â  if (!isLocked)
+            {
+                isLocked = false;
+                Debug.Log($"<color=white><b>[ì§„ì… ì„±ê³µ]</b> {gameObject.name}: ì „ì†¡ ëŒ€ê¸° ì¤‘ (Z:{localCamPos.z:F3})</color>");
+            }
+            else
+            {
+                Debug.Log($"<color=orange><b>[ì§„ì… ìœ ì§€]</b> {gameObject.name}: ì´ë¯¸ Lock ìƒíƒœ (ìˆœê°„ì´ë™ ë„ì°© ì§í›„)</color>");
+            }
+
+            lastLocalZ = localCamPos.z;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player") || other.name.Contains("Camera"))
+        if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
         {
             playerIsOverlapping = false;
-            isTeleportingJustNow = false;
+            isLocked = false;
+            Debug.Log($"<color=white><b>[í‡´ì¥]</b> {gameObject.name}: ìƒíƒœ ì´ˆê¸°í™”</color>");
 
-            // Æ÷Å»À» ¿ÏÀüÈ÷ ¹ş¾î³ª¸é ¸öÀÌ ´Ù½Ã ¿ÂÀüÈ÷ º¸ÀÌµµ·Ï Å¬¸®ÇÎ ÃÊ±âÈ­
             if (playerRenderer != null)
-                playerRenderer.material.SetVector("_PlanePosition", new Vector3(0, -9999, 0));
+                playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
         }
     }
 }
