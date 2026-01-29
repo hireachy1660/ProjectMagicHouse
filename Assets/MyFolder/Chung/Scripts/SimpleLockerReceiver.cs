@@ -70,6 +70,7 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
         if (item == null) yield break;
 
         // 아이템의 상호작용 중지 메소드 호출
+        // 현재 언 그랩에서 키네매틱을 켜는데 물건이 놓아 지면서 한번 더 호출이 되서 문제 가 됨
         item.OnPlaced();
 
         // 아이템을 어테치 포인트의 자식으로 지정 후 위치 조정
