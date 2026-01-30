@@ -49,4 +49,23 @@ public class GrabSync : MonoBehaviourPun
         interactable.Enable();
     }
 
+    public void InitializeState(bool isKinematic, bool useGravity, bool canInteract)
+    {
+        // 1. 물리 상태 설정 (안착 상태인지, 자유 상태인지)
+        if (rb != null)
+        {
+            rb.isKinematic = isKinematic;
+            rb.useGravity = useGravity; // 탐정님의 '안착 지문' 전략 적용
+        }
+
+        // 2. 상호작용 가능 여부 설정
+        if (interactable != null)
+        {
+            if (canInteract) interactable.Enable();
+            else interactable.Disable();
+        }
+
+        Debug.Log($"{gameObject.name}의 초기 상태 설정 완료: Kinematic({isKinematic}), Gravity({useGravity})");
+    }
+
 }
