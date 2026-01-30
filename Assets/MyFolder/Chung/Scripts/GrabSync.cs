@@ -5,7 +5,7 @@ using UnityEngine;
 public class GrabSync : MonoBehaviourPun
 {
     [SerializeField]
-    private Rigidbody rb = null;
+    protected Rigidbody rb = null;
     [SerializeField]
     private GrabInteractable interactable = null;
 
@@ -18,7 +18,7 @@ public class GrabSync : MonoBehaviourPun
         }
     }
 
-    public void OnGrabEvent()
+    public virtual void OnGrabEvent()
     {
         if(!photonView.IsMine)
         {
@@ -29,6 +29,7 @@ public class GrabSync : MonoBehaviourPun
 
     public void DisGrabEvent()
     {
+
         photonView.RPC(nameof(DisGrab), RpcTarget.OthersBuffered);
     }
 
@@ -55,7 +56,7 @@ public class GrabSync : MonoBehaviourPun
         if (rb != null)
         {
             rb.isKinematic = isKinematic;
-            rb.useGravity = useGravity; // 탐정님의 '안착 지문' 전략 적용
+            rb.useGravity = useGravity; 
         }
 
         // 2. 상호작용 가능 여부 설정
