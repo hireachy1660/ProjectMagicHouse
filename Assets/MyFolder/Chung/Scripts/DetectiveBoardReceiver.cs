@@ -48,10 +48,10 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
             //  정답: 아이템을 보드에 부착
             int viewID = _item.PhotonViewID;
 
-            if (!_item.photonView.IsMine)
-            {
-                _item.photonView.RequestOwnership();
-            }
+            //if (!_item.photonView.IsMine)
+            //{
+            //    _item.photonView.RequestOwnership();
+            //}
 
             photonView.RPC(nameof(AttachEvidence), RpcTarget.AllBuffered, viewID, _currentIndex);
             //AttachEvidence(viewID, _currentIndex);

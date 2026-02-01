@@ -13,6 +13,8 @@ public class ItemKey : MonoBehaviourPun, IItem
     private Rigidbody rigidbody = null;
     [SerializeField]
     private Collider collider = null;
+
+
     private int photonViewID; 
 
     // 인터페이스 구현: 매니저가 물어보면 이 ID를 줍니다.

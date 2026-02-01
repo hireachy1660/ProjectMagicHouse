@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Net.Mail;
 using UnityEngine;
 using Photon.Pun;
 
@@ -85,7 +84,7 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
         {
             _doorObject.localPosition = Vector3.Lerp(_doorObject.localPosition, _openPosition, Time.fixedDeltaTime * _moveSpeed);
             elapcedTime += Time.fixedDeltaTime;
-            yield return new waitForseconds(Time.fixedDeltaTime);
+            yield return new WaitForSeconds(Time.fixedDeltaTime);
         }
 
     }

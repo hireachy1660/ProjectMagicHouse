@@ -23,10 +23,19 @@ public class HandCamera : MonoBehaviourPun
     private GameObject failPhoto;
 
 
+
+
     public void OnGrabUseCamera()
     {
-        if (myGrabInteractable && myGrabInteractable.State != InteractableState.Select) return;
+        if (myGrabInteractable == null || myGrabInteractable.State != InteractableState.Select ) return;
         if (!photonView.IsMine) return;
+
+        // 스폰 포인트의 자식이 있으면 리턴하는 로직 필요
+        if (photoSpawnPoint.childCount < 0)
+        {
+            Debug.Log("[HandCamera] already have Picture");
+            return;
+        }
 
         Ray ray = new Ray(angleTr.position, angleTr.forward);
         bool isSuccess = Physics.Raycast(ray, out _, 5f, targetLayer);
