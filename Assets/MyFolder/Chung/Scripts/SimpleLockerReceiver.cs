@@ -83,15 +83,15 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
         // 에니메이션 재생
         while ( elapcedTime <= _moveSpeed)
         {
-            _doorObject.localPosition = Vector3.Lerp(_doorObject.localPosition, _openPosition, Time.deltaTime * _moveSpeed);
-            elapcedTime += Time.deltaTime;
-            yield return null;
+            _doorObject.localPosition = Vector3.Lerp(_doorObject.localPosition, _openPosition, Time.fixedDeltaTime * _moveSpeed);
+            elapcedTime += Time.fixedDeltaTime;
+            yield return new waitForseconds(Time.fixedDeltaTime);
         }
 
     }
 
     // 인터페이스 구현: 맨손으로 눌렀을 때
-    [PunRPC]
+    
     public void OnActivate()
     {
         if (!isOpen)

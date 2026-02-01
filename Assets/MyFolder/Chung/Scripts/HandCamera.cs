@@ -86,20 +86,32 @@ public class HandCamera : MonoBehaviourPun
         Vector3 startPos = Vector3.zero;
         Vector3 endPos = Vector3.up * 0.2f;
 
-        PhotonView myView = _go.GetPhotonView();
+        PhotonTransformView myView = _go.GetComponent<PhotonTransformView>();
+        Rigidbody rb = _go.GetComponent<Rigidbody>();
         myView.enabled = false;
 
         float elapsedTime = 0f;
         while(elapsedTime <= animDuration)
         {
-            _go.transform.localPosition = Vector3.Lerp(startPos, endPos, elapsedTime/animDuration);
-            elapsedTime += Time.deltaTime;
+            yield return new WaitForFixedUpdate();  // 에니메이션 처리를 자연스럽게 하기위해 픽스드 없데이트 사용
+
+            elapsedTime += Time.fixedDeltaTime; 
+            float progress = elapsedTime / animDuration;
+
+            // 2. 로컬 목표 지점 계산 (예: x축 방향으로 0.2)
+            // 만약 y축이라면 Vector3.up * (0.2f * progress)
+            Vector3 localOffset = new Vector3(0.2f * progress, 0, 0);
+            Vector3 targetPos = photoSpawnPoint.TransformPoint(localOffset);
             
-            yield return null;
+            rb.MovePosition(targetPos);
+            rb.MoveRotation(photoSpawnPoint.rotation);
+
+            //_go.transform.localPosition = Vector3.Lerp(startPos, endPos, elapsedTime/animDuration);
+            
         }
 
         myView.enabled=true;
-        _go.transform.localPosition = endPos;
+        //_go.transform.localPosition = endPos;
         //_go.transform.SetParent(null);
 
         SetPhotoState(_go);
