@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 076cc756b022f1241a868ea50cfe8d54
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 305174
+  packageName: Dynamic Photo Camera mini
+  packageVersion: 1.0
+  assetPath: Assets/PhotoCollection/Scripts/PhotoInputBlocker.cs
+  uploadId: 730649
