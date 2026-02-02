@@ -44,6 +44,11 @@ MonoBehaviour:
   - StartOpenCouroutine
   - AttachEvidence
   - PunBurnEvidence
+  - DisGrab
+  - OnGrab
+  - FailedCapture
+  - SucessedCapture
+  - StartPhotoProcess
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

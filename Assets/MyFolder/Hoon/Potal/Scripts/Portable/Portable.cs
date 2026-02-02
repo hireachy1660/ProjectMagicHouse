@@ -215,10 +215,15 @@ namespace VRPortalToolkit.Portables
                 transform.rotation = matrix.rotation;
                 transform.localScale = matrix.lossyScale;
 
-                if (rigidbody)
+                // 1. 리지드바디가 있는지, 포탈 정보가 있는지 먼저 확인합니다.
+                if (_rigidbody != null && portal != null)
                 {
-                    _rigidbody.linearVelocity = portal.ModifyVector(_rigidbody.linearVelocity);
-                    _rigidbody.angularVelocity = portal.ModifyVector(_rigidbody.angularVelocity);
+                    // 2. 아까 에러가 났던 Kinematic 체크까지 한 번에 넣어줍니다.
+                    if (!_rigidbody.isKinematic)
+                    {
+                        _rigidbody.linearVelocity = portal.ModifyVector(_rigidbody.linearVelocity);
+                        _rigidbody.angularVelocity = portal.ModifyVector(_rigidbody.angularVelocity);
+                    }
                 }
             }
 
