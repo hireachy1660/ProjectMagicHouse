@@ -5,7 +5,7 @@ using UnityEngine;
 public class GrabSync : MonoBehaviourPun
 {
     [SerializeField]
-    private Rigidbody rb = null;
+    protected Rigidbody rb = null;
     [SerializeField]
     private GrabInteractable interactable = null;
 
@@ -18,7 +18,7 @@ public class GrabSync : MonoBehaviourPun
         }
     }
 
-    public void OnGrabEvent()
+    public virtual void OnGrabEvent()
     {
         if(!photonView.IsMine)
         {
@@ -29,6 +29,7 @@ public class GrabSync : MonoBehaviourPun
 
     public void DisGrabEvent()
     {
+
         photonView.RPC(nameof(DisGrab), RpcTarget.OthersBuffered);
     }
 
@@ -47,6 +48,25 @@ public class GrabSync : MonoBehaviourPun
         rb.isKinematic = false;
         }
         interactable.Enable();
+    }
+
+    public void InitializeState(bool isKinematic, bool useGravity, bool canInteract)
+    {
+        // 1. 물리 상태 설정 (안착 상태인지, 자유 상태인지)
+        if (rb != null)
+        {
+            rb.isKinematic = isKinematic;
+            rb.useGravity = useGravity; 
+        }
+
+        // 2. 상호작용 가능 여부 설정
+        if (interactable != null)
+        {
+            if (canInteract) interactable.Enable();
+            else interactable.Disable();
+        }
+
+        Debug.Log($"{gameObject.name}의 초기 상태 설정 완료: Kinematic({isKinematic}), Gravity({useGravity})");
     }
 
 }
