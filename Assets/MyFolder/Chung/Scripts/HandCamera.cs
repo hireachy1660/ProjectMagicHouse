@@ -31,6 +31,7 @@ public class HandCamera : MonoBehaviourPun
 
     public void OnGrabUseCamera()
     {
+        Debug.Log("AAAAAAAAAAAAAAAAAAAAAAA");
         if (myGrabInteractable == null || myGrabInteractable.State != InteractableState.Select ) return;
         if (!photonView.IsMine) return;
 

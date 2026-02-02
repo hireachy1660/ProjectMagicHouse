@@ -34,7 +34,8 @@ public class LeftHandManager : MonoBehaviour
         IItem evidence = interactable.gameObject.transform.parent.GetComponent<IItem>();
         if (evidence != null)
         {
-            infoPanel.transform.position = new Vector3(leftHandTr.position.x, leftHandTr.position.y, 0f);
+            Vector3 panelPos = leftHandTr.position + transform.position + (transform.forward * 2f);
+            infoPanel.transform.position = new Vector3(leftHandTr.position.x, leftHandTr.position.y, transform.position.z);
             UpdateUI(evidence.ItemID);
         }
     }
