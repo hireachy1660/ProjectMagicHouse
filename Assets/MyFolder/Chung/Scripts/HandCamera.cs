@@ -31,7 +31,6 @@ public class HandCamera : MonoBehaviourPun
 
     public void OnGrabUseCamera()
     {
-        Debug.Log("AAAAAAAAAAAAAAAAAAAAAAA");
         if (myGrabInteractable == null || myGrabInteractable.State != InteractableState.Select ) return;
         if (!photonView.IsMine) return;
 
@@ -82,7 +81,7 @@ public class HandCamera : MonoBehaviourPun
         Vector3 endPos = Vector3.up * 0.2f;
 
         PhotonTransformView myView = _go.GetComponent<PhotonTransformView>();
-        Rigidbody rb = _go.GetComponent<Rigidbody>();
+        //Rigidbody rb = _go.GetComponent<Rigidbody>();
         myView.enabled = false;
 
         float elapsedTime = 0f;
@@ -98,15 +97,15 @@ public class HandCamera : MonoBehaviourPun
             Vector3 localOffset = new Vector3(0.2f * progress, 0, 0);
             Vector3 targetPos = photoSpawnPoint.TransformPoint(localOffset);
             
-            rb.MovePosition(targetPos);
-            rb.MoveRotation(photoSpawnPoint.rotation);
+            //rb.MovePosition(targetPos);
+            //rb.MoveRotation(photoSpawnPoint.rotation);
 
-            //_go.transform.localPosition = Vector3.Lerp(startPos, endPos, elapsedTime/animDuration);
+            _go.transform.localPosition = Vector3.Lerp(startPos, endPos, elapsedTime/animDuration);
             
         }
 
         myView.enabled=true;
-        //_go.transform.localPosition = endPos;
+        _go.transform.localPosition = endPos;
         //_go.transform.SetParent(null);
 
         SetPhotoState(_go);
