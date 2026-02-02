@@ -2,6 +2,7 @@ using UnityEngine;
 using Photon.Pun;
 using System.Collections;
 using Oculus.Interaction;
+using System.Collections.Generic;
 
 public class HandCamera : MonoBehaviourPun
 {
@@ -22,6 +23,9 @@ public class HandCamera : MonoBehaviourPun
     [SerializeField]
     private GameObject failPhoto;
 
+    [Header("Sounds")]
+    [SerializeField]
+    private List<SoundEventSO> soundEventSOs = new List<SoundEventSO>();
 
 
 
@@ -31,7 +35,7 @@ public class HandCamera : MonoBehaviourPun
         if (!photonView.IsMine) return;
 
         // 스폰 포인트의 자식이 있으면 리턴하는 로직 필요
-        if (photoSpawnPoint.childCount < 0)
+        if (photoSpawnPoint.childCount > 0)
         {
             Debug.Log("[HandCamera] already have Picture");
             return;
@@ -65,25 +69,6 @@ public class HandCamera : MonoBehaviourPun
             StartCoroutine(PhotoAnim(go));
         }
     }
-
-    //[PunRPC]
-    //private void SucessedCapture()
-    //{
-        
-    //    // GameObject go = Instantiate(sucessPhoto, photoSpawnPoint.localPosition, photoSpawnPoint.localRotation, photoSpawnPoint);
-    //    GameObject go = PhotonNetwork.Instantiate(nameof(sucessPhoto), photoSpawnPoint.localPosition, photoSpawnPoint.localRotation);
-    //    go.transform.SetParent(photoSpawnPoint);
-
-    //    StartCoroutine(PhotoAnim(go));
-    //}
-
-    //[PunRPC]
-    //private void FailedCapture()
-    //{
-    //    GameObject go = Instantiate(failPhoto, photoSpawnPoint.position, photoSpawnPoint.rotation, photoSpawnPoint);
-
-    //    StartCoroutine(PhotoAnim(go));
-    //}
 
     private IEnumerator PhotoAnim(GameObject _go)
     {
@@ -139,7 +124,5 @@ public class HandCamera : MonoBehaviourPun
         }
 
         goGrabSync.InitializeState(true, true, true);
-    }
-
-    
+    }    
 }
