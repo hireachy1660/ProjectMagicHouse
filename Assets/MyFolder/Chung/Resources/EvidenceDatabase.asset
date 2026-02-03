@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d26514a63ef1fd4793948cf03764e6a, type: 3}
+  m_Name: EvidenceDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::EvidenceDatabase
+  allEvidence:
+  - {fileID: 11400000, guid: 1ae225717c823284ab72e04816257907, type: 2}
+  - {fileID: 11400000, guid: 44ac702e05d51904983a8ba5c7fd3a5f, type: 2}
+  - {fileID: 11400000, guid: 7e44d3e3cc3906443a38154702a9bc4c, type: 2}
