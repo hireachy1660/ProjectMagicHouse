@@ -8349,6 +8349,7 @@ MonoBehaviour:
   mainCamera: {fileID: 868253565}
   playerRenderer: {fileID: 0}
   exitOffset: 0.1
+  cooldownTime: 0.5
 --- !u!1 &1446378388
 GameObject:
   m_ObjectHideFlags: 0
@@ -8889,6 +8890,7 @@ MonoBehaviour:
   mainCamera: {fileID: 868253565}
   playerRenderer: {fileID: 0}
   exitOffset: 0.1
+  cooldownTime: 0.5
 --- !u!1 &1504779294
 GameObject:
   m_ObjectHideFlags: 0

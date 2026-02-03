@@ -239,6 +239,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HandManager
   rayInteractor: {fileID: 1770761853}
   handInteractor: {fileID: 1082276410}
+  _showRayInScene: 1
 --- !u!114 &12803086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5240,6 +5241,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KeyObject
   _itemID: 101
   ItemType: 0
+  rigidbody: {fileID: 0}
+  collider: {fileID: 0}
 --- !u!1 &858603626
 GameObject:
   m_ObjectHideFlags: 0
@@ -8802,6 +8805,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SimpleLockerReceiver
   _requiredKeyID: 101
   _doorObject: {fileID: 2680750820366426083}
+  attachPoint: {fileID: 0}
   _moveOffset: {x: 0.5, y: 0, z: 0}
   _moveSpeed: 2
 --- !u!1 &1433221805
