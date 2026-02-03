@@ -2,6 +2,7 @@ using UnityEngine;
 using Oculus.Interaction;
 using TMPro;
 using Oculus.Interaction.HandGrab;
+using System.Collections;
 
 public class LeftHandManager : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class LeftHandManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI descTMP;
     [SerializeField] private GameObject infoPanel;
     [SerializeField] private Transform leftHandTr;
+    [SerializeField] private Transform CameraRig;
 
     private void Awake()
     {
@@ -34,7 +36,8 @@ public class LeftHandManager : MonoBehaviour
         IItem evidence = interactable.gameObject.transform.parent.GetComponent<IItem>();
         if (evidence != null)
         {
-            infoPanel.transform.position = new Vector3(leftHandTr.position.x, leftHandTr.position.y, 0f);
+            //Vector3 panelPos = leftHandTr.position + transform.position + (transform.forward * 2f);
+            //infoPanel.transform.position = new Vector3(leftHandTr.position.x, leftHandTr.position.y, transform.position.z);
             UpdateUI(evidence.ItemID);
         }
     }
@@ -48,11 +51,23 @@ public class LeftHandManager : MonoBehaviour
             titleTMP.text = data.title;
             descTMP.text = data.description;
             infoPanel?.SetActive(true);
+
+            StartCoroutine(UILookAtPlayer());
+        }
+    }
+
+    private IEnumerator UILookAtPlayer()
+    {
+        while(CameraRig != null)
+        {
+            infoPanel.transform.LookAt(CameraRig.transform.position);
+            yield return null;
         }
     }
 
     public void UnLeftHandUse()
     {
+        StopCoroutine(UILookAtPlayer());
         infoPanel?.SetActive(false);
     }
 }
