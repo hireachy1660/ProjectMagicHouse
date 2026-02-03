@@ -4,24 +4,70 @@ using Photon.Pun;
 public class AvatarSync : MonoBehaviourPun
 {
     [Header("Avatar parts")]
-    public Transform avatarHead;
-    public Transform avatarLeftHand;
-    public Transform avatarRightHand;
+    [SerializeField]
+    private Transform avatarHead;
+    [SerializeField]
+    private Transform avatarLeftHand;
+    [SerializeField]
+    private Transform avatarRightHand;
 
     // 실제 vr 기기의 위치 정보를 담을 변수
+    [Header("Debug/CheckVar")]
+    [SerializeField]
     private Transform vrHead;
+    [SerializeField]
     private Transform vrLeftHand;
+    [SerializeField]
     private Transform vrRightHand;
 
     // CharacterSpawner에서 이 함수를 호출해서 기기를 연결해 줄거다.
-    public void SetTargets(Transform hmd, Transform left, Transform right)
+    //public void SetTargets(Transform hmd, Transform left, Transform right)
+    //{
+    //    vrHead = hmd;
+    //    vrLeftHand = left;
+    //    vrRightHand = right;
+    //}
+
+    private void Start()
     {
-        vrHead = hmd;
-        vrLeftHand = left;
-        vrRightHand = right;
+        if (photonView.IsMine)
+        {
+            FindHardWareRig();
+
+            if (avatarHead  != null)    // 자신의 아바타는 로컬에서 메쉬가 랜더링 되지 않게 하는 처리
+            {
+                Renderer[] avatarMeshRenderers = this.GetComponentsInChildren<Renderer>();
+                for (int i = 0; i < avatarMeshRenderers.Length; i++)
+                {
+                    avatarMeshRenderers[i].enabled = false;
+                }
+            }
+        }
+        else
+        {
+            // [보안 추가] 내가 아닌 '남'의 캐릭터라면, 그 캐릭터에 붙은 카메라와 리스너를 즉시 파괴 
+            Camera remoteCam = GetComponentInChildren<Camera>();
+            if (remoteCam != null) Destroy(remoteCam);
+
+            AudioListener remoteListener = GetComponentInChildren<AudioListener>();
+            if (remoteListener != null) Destroy(remoteListener);
+        }
     }
 
-    private void Update()
+    private void FindHardWareRig()
+    {
+        OVRCameraRig rig; 
+        if(OVRManager.instance.TryGetComponent<OVRCameraRig>(out rig))
+        {
+            vrHead = rig.centerEyeAnchor;
+            vrLeftHand = rig.leftHandAnchor;
+            vrRightHand = rig.rightHandAnchor;
+
+        }
+
+    }
+
+    private void LateUpdate()
     {
         // 내가 소환한 내 캐릭터이고, 연결된 기기 정보가 있을 때만 움직인다.
         if(photonView.IsMine && vrHead != null)

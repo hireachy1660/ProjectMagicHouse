@@ -1,0 +1,685 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using VRPortalToolkit.Physics;
+using Misc;
+using Misc.EditorHelpers;
+
+// TODO: May not need transform clones :?
+// Primative colliders dont need a hierachy to be replicated (need to figure out the math for how they actually calculate themselves
+// Mesh colliders do, but if, when creating the sliced mesh, we modified the transform of each vertex, we could caculate a new one indepented of transforms
+// --- My only worry is that this could be slow enough to not be worth it
+// Could only replicate the hierachy for meshes?
+
+// TODO: Might wanna rewrite slicing to modify transform
+// Might even want to allow multislicing
+
+// Okay so you can get the actual transform of a cube as:
+// world scale of a cube collider as the lossy scale
+
+// Caspule probably
+// transform.position = capsule.transform.TransformPoint(cube.centre);
+// transform.rotation = capsule.transform.rotation;
+// transform.localScale = capsule.transform.TransformVector(new Vector3(capsule.radius, capsule.hieght * 0.5f, capsule.radius));
+// then make localScale.x = localScale.z = Mathf.Max(localScale.x, localScale.z);
+
+// Sphere probably
+// transform.position = sphere.transform.TransformPoint(cube.centre);
+// transform.rotation = sphere.transform.rotation; // Probably not even necessary
+// transform.localScale = sphere.transform.TransformVector(new Vector3(sphere.radius, sphere.radius, sphere.radius));
+// then make localScale.x = localScale.y = localScale.z = Mathf.Max(localScale.x, localScale.y, localScale.z);
+
+// Also, not on this behaviour, but do need 
+namespace VRPortalToolkit.Cloning
+{
+    /// <summary>
+    /// Creates and manages static collider clones for objects that overal with portals.
+    /// Specifically this creates static clones that are sliced along the portals plane,
+    /// allowing physics objects to only interact with the physics elements on the right side of the portal.
+    /// </summary>
+    public class PortalStaticCloneCollider : MonoBehaviour
+    {
+        private readonly static WaitForFixedUpdate _WaitForFixedUpdate = new WaitForFixedUpdate();
+
+        /// <summary>
+        /// The portal layer that determines how cloned colliders interact with the portal system.
+        /// </summary>
+        [Tooltip("The portal layer that determines how cloned colliders interact with the portal system")]
+        [SerializeField] private PortalLayer _portalLayer;
+        
+        /// <summary>
+        /// Gets or sets the portal layer associated with this clone collider.
+        /// </summary>
+        public PortalLayer portalLayer {
+            get => _portalLayer;
+            set => _portalLayer = value;
+        }
+        
+        /// <summary>
+        /// Clears the current portal layer association.
+        /// </summary>
+        public void ClearPortalSpace() => portalLayer = null;
+
+        /// <summary>
+        /// When enabled, only static colliders will be cloned. Otherwise, all colliders will be cloned.
+        /// </summary>
+        [Tooltip("When enabled, only static colliders will be cloned. Otherwise, all colliders will be cloned")]
+        [SerializeField] private bool _staticCollidersOnly = true;
+        
+        /// <summary>
+        /// Gets or sets whether only static colliders should be cloned.
+        /// </summary>
+        public bool staticCollidersOnly {
+            get => _staticCollidersOnly;
+            set {
+                if (_staticCollidersOnly != value)
+                {
+                    Validate.UpdateField(this, nameof(_staticCollidersOnly), _staticCollidersOnly = value);
+
+                    if (isActiveAndEnabled && Application.isPlaying)
+                    {
+                        if (_staticCollidersOnly)
+                        {
+                            foreach (Collider collider in triggerHandler.Values)
+                                if (collider && !collider.gameObject.isStatic) OnTriggerExitContainer(collider);
+                        }
+                        else
+                        {
+                            foreach (Collider collider in triggerHandler.Values)
+                                if (collider && !collider.gameObject.isStatic) OnTriggerEnterContainer(collider);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines how and when collider clones are updated.
+        /// </summary>
+        [Tooltip("Determines how and when collider clones are updated")]
+        [SerializeField] private UpdateMode _updateMode = UpdateMode.UpdateEachFixedUpdate;
+        
+        /// <summary>
+        /// Gets or sets the update mode for collider clones.
+        /// </summary>
+        public UpdateMode updateMode {
+            get => _updateMode;
+            set => _updateMode = value;
+        }
+
+        /// <summary>
+        /// Defines how collider clones are updated.
+        /// </summary>
+        public enum UpdateMode
+        {
+            /// <summary>No automatic updates.</summary>
+            None = 0,
+            /// <summary>Update positions and transforms each fixed update.</summary>
+            UpdateEachFixedUpdate = 1,
+            /// <summary>Completely recreate colliders each fixed update.</summary>
+            RecalculateEachFixedUpdate = 2,
+        }
+
+        /// <summary>
+        /// Stores information about cloned colliders.
+        /// </summary>
+        protected class ColliderClones
+        {
+            public Portal portal;
+
+            public Collider original;
+
+            public Collider localClone;
+            public GameObject localCloneObject;
+
+            public Collider connectedClone;
+            public GameObject connectedCloneObject;
+        }
+
+        protected Dictionary<Collider, ColliderClones> _colliderClones = new Dictionary<Collider, ColliderClones>();
+        protected ObjectPool<ColliderClones> _colliderPool = new ObjectPool<ColliderClones>(() => new ColliderClones());
+
+        protected static HashSet<Collider> _ignoredColliders = new HashSet<Collider>();
+        private static Transform _actualRoot;
+        
+        /// <summary>
+        /// The root transform under which all cloned colliders are organized.
+        /// </summary>
+        protected Transform _root => _actualRoot ? _actualRoot : _actualRoot = new GameObject("Portal Static Colliders").transform;
+
+        protected readonly TriggerHandler<Collider> triggerHandler = new TriggerHandler<Collider>();
+        protected readonly HashSet<Collider> _stayedColliders = new HashSet<Collider>();
+        private IEnumerator _waitFixedUpdateLoop;
+
+        protected virtual void OnValidate()
+        {
+            Validate.FieldWithProperty(this, nameof(_staticCollidersOnly), nameof(staticCollidersOnly));
+        }
+
+        protected virtual void Reset()
+        {
+            portalLayer = GetComponentInParent<PortalLayer>();
+            if (!portalLayer) portalLayer = GetComponentInChildren<PortalLayer>(true);
+        }
+
+        protected virtual void Awake()
+        {
+            _waitFixedUpdateLoop = WaitFixedUpdateLoop();
+        }
+
+        protected virtual void OnEnable()
+        {
+            triggerHandler.valueAdded += OnTriggerEnterContainer;
+            triggerHandler.valueRemoved += OnTriggerExitContainer;
+            StartCoroutine(_waitFixedUpdateLoop);
+
+            PortalPhysics.lateFixedUpdate += LateFixedUpdate;
+        }
+
+        protected virtual void OnDisable()
+        {
+            triggerHandler.valueAdded -= OnTriggerEnterContainer;
+            triggerHandler.valueRemoved -= OnTriggerExitContainer;
+            StopCoroutine(_waitFixedUpdateLoop);
+
+            PortalPhysics.lateFixedUpdate -= LateFixedUpdate;
+        }
+
+        /// <summary>
+        /// Called during late fixed update to update or recalculate collider clones based on the update mode.
+        /// </summary>
+        protected virtual void LateFixedUpdate()
+        {
+            if (updateMode == UpdateMode.UpdateEachFixedUpdate)
+                UpdateColliderClones();
+            else if (updateMode == UpdateMode.RecalculateEachFixedUpdate)
+                RecalculateColliderClones();
+        }
+
+        /// <summary>
+        /// Updates the transforms and layers of all collider clones.
+        /// </summary>
+        private void UpdateColliderClones()
+        {
+            foreach (ColliderClones colliders in _colliderClones.Values)
+                UpdateColliderClones(colliders);
+        }
+
+        /// <summary>
+        /// Updates a specific collider clone's transform and layers.
+        /// </summary>
+        /// <param name="clones">The collider clone to update.</param>
+        protected void UpdateColliderClones(ColliderClones clones)
+        {
+            // Make Sure the clones exist
+            if (!clones.localClone || !clones.connectedClone)
+                CreateColliderClones(clones);
+
+            if (clones.localClone && clones.connectedClone)
+            {
+                if (portalLayer)
+                {
+                    if (portalLayer.portal && portalLayer.portal.usesTeleport)
+                    {
+                        Matrix4x4 matrix = portalLayer.portal.ModifyMatrix(clones.localClone.transform.localToWorldMatrix);
+
+                        clones.connectedClone.transform.SetPositionAndRotation(matrix.GetColumn(3), matrix.rotation);
+                        clones.connectedClone.transform.localScale = matrix.lossyScale;
+                    }
+                    else
+                    {
+                        clones.connectedClone.transform.SetPositionAndRotation(clones.localClone.transform.position, clones.localClone.transform.rotation);
+                        clones.connectedClone.transform.localScale = clones.localClone.transform.localScale;
+                    }
+
+                    clones.localCloneObject.layer = portalLayer.ConvertOutsideToInside(clones.original.gameObject.layer);
+
+                    if (portalLayer.connectedLayer)
+                    {
+                        int connectedLayer = clones.original.gameObject.layer;
+
+                        if (portalLayer.portal && portalLayer.portal.usesLayers)
+                            connectedLayer = portalLayer.portal.ModifyLayer(connectedLayer);
+
+                        clones.connectedCloneObject.layer = portalLayer.connectedLayer.ConvertOutsideToInside(connectedLayer);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Completely recreates all collider clones.
+        /// </summary>
+        public void RecalculateColliderClones()
+        {
+            foreach (ColliderClones clones in _colliderClones.Values)
+            {
+                CreateColliderClones(clones);
+                UpdateColliderClones(clones);
+            }
+        }
+
+        /// <summary>
+        /// Creates clones for a specific collider, handling different collider types appropriately.
+        /// </summary>
+        /// <param name="clones">The collider clone info to populate.</param>
+        protected void CreateColliderClones(ColliderClones clones)
+        {
+            if (!clones.localCloneObject) clones.localCloneObject = new GameObject($"{clones.original.name} (Local Clone)");
+            if (!clones.connectedCloneObject) clones.connectedCloneObject = new GameObject($"{clones.original.name} (Connected Clone)");
+
+            clones.portal = portalLayer?.portal;
+
+            Transform local = clones.localCloneObject.transform, connected = clones.connectedCloneObject.transform;
+
+            if (local.parent != _root) local.SetParent(_actualRoot);
+
+            if (connected.parent != _actualRoot) connected.SetParent(_actualRoot);
+
+            Type type = clones.original.GetType();
+
+            // Copy specific collider
+            if (type == typeof(MeshCollider))
+            {
+                MeshCollider originalClone = (MeshCollider)clones.original;
+
+                Mesh mesh = originalClone.sharedMesh;
+
+                GetCollider(clones.localCloneObject, ref clones.localClone, out MeshCollider localClone);
+                GetCollider(clones.connectedCloneObject, ref clones.connectedClone, out MeshCollider connectedClone);
+
+                Vector3[] vertices = mesh.vertices;
+                Vector3[] normals = mesh.normals;
+                GetSubMeshes(mesh, out int[][] subMeshes, out int subMeshCount);
+
+                if (clones.original.transform.parent != null)
+                {
+                    for (int i = 0; i < vertices.Length; i++)
+                        vertices[i] = clones.original.transform.TransformPoint(vertices[i]);
+
+                    local.position = connected.position = Vector3.zero;
+                    local.rotation = connected.rotation = Quaternion.identity;
+                    local.localScale = connected.localScale = Vector3.one;
+                }
+                else
+                {
+                    local.position = connected.position = clones.original.transform.position;
+                    local.rotation = connected.rotation = clones.original.transform.rotation;
+                    local.localScale = connected.localScale = clones.original.transform.localScale;
+                }
+
+                bool hasInside = true;
+                Mesh newMesh;
+
+                if (TryGetCuttingPlanes(clones.original.transform.parent ? clones.original.transform : null, out Plane[] cuttingPlanes, out int planeCount)
+                    && MeshSlicing.Slice(vertices, null, normals, null, subMeshes, vertices.Length, subMeshCount, null, cuttingPlanes, planeCount, 0, new Rect(0f, 0f, 1f, 1f), out newMesh, out hasInside))
+                    localClone.sharedMesh = connectedClone.sharedMesh = newMesh;
+                else if (!hasInside)
+                {
+                    // Not creating a mesh is an option if it was all sliced
+                    if (localClone) localClone.enabled = false;
+                    if (connectedClone) connectedClone.enabled = false;
+                }
+                else
+                {
+                    // Transform has been modified
+                    if (clones.original.transform.parent != null)
+                    {
+                        newMesh = new Mesh();
+
+                        newMesh.subMeshCount = subMeshCount;
+                        newMesh.vertices = vertices;
+                        newMesh.normals = normals;
+
+                        for (int i = 0; i < subMeshCount; i++)
+                            newMesh.SetTriangles(subMeshes[i], i, false);
+                    }
+                    else
+                        localClone.sharedMesh = connectedClone.sharedMesh = originalClone.sharedMesh;
+                }
+
+                localClone.cookingOptions = connectedClone.cookingOptions = originalClone.cookingOptions;
+                localClone.convex = connectedClone.convex = originalClone.convex;
+            }
+            else if (type == typeof(BoxCollider))
+            {
+                BoxCollider originalClone = (BoxCollider)clones.original;
+
+                local.position = connected.position = originalClone.transform.TransformPoint(originalClone.center);
+                local.rotation = connected.rotation = originalClone.transform.rotation;
+                local.localScale = connected.localScale = originalClone.transform.TransformVector(originalClone.size);
+
+                Mesh mesh = PrimativeMeshes.Get(PrimitiveType.Cube);
+
+                if (!TrySliceMesh(clones, mesh))
+                {
+                    GetCollider(clones.localCloneObject, ref clones.localClone, out BoxCollider localClone);
+                    GetCollider(clones.connectedCloneObject, ref clones.connectedClone, out BoxCollider connectedClone);
+
+                    localClone.center = connectedClone.center = Vector3.zero;
+                    localClone.size = connectedClone.size = Vector3.one;
+                }
+            }
+            else if (type == typeof(SphereCollider))
+            {
+                SphereCollider originalClone = (SphereCollider)clones.original;
+
+                local.position = connected.position = originalClone.transform.TransformPoint(originalClone.center);
+                local.rotation = connected.rotation = originalClone.transform.rotation;
+
+                Vector3 scale = originalClone.transform.TransformVector(new Vector3(originalClone.radius, originalClone.radius, originalClone.radius));
+                float scaleUnit = Mathf.Max(scale.x, scale.y, scale.z);
+
+                local.localScale = connected.localScale = new Vector3(scaleUnit, scaleUnit, scaleUnit);
+
+                Mesh mesh = PrimativeMeshes.Get(PrimitiveType.Sphere);
+
+                if (!TrySliceMesh(clones, mesh))
+                {
+                    GetCollider(clones.localCloneObject, ref clones.localClone, out SphereCollider localClone);
+                    GetCollider(clones.connectedCloneObject, ref clones.connectedClone, out SphereCollider connectedClone);
+
+                    localClone.center = connectedClone.center = Vector3.zero;
+                    localClone.radius = connectedClone.radius = 0.5f;
+                }
+            }
+            else if (type == typeof(CapsuleCollider))
+            {
+                CapsuleCollider originalClone = (CapsuleCollider)clones.original;
+
+                local.position = connected.position = originalClone.transform.TransformPoint(originalClone.center);
+
+                if (originalClone.direction == 1)
+                {
+                    local.rotation = connected.rotation = originalClone.transform.rotation;
+
+                    Vector3 scale = originalClone.transform.TransformVector(new Vector3(originalClone.radius, originalClone.height * 0.5f, originalClone.radius));
+                    float scaleUnit = Mathf.Max(scale.x, scale.z);
+                    local.localScale = connected.localScale = new Vector3(Mathf.Min(scale.x, scaleUnit * 0.5f), scaleUnit, scaleUnit);
+                }
+                else if (originalClone.direction == 0)
+                {
+                    local.rotation = connected.rotation = originalClone.transform.rotation;
+
+                    Vector3 scale = originalClone.transform.TransformVector(new Vector3(originalClone.height * 0.5f, originalClone.radius, originalClone.radius));
+                    float scaleUnit = Mathf.Max(scale.y, scale.z);
+                    local.localScale = connected.localScale = new Vector3(scaleUnit, Mathf.Min(scale.y, scaleUnit * 0.5f), scaleUnit);
+                }
+                else
+                {
+                    local.rotation = connected.rotation = originalClone.transform.rotation;
+
+                    Vector3 scale = originalClone.transform.TransformVector(new Vector3(originalClone.radius, originalClone.radius, originalClone.height * 0.5f));
+                    float scaleUnit = Mathf.Max(scale.x, scale.y);
+                    local.localScale = connected.localScale = new Vector3(scaleUnit, scaleUnit, Mathf.Min(scale.z, scaleUnit * 0.5f));
+                }
+
+                Mesh mesh = PrimativeMeshes.Get(PrimitiveType.Capsule);
+
+                if (!TrySliceMesh(clones, mesh))
+                {
+                    GetCollider(clones.localCloneObject, ref clones.localClone, out CapsuleCollider localClone);
+                    GetCollider(clones.connectedCloneObject, ref clones.connectedClone, out CapsuleCollider connectedClone);
+
+                    localClone.direction = connectedClone.direction = 0;
+                    localClone.center = connectedClone.center = Vector3.zero;
+                    localClone.radius = connectedClone.radius = 0.5f;
+                    localClone.height = connectedClone.height = 2f;
+                }
+            }
+            else if (type == typeof(TerrainCollider))
+            {
+                TerrainCollider originalClone = (TerrainCollider)clones.original;
+                //cloneTerain.terrainData = originalTerrain.terrainData;
+
+                // TODO: Don't know what to do with a terrain collider
+
+                return;
+            }
+            else return;
+
+            // Copy original
+            clones.localClone.contactOffset = clones.connectedClone.contactOffset = clones.original.contactOffset;
+            clones.localClone.isTrigger = clones.connectedClone.isTrigger = clones.original.isTrigger;
+            clones.localClone.sharedMaterial = clones.connectedClone.sharedMaterial = clones.original.sharedMaterial;
+
+            clones.localCloneObject.layer = clones.connectedCloneObject.layer = clones.original.gameObject.layer;
+
+            // Add to cloning
+            if (clones.original && clones.localClone)
+            {
+                PortalCloning.AddClone(clones.original, clones.localClone);
+                PortalCloning.AddClone(clones.original.transform, clones.localClone.transform);
+            }
+
+            if (clones.original && clones.connectedClone)
+            {
+                Portal[] portalAsArray = new Portal[] { clones.portal };
+                PortalCloning.AddClone(clones.original, clones.connectedClone, portalAsArray);
+                PortalCloning.AddClone(clones.original.transform, clones.connectedClone.transform, portalAsArray);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to slice a mesh for a collider clone.
+        /// </summary>
+        /// <param name="colliderClones">The collider clone info.</param>
+        /// <param name="mesh">The mesh to slice.</param>
+        /// <returns>True if slicing was successful, false otherwise.</returns>
+        protected bool TrySliceMesh(ColliderClones colliderClones, Mesh mesh)
+        {
+            if (TryGetCuttingPlanes(colliderClones.localCloneObject.transform, out Plane[] cuttingPlanes, out int planeCount))
+            {
+                Vector3[] vertices = mesh.vertices;
+                Vector3[] normals = mesh.normals;
+                //Vector4[] tangents = mesh.tangents;
+
+                GetSubMeshes(mesh, out int[][] subMeshes, out int subMeshCount);
+
+                if (MeshSlicing.Slice(vertices, null, normals, null, subMeshes, vertices.Length, subMeshCount, null, cuttingPlanes, planeCount, 0, new Rect(0f, 0f, 1f, 1f), out Mesh newMesh, out bool hasInside))
+                {
+                    GetCollider(colliderClones.localCloneObject, ref colliderClones.localClone, out MeshCollider localClone);
+                    GetCollider(colliderClones.connectedCloneObject, ref colliderClones.connectedClone, out MeshCollider connectedClone);
+
+                    localClone.sharedMesh = connectedClone.sharedMesh = newMesh;
+                    localClone.convex = connectedClone.convex = true;
+
+                    return true;
+                }
+
+                // Not creating a mesh is an option if it was all sliced
+                if (!hasInside)
+                {
+                    GetCollider(colliderClones.localCloneObject, ref colliderClones.localClone, out MeshCollider localClone);
+                    GetCollider(colliderClones.connectedCloneObject, ref colliderClones.connectedClone, out MeshCollider connectedClone);
+
+                    if (localClone) localClone.enabled = false;
+                    if (connectedClone) connectedClone.enabled = false;
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
+        }
+
+        protected Plane[] _planes;
+        
+        /// <summary>
+        /// Gets the cutting planes for slicing a mesh.
+        /// </summary>
+        /// <param name="space">The transform space for the planes.</param>
+        /// <param name="cuttingPlanes">Output parameter for the cutting planes.</param>
+        /// <param name="planeCount">Output parameter for the number of planes.</param>
+        /// <returns>True if planes were obtained, false otherwise.</returns>
+        protected bool TryGetCuttingPlanes(Transform space, out Plane[] cuttingPlanes, out int planeCount)
+        {
+            if (_planes == null || _planes.Length < 1)//_sliceNormals.Count)
+                _planes = new Plane[1];//_sliceNormals.Count];
+
+            cuttingPlanes = _planes;
+
+            Transform plane;
+            /*for (int i = 0; i < _sliceNormals.Count; i++)
+            {
+                plane = _sliceNormals[i];
+
+                if (plane)
+                {
+                    if (space)
+                        cuttingPlanes[i] = new Plane(space.InverseTransformDirection(plane.forward), space.InverseTransformPoint(plane.position));
+                    else
+                        cuttingPlanes[i] = new Plane(plane.forward, plane.position);
+                }
+            }
+            
+            planeCount = _sliceNormals.Count;
+            return planeCount != 0;
+            */
+
+            plane = portalLayer && portalLayer.portalTransition ? portalLayer.portalTransition.transitionPlane : null; 
+
+            if (plane)
+            {
+                if (space)
+                    cuttingPlanes[0] = new Plane(space.InverseTransformDirection(plane.forward), space.InverseTransformPoint(plane.position));
+                else
+                    cuttingPlanes[0] = new Plane(plane.forward, plane.position);
+
+                planeCount = 1;
+                return true;
+            }
+
+            planeCount = 0;
+            return planeCount != 0;
+        }
+
+        protected int[][] _indices;
+        
+        /// <summary>
+        /// Gets the submeshes from a mesh.
+        /// </summary>
+        /// <param name="sharedMesh">The mesh to get submeshes from.</param>
+        /// <param name="subMeshes">Output parameter for the submeshes.</param>
+        /// <param name="subMeshCount">Output parameter for the number of submeshes.</param>
+        protected void GetSubMeshes(Mesh sharedMesh, out int[][] subMeshes, out int subMeshCount)
+        {
+            if (_indices == null || _planes.Length < sharedMesh.subMeshCount)
+                _indices = new int[sharedMesh.subMeshCount][];
+
+            subMeshes = _indices;
+
+            for (int i = 0; i < sharedMesh.subMeshCount; i++)
+                _indices[i] = sharedMesh.GetTriangles(i);
+
+            subMeshCount = sharedMesh.subMeshCount;
+        }
+
+        /// <summary>
+        /// Gets or creates a collider of the specified type on a GameObject.
+        /// </summary>
+        /// <typeparam name="TCollider">The type of collider to get or create.</typeparam>
+        /// <param name="cloneObject">The GameObject to add the collider to.</param>
+        /// <param name="clone">Reference to the current collider (if any).</param>
+        /// <param name="cloneAsT">Output parameter for the typed collider.</param>
+        protected void GetCollider<TCollider>(GameObject cloneObject, ref Collider clone, out TCollider cloneAsT) where TCollider : Collider
+        {
+            if (clone)
+            {
+                if (clone is TCollider)
+                {
+                    cloneAsT = (TCollider)clone;
+                    clone.enabled = true;
+                    return;
+                }
+                else
+                    clone.enabled = false;
+            }
+
+            if (cloneObject.TryGetComponent(out cloneAsT))
+            {
+                clone = cloneAsT;
+                clone.enabled = true;
+
+                // Incase this collider has been cheekily added
+                _ignoredColliders.Add(clone);
+            }
+            else
+            {
+                clone = cloneAsT = cloneObject.AddComponent<TCollider>();
+                _ignoredColliders.Add(clone);
+            }
+        }
+
+        protected virtual void OnTriggerEnter(Collider other)
+        {
+            if (!_ignoredColliders.Contains(other))
+                triggerHandler.Add(other, other);
+        }
+
+        protected virtual void OnTriggerStay(Collider other)
+        {
+            if (!triggerHandler.HasCollider(other) && !_ignoredColliders.Contains(other))
+                triggerHandler.Add(other, other);
+
+            _stayedColliders.Add(other);
+        }
+
+        protected virtual void OnTriggerExit(Collider other)
+        {
+            triggerHandler.RemoveCollider(other);
+        }
+
+        private IEnumerator WaitFixedUpdateLoop()
+        {
+            while (true)
+            {
+                yield return _WaitForFixedUpdate;
+
+                triggerHandler.UpdateColliders(_stayedColliders);
+                _stayedColliders.Clear();
+            }
+        }
+
+        private void OnTriggerEnterContainer(Collider collider)
+        {
+            if (staticCollidersOnly && !collider.gameObject.isStatic)
+                return;
+
+            if (!_colliderClones.ContainsKey(collider))
+            {
+                ColliderClones clones = _colliderPool.Get();
+
+                if (clones.localCloneObject) clones.connectedCloneObject.name = $"{clones.localCloneObject.name} (Static Collider Clone)";
+                if (clones.connectedCloneObject) clones.connectedCloneObject.name = $"{clones.connectedCloneObject.name} (Static Collider Clone)";
+
+                _colliderClones[collider] = clones;
+
+                clones.original = collider;
+
+                CreateColliderClones(clones);
+                UpdateColliderClones(clones);
+            }
+        }
+
+        private void OnTriggerExitContainer(Collider collider)
+        {
+            if (_colliderClones.TryGetValue(collider, out ColliderClones trackedCollider))
+            {
+                RemoveTrackedCollider(trackedCollider);
+                _colliderClones.Remove(collider);
+            }
+        }
+
+        protected virtual void RemoveTrackedCollider(ColliderClones trackedCollider)
+        {
+            if (trackedCollider.localCloneObject) trackedCollider.localCloneObject.SetActive(false);
+            if (trackedCollider.connectedCloneObject) trackedCollider.connectedCloneObject.SetActive(false);
+
+            _colliderPool.Release(trackedCollider);
+        }
+    }
+}
