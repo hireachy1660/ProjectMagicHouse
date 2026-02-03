@@ -67,3 +67,4 @@ public class ModernPortal : MonoBehaviour
         pCam.projectionMatrix = Camera.main.GetStereoProjectionMatrix(eye);
     }
 }
+

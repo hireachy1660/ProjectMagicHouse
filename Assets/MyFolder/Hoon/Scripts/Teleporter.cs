@@ -9,24 +9,24 @@ public class Teleporter : MonoBehaviour
     public Renderer playerRenderer;
 
     [Header("Settings")]
-    public float exitOffset = -0.01f;
-    public float cooldownTime = 0.5f; // [추가] 텔레포트 후 재발동 방지 시간
+    public float exitOffset = 0.05f; // 약간의 여유를 두어 끼임 방지
+    public float cooldownTime = 0.5f;
 
     private bool playerIsOverlapping = false;
     private bool isLocked = false;
-    private bool inCooldown = false; // [추가] 쿨타임 체크
+    private bool inCooldown = false;
     private float lastLocalZ = 0f;
 
     void Update()
     {
-        // 쿨타임 중이면 로직 건너뜀
         if (playerIsOverlapping && !inCooldown)
         {
             Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
 
             if (isLocked)
             {
-                if (Mathf.Abs(localCamPos.z) > exitOffset * 0.8f)
+                // 락 해제 로직 (출구에서 충분히 떨어졌을 때)
+                if (Mathf.Abs(localCamPos.z) > 0.1f)
                 {
                     isLocked = false;
                     Debug.Log($"<color=cyan><b>[Lock 해제]</b> {gameObject.name}</color>");
@@ -35,7 +35,11 @@ public class Teleporter : MonoBehaviour
 
             if (!isLocked)
             {
-                if (Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z) && Mathf.Abs(lastLocalZ) < 0.5f)
+                // 면 통과 감지 또는 너무 가까워졌을 때 강제 전송(안전장치)
+                bool crossed = Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z);
+                bool forced = localCamPos.z < -0.02f; // 살짝 뒤로 넘어갔을 때
+
+                if ((crossed || forced) && Mathf.Abs(lastLocalZ) < 0.5f)
                 {
                     ExecuteTeleport();
                     return;
@@ -51,32 +55,43 @@ public class Teleporter : MonoBehaviour
     {
         if (receiver == null || playerRig == null) return;
 
-        Vector3 relativePos = transform.InverseTransformPoint(playerRig.position);
-        Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * playerRig.rotation;
+        // 1. 회전 변환 계산 (핵심)
+        // 입구와 출구는 서로 마주보고 있으므로 180도 회전을 더해줘야 정면이 맞습니다.
+        Quaternion relativeRot = receiver.rotation * Quaternion.Inverse(transform.rotation);
 
+        // 2. 위치 변환
+        Vector3 relativePos = transform.InverseTransformPoint(playerRig.position);
+        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
+
+        // 3. 회전 적용 (몸 전체를 돌려줌)
+        playerRig.rotation = relativeRot * playerRig.rotation;
+
+        // 4. 속도(Velocity) 변환 (Rigidbody가 있을 경우 조작감 유지의 핵심)
+        Rigidbody rb = playerRig.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = relativeRot * rb.linearVelocity;
+        }
+
+        // 5. 상대방 포탈 상태 설정
         var recScript = receiver.GetComponent<Teleporter>();
         if (recScript != null)
         {
             recScript.playerIsOverlapping = true;
             recScript.isLocked = true;
             recScript.lastLocalZ = exitOffset;
-            recScript.StartCooldown(); // [추가] 도착지 포탈에 쿨타임 부여
+            recScript.StartCooldown();
         }
-
-        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
-        playerRig.rotation = receiver.rotation * relativeRot;
 
         playerIsOverlapping = false;
 
         if (playerRenderer != null)
             playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
+
+        Debug.Log($"<color=lime><b>[전송 완료]</b> {gameObject.name} -> {receiver.name}</color>");
     }
 
-    public void StartCooldown()
-    {
-        StartCoroutine(CooldownRoutine());
-    }
-
+    public void StartCooldown() => StartCoroutine(CooldownRoutine());
     IEnumerator CooldownRoutine()
     {
         inCooldown = true;
@@ -96,21 +111,7 @@ public class Teleporter : MonoBehaviour
         if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
         {
             playerIsOverlapping = true;
-            Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
-
-            // [개선] 진입 시에는 무조건 락을 걸지 않습니다. 
-            // 락은 오직 '반대편에서 넘어왔을 때'만 걸려 있어야 합니다.
-            if (!isLocked)
-            {
-                isLocked = false;
-                Debug.Log($"<color=white><b>[진입 성공]</b> {gameObject.name}: 전송 대기 중 (Z:{localCamPos.z:F3})</color>");
-            }
-            else
-            {
-                Debug.Log($"<color=orange><b>[진입 유지]</b> {gameObject.name}: 이미 Lock 상태 (순간이동 도착 직후)</color>");
-            }
-
-            lastLocalZ = localCamPos.z;
+            lastLocalZ = transform.InverseTransformPoint(mainCamera.position).z;
         }
     }
 
@@ -120,8 +121,6 @@ public class Teleporter : MonoBehaviour
         {
             playerIsOverlapping = false;
             isLocked = false;
-            Debug.Log($"<color=white><b>[퇴장]</b> {gameObject.name}: 상태 초기화</color>");
-
             if (playerRenderer != null)
                 playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
         }
