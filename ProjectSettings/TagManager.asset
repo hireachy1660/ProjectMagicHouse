@@ -21,8 +21,8 @@ TagManager:
   - Portal
   - Target Camera
   - Overlay UI
-  - 
-  - 
+  - Camera_Mask
+  - Camera_Body_Local
   - 
   - 
   - 
