@@ -40530,11 +40530,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7565711495288561683, guid: 6b3eb080587793b499aa353076954ec9, type: 3}
       propertyPath: _itemID
-      value: 202
+      value: 301
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565711495288561683, guid: 6b3eb080587793b499aa353076954ec9, type: 3}
+      propertyPath: ItemType
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8424526586620733090, guid: 6b3eb080587793b499aa353076954ec9, type: 3}
       propertyPath: m_Name
-      value: '[BuildingBlock] Cube_Evidence_2'
+      value: '[BuildingBlock] OfiicePiture'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
