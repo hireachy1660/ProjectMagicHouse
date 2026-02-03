@@ -6,17 +6,44 @@ public class ModernPortal : MonoBehaviour
     public ModernPortal targetPortal;
     public Transform playerRig;
     public Camera portalCamL, portalCamR;
+    public MeshRenderer portalDisplay; // [중요] 포탈 화면이 나오는 Quad/Plane을 인스펙터에서 꼭 연결하세요
     public float activationDistance = 10f;
 
     private Transform mainCamTransform;
+    private RenderTexture dynamicRTL, dynamicRTR;
+
+    void Awake()
+    {
+        // 실시간 렌더 텍스처 생성
+        dynamicRTL = new RenderTexture(1024, 1024, 24);
+        dynamicRTR = new RenderTexture(1024, 1024, 24);
+
+        if (portalCamL) portalCamL.targetTexture = dynamicRTL;
+        if (portalCamR) portalCamR.targetTexture = dynamicRTR;
+    }
 
     void Start()
     {
         mainCamTransform = Camera.main.transform;
-
-        // 초기 설정: 카메라들은 꺼두기
         if (portalCamL) portalCamL.enabled = false;
         if (portalCamR) portalCamR.enabled = false;
+    }
+
+    // [이 함수가 없어서 에러가 났던 것입니다!]
+    public void Link(ModernPortal target, Transform rig)
+    {
+        targetPortal = target;
+        playerRig = rig;
+
+        if (portalDisplay != null)
+        {
+            Material portalMat = portalDisplay.material;
+            // 쉐이더의 텍스처 변수 이름이 다를 경우 아래 이름을 수정하세요
+            portalMat.SetTexture("Left Eye Texture", target.dynamicRTL);
+            portalMat.SetTexture("Right Eye Texture", target.dynamicRTR);
+        }
+
+        Debug.Log($"<color=orange><b>[Link]</b> {gameObject.name}가 {target.name}과 연결되었습니다.</color>");
     }
 
     void LateUpdate()
@@ -29,7 +56,6 @@ public class ModernPortal : MonoBehaviour
         {
             portalCamL.enabled = true;
             portalCamR.enabled = true;
-
             SyncEyeCamera(portalCamL, Camera.StereoscopicEye.Left);
             SyncEyeCamera(portalCamR, Camera.StereoscopicEye.Right);
         }
@@ -42,29 +68,20 @@ public class ModernPortal : MonoBehaviour
 
     void SyncEyeCamera(Camera pCam, Camera.StereoscopicEye eye)
     {
-        if (pCam == null) return;
+        if (pCam == null || targetPortal == null) return;
 
-        // 1. 실제 사용자의 눈 위치(월드 좌표) 가져오기
-        // GetStereoViewMatrix의 역행렬 4열이 정확한 눈의 월드 위치입니다.
         Matrix4x4 eyeMatrix = Camera.main.GetStereoViewMatrix(eye).inverse;
         Vector3 eyeWorldPos = eyeMatrix.GetColumn(3);
-        Quaternion eyeWorldRot = mainCamTransform.rotation; // VR 시선 회전
+        Quaternion eyeWorldRot = mainCamTransform.rotation;
 
-        // 2. 입구 포탈(A) 기준 플레이어 눈의 상대적 위치/회전 계산
         Vector3 relativePos = transform.InverseTransformPoint(eyeWorldPos);
         Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * eyeWorldRot;
 
-        // 3. 출구 포탈(B)에서의 카메라 배치
-        // 상대 좌표를 타겟 포탈의 월드 좌표로 변환
         Vector3 targetPos = targetPortal.transform.TransformPoint(relativePos);
         Quaternion targetRot = targetPortal.transform.rotation * relativeRot;
 
-        // 4. 최종 적용
         pCam.transform.position = targetPos;
         pCam.transform.rotation = targetRot;
-
-        // 5. VR 투영 행렬 동기화 (시차 유지의 핵심)
         pCam.projectionMatrix = Camera.main.GetStereoProjectionMatrix(eye);
     }
 }
-
