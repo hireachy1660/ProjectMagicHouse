@@ -111,7 +111,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 2, z: 1}
+  m_Size: {x: 1, y: 2, z: 0.2}
   m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!114 &2981696325804874490
 MonoBehaviour:
@@ -128,8 +128,8 @@ MonoBehaviour:
   receiver: {fileID: 0}
   playerRig: {fileID: 0}
   mainCamera: {fileID: 0}
-  playerRenderer: {fileID: 0}
   exitOffset: 0
+  threshold: 0.15
   cooldownTime: 0.5
 --- !u!1 &4367728557402223963
 GameObject:
@@ -239,7 +239,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: bc5ba276b8d2b1b40aa8059e7b676517, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
@@ -376,7 +376,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: b33dbdc777b50004882c5b7f2880b464, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
@@ -490,7 +490,7 @@ MonoBehaviour:
   portalCamL: {fileID: 5187620823337045317}
   portalCamR: {fileID: 1239751918419112164}
   portalDisplay: {fileID: 6088456615342591933}
-  activationDistance: 10
+  activationDistance: 50
 --- !u!1 &9136880755444511849
 GameObject:
   m_ObjectHideFlags: 0
