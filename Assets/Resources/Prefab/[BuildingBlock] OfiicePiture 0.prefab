@@ -186,7 +186,7 @@ GameObject:
   - component: {fileID: 3466689234453047269}
   - component: {fileID: -1034683122382025233}
   m_Layer: 0
-  m_Name: '[BuildingBlock] OfiicePiture 1'
+  m_Name: '[BuildingBlock] OfiicePiture 0'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -405,7 +405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyObject
-  _itemID: 301
+  _itemID: 300
   ItemType: 2
   rigidbody: {fileID: 6185267588032285079}
   collider: {fileID: 4868183532792117734}

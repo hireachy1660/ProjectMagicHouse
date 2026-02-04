@@ -5,12 +5,14 @@ public class RoleGrabSync : GrabSync
     [Header("역할 데이터 시스템")]
     [SerializeField]
     private GameStatusSO gameStatus; // 인스펙터에서 연결할 SO
+    [SerializeField]
+    private bool IsDebugMode;
 
     protected override void Start()
     {
         // 1. 부모의 널 체크 실행
         base.Start();
-
+        if (!IsDebugMode) return;
         // 2. 즉시 권한 확인 후 상호작용 잠금 결정
         ApplyRoleAuthorityLocally();
     }
