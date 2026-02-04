@@ -24,6 +24,8 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public TMP_InputField roomNameInputField;   // 방 이름 입력칸
     public Transform roomListContent;           // scroll view의 방 리스트
     public GameObject roomItemPrefab;           // 방 버튼 프리팹
+
+    private bool isJoiningRoom = false;
     private void Start()
     {
         // 게임이 시작되자마자 자동로그인을 시도한다.
@@ -194,16 +196,49 @@ public class LoginManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
     // 방 목록이 변할 때 마다 실행되는 포톤 콜백
-    
+
+    //public void JoinRoom(string roomName)
+    //{
+    //    // 로드중 한번 더 눌러 에러가 뜨느 것을 방지
+    //    if (PhotonNetwork.LevelLoadingProgress > 0 || PhotonNetwork.InRoom) return;
+
+    //    // 가짜 방 이름을 가지고 실제로 방을 만들면서 들어감
+    //    PhotonNetwork.JoinOrCreateRoom(roomName, new RoomOptions { MaxPlayers = 2 }, TypedLobby.Default);
+    //}
+
     public void JoinRoom(string roomName)
     {
-        PhotonNetwork.JoinRoom(roomName);
+        // [핵심] 이미 입장 프로세스가 진행 중이면 뒤에 오는 클릭은 모두 무시
+        if (isJoiningRoom) return;
+
+        // 현재 포톤 상태가 로비가 아니면 실행하지 않음
+        if (PhotonNetwork.NetworkClientState != ClientState.JoinedLobby)
+        {
+            Debug.LogWarning($"[JoinRoom] 로비 접속 상태가 아닙니다. 현재 상태: {PhotonNetwork.NetworkClientState}");
+            return;
+        }
+
+        isJoiningRoom = true; // 잠금 시작
+        UpdateStatus($"{roomName} 입장 시도 중...");
+
+        RoomOptions roomOptions = new RoomOptions { MaxPlayers = 2 };
+        PhotonNetwork.JoinOrCreateRoom(roomName, roomOptions, TypedLobby.Default);
     }
 
+    // 입장 실패 시에도 잠금을 풀어줘야 다시 시도 가능함
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        isJoiningRoom = false; // 잠금 해제
+        UpdateStatus("입장 실패: " + message);
+    }
+
+    // 입장 성공 시 잠금 해제
     public override void OnJoinedRoom()
     {
         Debug.Log($"방 '{PhotonNetwork.CurrentRoom.Name}'입장 완료! 아바타를 생성합니다.");
-        
+
+        isJoiningRoom = false; // 잠금 해제
+
         // Resources 폴더에 있는 프리팹 이름을 "MyAvatar"라고 가정했을 때:
         // 생성 위치는 Vector3.zero, 회전은 기본값
         //PhotonNetwork.Instantiate("NetworkPrefabs/MyAvatar", Vector3.zero, Quaternion.identity);
@@ -240,8 +275,13 @@ public class LoginManager : MonoBehaviourPunCallbacks
             {
                 // RoomItem 스크립트에 텍스트 변수가 public으로 되어 있어야 합니다.
                 // 만약 아래 변수명이 다르면 본인의 RoomItem 변수명으로 고치세요.
-                script.roomInfoText.text = "Test Room " + i;
+                string fakeName = "Test Room " + i;
+                script.roomInfoText.text = fakeName;
+
+                // [수정 핵심] 가짜 방이라도 manager 참조를 넣어줘야 onClickRoom()에서 null이 안 납니다.
+                script.SetManagerOnly(this, fakeName);
             }
         }
     }
+
 }

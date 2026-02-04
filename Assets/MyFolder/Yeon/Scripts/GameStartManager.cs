@@ -6,6 +6,9 @@ using Photon.Realtime;  // Hashtable 사용
 
 public class GameStartManager : MonoBehaviourPunCallbacks
 {
+    [SerializeField]
+    private GameStatusSO gameStatus;
+
     public Button startButton;  // 시작 버튼
 
     private void Start()
@@ -67,6 +70,6 @@ public class GameStartManager : MonoBehaviourPunCallbacks
     {
         // 모든 준비가 끝났을 때만 씬 이동
         Debug.Log("모두 준비 완료! 게임씬으로 이동한다.");
-        PhotonNetwork.LoadLevel("GameScene");
+        PhotonNetwork.LoadLevel(gameStatus.gameScene);
     }
 }

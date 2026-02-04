@@ -22502,6 +22502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f1bd99489c94ce4082cbef8d845fea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameStartManager
+  gameStatus: {fileID: 0}
   startButton: {fileID: 0}
 --- !u!114 &1647350243
 MonoBehaviour:
@@ -22510,7 +22511,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1647350241}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e361023aec57dd947a6612044dfa20b0, type: 3}
   m_Name: 

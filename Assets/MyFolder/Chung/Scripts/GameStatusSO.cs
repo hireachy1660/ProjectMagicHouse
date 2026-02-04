@@ -15,6 +15,11 @@ public class GameStatusSO : ScriptableObject
     public Action<GameState> OnStateChanged;
     public Action OnAllPlayersReady; // 모든 인원이 MyRole을 설정했을 때
 
+    [Header("Scenes Configuration")]
+    public string lobbyScene = "LobbyScene";
+    public string gameScene = "GameScene";
+    public string endingScene = "EndingScene";
+
     public void ChangeState(GameState newState)
     {
         currentState = newState;

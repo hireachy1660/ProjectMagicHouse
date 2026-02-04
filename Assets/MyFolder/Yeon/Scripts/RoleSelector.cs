@@ -4,6 +4,9 @@ using ExitGames.Client.Photon;
 
 public class RoleSelector : MonoBehaviourPunCallbacks
 {
+    [SerializeField]
+    private GameStatusSO gameStatus;
+
     // 버튼에 이 함수 연결 ( 인자 값으로 프리팹 이름을 직접 쓴다 )
     public void SelectRoleAndStart(string characterName)
     {
@@ -18,6 +21,8 @@ public class RoleSelector : MonoBehaviourPunCallbacks
         Hashtable props = new Hashtable { { "MyRole", characterName } };
         // 내 가방에 데이터를 넣는다.
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+
+        gameStatus.myRole = characterName;
 
         Debug.Log(characterName + "정보를 가방에 넣었습니다!");
 
