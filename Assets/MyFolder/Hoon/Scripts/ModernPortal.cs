@@ -39,8 +39,8 @@ public class ModernPortal : MonoBehaviour
         {
             Material portalMat = portalDisplay.material;
             // 쉐이더의 텍스처 변수 이름이 다를 경우 아래 이름을 수정하세요
-            portalMat.SetTexture("Left Eye Texture", target.dynamicRTL);
-            portalMat.SetTexture("Right Eye Texture", target.dynamicRTR);
+            portalMat.SetTexture("_LeftTex", target.dynamicRTL);
+            portalMat.SetTexture("_RightTex", target.dynamicRTR);
         }
 
         Debug.Log($"<color=orange><b>[Link]</b> {gameObject.name}가 {target.name}과 연결되었습니다.</color>");
