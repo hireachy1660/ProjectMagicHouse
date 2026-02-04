@@ -184,6 +184,7 @@ GameObject:
   - component: {fileID: 9212500602956694097}
   - component: {fileID: 4933441543566685446}
   - component: {fileID: 3466689234453047269}
+  - component: {fileID: -1034683122382025233}
   m_Layer: 0
   m_Name: '[BuildingBlock] OfiicePiture 1'
   m_TagString: Untagged
@@ -404,7 +405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 006af09ad68fb9243a4ab472e8521316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyObject
-  _itemID: 302
+  _itemID: 301
   ItemType: 2
   rigidbody: {fileID: 6185267588032285079}
   collider: {fileID: 4868183532792117734}
@@ -460,8 +461,8 @@ MonoBehaviour:
   _whenSelect:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9212500602956694097}
-        m_TargetAssemblyTypeName: GrabSync, Assembly-CSharp
+      - m_Target: {fileID: -1034683122382025233}
+        m_TargetAssemblyTypeName: RoleGrabSync, Assembly-CSharp
         m_MethodName: OnGrabEvent
         m_Mode: 1
         m_Arguments:
@@ -475,8 +476,8 @@ MonoBehaviour:
   _whenUnselect:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9212500602956694097}
-        m_TargetAssemblyTypeName: GrabSync, Assembly-CSharp
+      - m_Target: {fileID: -1034683122382025233}
+        m_TargetAssemblyTypeName: RoleGrabSync, Assembly-CSharp
         m_MethodName: DisGrabEvent
         m_Mode: 1
         m_Arguments:
@@ -499,3 +500,19 @@ MonoBehaviour:
   _whenSelectingInteractorViewRemoved:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &-1034683122382025233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7357533261991924507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca500365f50a42742a142f583abdbec1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoleGrabSync
+  rb: {fileID: 6185267588032285079}
+  interactable: {fileID: 2156709485805285500}
+  gameStatus: {fileID: 11400000, guid: 9e60acdf9027bff47bd1c1f835fa0b65, type: 2}
+  IsDebugMode: 1
