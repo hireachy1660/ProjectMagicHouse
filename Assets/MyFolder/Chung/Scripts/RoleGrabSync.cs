@@ -12,7 +12,7 @@ public class RoleGrabSync : GrabSync
     {
         // 1. 부모의 널 체크 실행
         base.Start();
-        if (!IsDebugMode) return;
+        if (IsDebugMode) return;
         // 2. 즉시 권한 확인 후 상호작용 잠금 결정
         ApplyRoleAuthorityLocally();
     }
