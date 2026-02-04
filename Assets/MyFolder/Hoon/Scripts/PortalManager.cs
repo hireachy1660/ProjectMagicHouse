@@ -20,7 +20,10 @@ public class PortalManager : MonoBehaviour, IReceiver
     private GameObject activePortalB;
 
     [Header("Test Settings")]
-    public string testPhotoID = "301";
+    public string testPhotoID = "300";
+
+    [Header("Door Visuals")]
+    public GameObject doorVisual; // 거실에 원래 있던 문 오브젝트를 인스펙터에서 연결
 
     [ContextMenu("Debug Spawn Portal")]
     public void TestSpawn()
@@ -54,6 +57,12 @@ public class PortalManager : MonoBehaviour, IReceiver
         // 기존 포탈 정리
         if (activePortalA) Destroy(activePortalA);
         if (activePortalB) Destroy(activePortalB);
+
+        // [로직 추가] 포탈이 생성될 때 원래 있던 문을 비활성화
+        if (doorVisual != null)
+        {
+            doorVisual.SetActive(false);
+        }
 
         // 1. 입구 포탈(A) 소환
         activePortalA = Instantiate(portalPrefab, entranceSpawnPoint.position, entranceSpawnPoint.rotation);
