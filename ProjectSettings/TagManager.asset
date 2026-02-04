@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Bullet
   - Target Camera
+  - Pathfinder
+  - Inquisitor
   layers:
   - Default
   - TransparentFX
@@ -23,11 +25,11 @@ TagManager:
   - Overlay UI
   - Camera_Mask
   - Camera_Body_Local
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Showcase_Mask
+  - Showcase_Reveal
+  - Showcase_Hide
+  - Camera_Reveal
+  - EvidenceTrigger
   - 
   - 
   - 
