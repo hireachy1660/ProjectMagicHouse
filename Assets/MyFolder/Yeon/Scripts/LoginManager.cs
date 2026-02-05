@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-
+// 서버 접속과 방 목록 담당
 public class LoginManager : MonoBehaviourPunCallbacks
 {
     [Header("UI Panels")]
@@ -55,33 +55,50 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // InputField에서 사용자 ID를 가져온다.
         string userCustomID = idInputField.text;
 
-        // 아이디 있는지 확인
-        if(string.IsNullOrEmpty(userCustomID))
+        //아이디 있는지 확인
+        if (string.IsNullOrEmpty(userCustomID))
         {
             Debug.LogWarning("아이디가 비어있습니다!");
             return;
         }
 
         // 이미 완전히 연결되어 로비에 있다면 바로 패널 교체
-        if(PhotonNetwork.InLobby)
+        if (PhotonNetwork.InLobby)
         {
             UpdateStatus("이미 로비에 접속되어 있습니다.");
             loginPanel.SetActive(false);
             lobbyPanel.SetActive(true);
             return;
         }
-
-        // PlayFab 로그인 시작
-        var request = new LoginWithCustomIDRequest
+        // 서버 연결은 되어있지만 로비만 나간 상태 (LeaveLobby)
+        else if (PhotonNetwork.IsConnectedAndReady)
         {
-            // 사용자 아이디를 PlayFab CustomId로 사용
-            CustomId = userCustomID,   // 기기마다 가진 고유 번호
-            CreateAccount = true    // 계정이 없으면 새로 만들어라
-        };
+            UpdateStatus("로비에 다시 장합니다...");
+            PhotonNetwork.JoinLobby();
+        }
+        // 아예 처음 접속이라면 (서버 연결 끊고 재접속)
+        else
+        {
+            var request = new LoginWithCustomIDRequest
+            {
+                CustomId = userCustomID,
+                CreateAccount = true
+            };
+            PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure);
+        }
 
-        Debug.Log($"{userCustomID} 아이디로 PlayFab 로그인을 시도합니다.");
+        //위에 else if 안할 시 주석 해제
+        //    // PlayFab 로그인 시작
+        //    var request = new LoginWithCustomIDRequest
+        //    {
+        //        // 사용자 아이디를 PlayFab CustomId로 사용
+        //        CustomId = userCustomID,   // 기기마다 가진 고유 번호
+        //        CreateAccount = true    // 계정이 없으면 새로 만들어라
+        //    };
 
-        PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure);
+        //Debug.Log($"{userCustomID} 아이디로 PlayFab 로그인을 시도합니다.");
+
+        //PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure);
     }
 
     // ----- PlalyFab 연결 관련 ------
@@ -216,7 +233,32 @@ public class LoginManager : MonoBehaviourPunCallbacks
     // 접속 실패 시 호출되는 콜백
     public override void OnDisconnected(DisconnectCause cause)
     {
-        Debug.LogError($"포톤 연결 실패: {cause.ToString()}");
+        // 종료 버튼(OnClickExitButton) 눌렀을 경우
+        if (cause == DisconnectCause.DisconnectByClientLogic)
+        {
+            Debug.Log("사용자 요청에 의해 서버 연결이 안전하게 종료되었습니다.");
+            QuitGame();
+            return;
+        }
+
+        Debug.LogError($"연결 종료 원인: {cause}");
+
+        // 패널들이 파괴되지 않았고 살아있을 때만 SetActive를 실행한다.
+        if (loginPanel != null)
+        {
+            loginPanel.SetActive(true);
+        }
+
+        if (lobbyPanel != null)
+        {
+            lobbyPanel.SetActive(false);
+        }
+        if(roleSelectPanel != null)
+        {
+            roleSelectPanel.SetActive(false);
+        }
+
+        UpdateStatus("연결이 끊겼습니다. 다시 로그인해주세요.");
     }
 
     // [[[ 테스트 후 지우기 ]]] - 가짜방 만들기
@@ -243,5 +285,88 @@ public class LoginManager : MonoBehaviourPunCallbacks
                 script.roomInfoText.text = "Test Room " + i;
             }
         }
+    }
+
+    // ----- 뒤로가기, 새로고침 버튼 관련 -----
+
+    // [뒤로가기 버튼] 방 만들기 화면 -> 로그인 화면으로 
+    // 종류 1번째 - 닉네임 증발
+    //public void BackToLogin()
+    //{
+    //    // 서버 연결 끊기 - 닉네임 정보 증발
+    //    if (PhotonNetwork.IsConnected)
+    //    {
+    //        // 닉네임 다시 설정해야하는 코드
+    //        PhotonNetwork.Disconnect();
+
+    //    }
+    //    // 패널 전환
+    //    lobbyPanel.SetActive(false);
+    //    loginPanel.SetActive(true);
+    //}
+
+    // 종류 2번째 - 로그인 정보 유지
+    public void BackToLogin()
+    {
+        //로비를 나갑니다.( 방목록 업데이트 중단 )
+        if (PhotonNetwork.InLobby)
+        {
+            PhotonNetwork.LeaveLobby();
+        }
+
+        // 패널 전환
+        lobbyPanel.SetActive(false);
+        loginPanel.SetActive(true);
+        UpdateStatus("로그인 화면으로 돌아왔습니다..");
+    }
+
+    // [새로고침 버튼]
+    public void RefreshRoomList()
+    {
+        if(PhotonNetwork.InLobby)
+        {
+            // 로비를 잠시 나갔다들어오는 방식으로 목록을 강제 갱신
+            // OnLeftLobby 콜백에서 자동으로 JoinLobby를 호출함.
+            PhotonNetwork.LeaveLobby();
+            UpdateStatus("방 목록 새로고침 중...");
+        }
+    }
+
+    // 로비를 나갔을 때 실행되는 콜백
+    public override void OnLeftLobby()
+    {
+        // 만약 현재 활성화된 패널이 로비 패널이라면, 새로고침 버튼을 눌러서 나간것임.
+        if(lobbyPanel.activeSelf)
+        {
+            PhotonNetwork.JoinLobby();
+        }
+    }
+
+    // 로그인패널에 종료버튼 - 게임 종료
+    public void OnClickExitButton()
+    {
+        Debug.Log("서버와 연결 해제 시도중...");
+
+        // 포톤 서버에 연결 해제 요청
+        if (PhotonNetwork.IsConnected)
+        {
+            // 포톤 연결 끊기
+            PhotonNetwork.Disconnect();
+        }
+        else
+        {
+            // 이미 연결이 끊겨 있다면 바로 종료
+            QuitGame();
+        }
+    }
+
+    // 실제 종료 처리 담당하는 공통 함수
+    private void QuitGame()
+    {
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }
