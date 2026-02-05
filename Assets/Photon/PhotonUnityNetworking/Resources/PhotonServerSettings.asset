@@ -50,6 +50,8 @@ MonoBehaviour:
   - SucessedCapture
   - StartPhotoProcess
   - PlayAudioRPC
+  - RPC_ResetPortal
+  - RPC_StartPortalSequence
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
