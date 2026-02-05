@@ -77,37 +77,44 @@ public class HandCamera : MonoBehaviourPun
         _go.transform.localPosition = Vector3.zero;
         _go.transform.localRotation = Quaternion.identity;
 
+
+        // 이동 범위 설정 (로컬 좌표 기준)
         Vector3 startPos = Vector3.zero;
-        Vector3 endPos = Vector3.up * 0.2f;
+        Vector3 endPos = Vector3.forward * 0.2f; // 앞으로 0.2m 이동
 
         PhotonTransformView myView = _go.GetComponent<PhotonTransformView>();
         Rigidbody rb = _go.GetComponent<Rigidbody>();
+
+        // 2. 물리 및 네트워크 간섭 차단
         myView.enabled = false;
-
-        float elapsedTime = 0f;
-        while(elapsedTime <= animDuration)
+        if (rb != null)
         {
-            yield return new WaitForFixedUpdate();  // 에니메이션 처리를 자연스럽게 하기위해 픽스드 없데이트 사용
-
-            elapsedTime += Time.fixedDeltaTime; 
-            float progress = elapsedTime / animDuration;
-
-            // 2. 로컬 목표 지점 계산 (예: x축 방향으로 0.2)
-            // 만약 y축이라면 Vector3.up * (0.2f * progress)
-            Vector3 localOffset = new Vector3(0.2f * progress, 0, 0);
-            Vector3 targetPos = photoSpawnPoint.TransformPoint(localOffset);
-            
-            rb.MovePosition(targetPos);
-            rb.MoveRotation(photoSpawnPoint.rotation);
-
-            //_go.transform.localPosition = Vector3.Lerp(startPos, endPos, elapsedTime/animDuration);
-            
+            rb.isKinematic = true; // 물리 엔진의 간섭을 막아야 수치가 변합니다.
         }
 
-        myView.enabled=true;
-        //_go.transform.localPosition = endPos;
-        //_go.transform.SetParent(null);
+        float elapsedTime = 0f;
+        while (elapsedTime < animDuration)
+        {
+            yield return null; // Update 주기에 맞춰 실행
 
+            elapsedTime += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsedTime / animDuration);
+
+            // 3. 로컬 포지션을 직접 수정 (이게 가장 확실합니다)
+            // SmoothStep을 적용하면 연출이 더 고급스러워집니다.
+            float smoothedProgress = Mathf.SmoothStep(0, 1, progress);
+            _go.transform.localPosition = Vector3.Lerp(startPos, endPos, smoothedProgress);
+        }
+
+        // 4. 최종 위치 확정 및 상태 복구
+        _go.transform.localPosition = endPos;
+
+        if (rb != null)
+        {
+            rb.isKinematic = false; // 필요 시 다시 물리 적용
+        }
+
+        myView.enabled = true;
         SetPhotoState(_go);
     }
 

@@ -1,25 +1,32 @@
-using UnityEngine;
-using Photon.Pun;
 using ExitGames.Client.Photon;
+using Photon.Pun;
+using UnityEngine;
+using WebSocketSharp;
 
 public class RoleSelector : MonoBehaviourPunCallbacks
 {
+    [SerializeField]
+    private GameStatusSO gameStatus;
+
     // 버튼에 이 함수 연결 ( 인자 값으로 프리팹 이름을 직접 쓴다 )
-    public void SelectRoleAndStart(string characterName)
+    public void SelectRoleAndStart(Role _myRole)
     {
         // 이름이 비었는지 체크(방어코드)
-        if (string.IsNullOrEmpty(characterName))
-        {
-            Debug.LogError("버튼 인스펙터 창에 캐릭터 이름을 안 적으셨어요!");
-            return;
-        }
+        //if (string.IsNullOrEmpty(myRole))
+        //{
+        //    Debug.LogError("버튼 인스펙터 창에 캐릭터 이름을 안 적으셨어요!");
+        //    return;
+        //}
+        string myRole = _myRole.ToString();
 
         // 가방에 확실히 저장
-        Hashtable props = new Hashtable { { "MyRole", characterName } };
+        Hashtable props = new Hashtable { { "MyRole", myRole } };
         // 내 가방에 데이터를 넣는다.
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
 
-        Debug.Log(characterName + "정보를 가방에 넣었습니다!");
+        gameStatus.myRole = myRole;
+
+        Debug.Log(myRole + "정보를 가방에 넣었습니다!");
 
         // 포톤 서버가 '가방 업데이트 완료했어'라고 알려주는 함수이다.
     }

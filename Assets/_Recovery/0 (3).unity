@@ -2567,6 +2567,7 @@ MonoBehaviour:
   playerRig: {fileID: 129177237}
   portalCamL: {fileID: 2053918600}
   portalCamR: {fileID: 269500562}
+  activationDistance: 10
 --- !u!1 &333002984
 GameObject:
   m_ObjectHideFlags: 0
@@ -10269,6 +10270,7 @@ MonoBehaviour:
   playerRig: {fileID: 129177237}
   portalCamL: {fileID: 653692906}
   portalCamR: {fileID: 2114114442}
+  activationDistance: 10
 --- !u!1 &1771805446
 GameObject:
   m_ObjectHideFlags: 0

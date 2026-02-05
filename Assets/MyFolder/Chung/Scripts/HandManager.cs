@@ -69,10 +69,10 @@ public class HandManager : MonoBehaviour
                 targetReceiver.OnActivate();
             }
         }
-        
+
         //if (UseInteractor.HandGrabTarget != null)
         //{
-        //    Debug.Log($"[Hand Manger] use interactor has interactable / Target Is {UseInteractor.HandGrabTarget}  / ObejectName Is {UseInteractor.Interactable.gameObject.name}");
+        //    Debug.Log($"[Hand Manger] use interactor has interactable / Target Is {UseInteractor.HandGrabTarget}  / ObejectName Is {UseInteractor.Interactable.transform.parent.name}");
         //}
         //else
         //{

@@ -67,7 +67,7 @@ public class CharacterSpawner : MonoBehaviour
 
             // 그 이름을 그대로 소환한다.
             // Resources/NetworkPrefabs
-            GameObject player = PhotonNetwork.Instantiate("NetworkPrefabs/" + myRole, spawnPosition, Quaternion.identity);
+            GameObject player = PhotonNetwork.Instantiate("NetworkPrefabs/Avatar_" + myRole, spawnPosition, Quaternion.identity);
 
             //// 소환된 게 내 거라면 VR 기기 정보를 꽂아준다.
             //if(player.GetComponent<PhotonView>().IsMine)

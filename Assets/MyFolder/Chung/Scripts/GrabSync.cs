@@ -7,9 +7,9 @@ public class GrabSync : MonoBehaviourPun
     [SerializeField]
     protected Rigidbody rb = null;
     [SerializeField]
-    private GrabInteractable interactable = null;
+    protected GrabInteractable interactable = null;
 
-    private void Start()
+    protected virtual void Start()
     {
         if (rb == null || interactable == null)
         {
