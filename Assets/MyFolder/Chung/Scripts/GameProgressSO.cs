@@ -9,7 +9,7 @@ public class GameProgressSO : ScriptableObject
     public int currentEvidenceCount;
 
     [Header("Events")]
-    public Action<int> OnEvidenceAdded;
+    public Action<int> OnEvidenceAdded; 
     public Action OnStageClear; // 모든 증거 수집 완료 시
 
     public void AddEvidence()

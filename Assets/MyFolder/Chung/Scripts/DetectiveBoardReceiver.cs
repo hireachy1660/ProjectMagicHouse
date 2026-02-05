@@ -110,7 +110,7 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
         if (item == null) return;
         item.OnPlaced();
 
-        //targetView.transform.SetParent(evidenceSlots[_trIndex].placePoint);
+        //targetView.transform.Set Parent(evidenceSlots[_trIndex].placePoint);
         //targetView.transform.localPosition = Vector3.zero;
         //targetView.transform.localRotation = Quaternion.identity;
 
