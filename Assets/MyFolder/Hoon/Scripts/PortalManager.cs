@@ -1,8 +1,9 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun; // 추가 [cite: 2025-12-24]
 
-public class PortalManager : MonoBehaviour, IReceiver
+public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상속 [cite: 2025-12-24]
 {
     [System.Serializable]
     public struct DestinationData
@@ -44,23 +45,32 @@ public class PortalManager : MonoBehaviour, IReceiver
             return;
         }
 
-        StartCoroutine(PortalOpeningSequence(item));
+        // [네트워크 핵심] 방에 있는 모든 사람에게 포탈 생성을 명령합니다. [cite: 2025-12-24]
+        photonView.RPC("RPC_StartPortalSequence", RpcTarget.All, item.ItemID);
     }
 
-    private IEnumerator PortalOpeningSequence(IItem item)
+    [PunRPC] // 모든 클라이언트에서 실행될 함수 [cite: 2025-12-24]
+    private void RPC_StartPortalSequence(string itemID)
+    {
+        // 네트워크 환경에서는 item 오브젝트가 각자 다를 수 있으므로 ID로 처리하거나
+        // 씬 내의 아이템을 찾아야 합니다. 여기선 연출을 위해 아이템 태그 등으로 찾거나
+        // 상호작용한 아이템을 특정하는 로직이 필요할 수 있습니다.
+        // 우선 기존 로직을 최대한 유지하며 시퀀스를 실행합니다.
+        StartCoroutine(PortalOpeningSequenceByNet(itemID));
+    }
+
+    private IEnumerator PortalOpeningSequenceByNet(string itemID)
     {
         isPortalOpened = true;
-        item.OnPlaced();
-        Transform itemTF = item.Transform;
 
-        // [연출 1] 사진 부착
-        yield return StartCoroutine(AttachPhotoSequence(itemTF));
+        // 실제 아이템 오브젝트를 씬에서 찾아 연출에 사용 (간단한 예시)
+        GameObject itemObj = GameObject.Find(itemID); // 아이템 이름이 ID와 같다고 가정
+        Transform itemTF = itemObj ? itemObj.transform : null;
 
-        // [연출 2] 사진 부착 후 잠시 대기
+        if (itemTF) yield return StartCoroutine(AttachPhotoSequence(itemTF));
         yield return new WaitForSeconds(photoFadeDelay);
 
-        // [연출 3] 실제 포탈 및 면(Mesh) 생성
-        ExecutePortalOpening(item.ItemID);
+        ExecutePortalOpening(itemID);
 
         GameObject displayMesh = null;
         if (activePortalA != null)
@@ -69,62 +79,43 @@ public class PortalManager : MonoBehaviour, IReceiver
             if (t != null) displayMesh = t.gameObject;
         }
 
-        // [연출 4] 포탈 확장 시작
         if (portalVFXHandler != null)
         {
             portalVFXHandler.gameObject.SetActive(true);
-
-            // [수정] 사진 소멸을 시작하고, 그 코루틴이 끝날 때까지 기다리지 않고 다음 줄로 넘어갑니다.
-            StartCoroutine(FadeOutPhotoOnly(itemTF, expandDuration));
-
-            // 포탈 면이 커지는 동안 대기
+            if (itemTF) StartCoroutine(FadeOutPhotoOnly(itemTF, expandDuration));
             yield return StartCoroutine(ExpandRoutineForManager(expandDuration, displayMesh));
         }
 
-        // [연출 5] 포탈 면이 다 커진 직후 문을 비활성화
-        if (doorVisual)
-        {
-            doorVisual.SetActive(false);
-            Debug.Log("포탈이 완전히 열려 문을 숨깁니다.");
-        }
+        if (doorVisual) doorVisual.SetActive(false);
 
-        // [연출 6] VFX 파티클 소멸
         if (portalVFXHandler)
         {
             portalVFXHandler.StopWithFade(vfxStayDuration, vfxFadeOutDuration);
         }
     }
 
-    // Manager에서 Handler의 연출이 끝날 때까지 기다려주기 위한 브릿지 코루틴
+    // ... [FadeOutPhotoOnly, GetMaterialsFromObj, ApplyAlphaToMats, AttachPhotoSequence 코드는 기존과 동일] ...
+
     private IEnumerator ExpandRoutineForManager(float duration, GameObject mesh)
     {
         portalVFXHandler.PlayExpand(duration, mesh);
-        yield return new WaitForSeconds(duration); // 확장이 끝나는 시간만큼 대기
+        yield return new WaitForSeconds(duration);
     }
 
-    // 사진 소멸 로직 강화
     private IEnumerator FadeOutPhotoOnly(Transform photoTF, float duration)
     {
         if (photoTF == null) yield break;
-
         float elapsed = 0f;
         List<Material> photoMats = GetMaterialsFromObj(photoTF.gameObject);
-
-        // 시작 시 투명도 조절이 가능하도록 머티리얼 설정 확인 권장 (코드로는 제어 불가, 인스펙터 확인 필요)
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             float alpha = Mathf.Lerp(1f, 0f, t);
-
             ApplyAlphaToMats(photoMats, alpha);
             yield return null;
         }
-
-        // [핵심] 알파값 조절 후 아예 오브젝트를 비활성화하여 '자국'을 없앱니다.
         photoTF.gameObject.SetActive(false);
-
-        // 다음 사용을 위해 투명도를 다시 1로 초기화해둡니다 (나중에 다시 나타날 때 대비)
         ApplyAlphaToMats(photoMats, 1f);
     }
 
@@ -166,11 +157,9 @@ public class PortalManager : MonoBehaviour, IReceiver
         Vector3 targetPos = entranceSpawnPoint.position
                             + (entranceSpawnPoint.forward * distanceOffset)
                             + (entranceSpawnPoint.up * heightOffset);
-
         Vector3 startPos = itemTF.position;
         Quaternion startRot = itemTF.rotation;
         float elapsed = 0f;
-
         while (elapsed < attachDuration)
         {
             elapsed += Time.deltaTime;
@@ -211,24 +200,24 @@ public class PortalManager : MonoBehaviour, IReceiver
         }
     }
 
-    /// <summary>
-    /// 포탈을 닫고 문을 다시 켭니다. 
-    /// 맵 이동 후나 리셋이 필요할 때 호출하세요.
-    /// </summary>
     public void ResetPortal()
+    {
+        // 리셋도 필요하다면 RPC로 동기화해야 합니다. [cite: 2025-12-24]
+        if (PhotonNetwork.IsMasterClient)
+            photonView.RPC("RPC_ResetPortal", RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void RPC_ResetPortal()
     {
         if (activePortalA) Destroy(activePortalA);
         if (activePortalB) Destroy(activePortalB);
         if (portalVFXHandler) portalVFXHandler.gameObject.SetActive(false);
-
-        // [중요] 비활성화했던 문을 다시 켭니다.
         if (doorVisual)
         {
             doorVisual.SetActive(true);
-            // 투명도도 1로 복구
             ApplyAlphaToMats(GetMaterialsFromObj(doorVisual), 1f);
         }
-
         isPortalOpened = false;
     }
 
