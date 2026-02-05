@@ -26,6 +26,8 @@ public class HandCamera : MonoBehaviourPun
     [Header("Sounds")]
     [SerializeField]
     private List<SoundEventSO> soundEventSOs = new List<SoundEventSO>();
+    [SerializeField]
+    private SoundEventSO Chalkac;
 
 
 
@@ -43,6 +45,7 @@ public class HandCamera : MonoBehaviourPun
 
         Ray ray = new Ray(angleTr.position, angleTr.forward);
         bool isSuccess = Physics.Raycast(ray, out _, 5f, targetLayer);
+
 
         // 불 값에 따른 생성 객체 지정
         CaptureNetworkPhoto(isSuccess);
@@ -66,6 +69,7 @@ public class HandCamera : MonoBehaviourPun
         if (targetView != null)
         {
             GameObject go = targetView.gameObject;
+            soundEventSOs[0].PlayLocal(photonView.ViewID);
             StartCoroutine(PhotoAnim(go));
         }
     }
