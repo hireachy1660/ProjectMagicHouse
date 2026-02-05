@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-[CreateAssetMenu(fileName = "NewSoundEvent", menuName = "Detective/SoundEvent")]
+[CreateAssetMenu(fileName = "NewSoundEvent", menuName = "Detective/So/SoundEvent")]
 public class SoundEventSO : ScriptableObject
 {
     [SerializeField] 

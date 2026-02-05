@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameProgressSO : ScriptableObject
 {
     [Header("Evidence Tracking")]
-    public int requiredEvidenceCount = 5; // 클리어 조건
+    public int requiredEvidenceCount = 3; // 클리어 조건
     public int currentEvidenceCount;
 
     [Header("Events")]

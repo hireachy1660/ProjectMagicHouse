@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 
 public enum GameState { Login, Lobby, RoleSelect, InGame, GameOver }
+public enum Role { Pathfinder, Inquisitor}
 
 [CreateAssetMenu(fileName = "GameStatus", menuName = "Detective/SO/GameStatus")]
 public class GameStatusSO : ScriptableObject

@@ -25,6 +25,10 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public Transform roomListContent;           // scroll view의 방 리스트
     public GameObject roomItemPrefab;           // 방 버튼 프리팹
 
+    [Header("GameStateSo")]
+    [SerializeField]
+    private GameStatusSO gameStatus;
+
     private bool isJoiningRoom = false;
     private void Start()
     {
@@ -134,6 +138,8 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // "MyRoom"이라는 이름의 방을 접속하거나, 없으면 만든다.
         //PhotonNetwork.JoinOrCreateRoom("MyRoom", new RoomOptions { MaxPlayers = 2}, TypedLobby.Default);
 
+        gameStatus.ChangeState(GameState.Lobby);
+
         // UI 패널 교체
         loginPanel.SetActive(false);
         lobbyPanel.SetActive(true);
@@ -238,6 +244,8 @@ public class LoginManager : MonoBehaviourPunCallbacks
         Debug.Log($"방 '{PhotonNetwork.CurrentRoom.Name}'입장 완료! 아바타를 생성합니다.");
 
         isJoiningRoom = false; // 잠금 해제
+
+        gameStatus.ChangeState(GameState.RoleSelect);
 
         // Resources 폴더에 있는 프리팹 이름을 "MyAvatar"라고 가정했을 때:
         // 생성 위치는 Vector3.zero, 회전은 기본값

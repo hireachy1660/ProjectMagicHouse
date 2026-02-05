@@ -3943,7 +3943,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Role B
+  m_text: Inquisitor
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5770,7 +5770,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Role A
+  m_text: Pathfinder
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -11099,6 +11099,7 @@ GameObject:
   - component: {fileID: 785733818}
   - component: {fileID: 785733817}
   - component: {fileID: 785733816}
+  - component: {fileID: 785733819}
   m_Layer: 5
   m_Name: Btn_RoleB
   m_TagString: Untagged
@@ -11170,14 +11171,14 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 891695741}
-        m_TargetAssemblyTypeName: RoleSelector, Assembly-CSharp
-        m_MethodName: SelectRoleAndStart
-        m_Mode: 5
+      - m_Target: {fileID: 785733819}
+        m_TargetAssemblyTypeName: RoleButton, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: Inquisitor
           m_BoolArgument: 0
@@ -11220,6 +11221,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 785733814}
   m_CullTransparentMesh: 1
+--- !u!114 &785733819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785733814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d4af30eaf905c8478abd3ad1e3656df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoleButton
+  role: 1
+  selector: {fileID: 891695741}
 --- !u!1 &810102318
 GameObject:
   m_ObjectHideFlags: 0
@@ -11257,6 +11272,7 @@ MonoBehaviour:
   roomNameInputField: {fileID: 328906499}
   roomListContent: {fileID: 2063147775}
   roomItemPrefab: {fileID: 1543733533427986922, guid: ebbfa756d424f3c41ae99f5ffbaaa993, type: 3}
+  gameStatus: {fileID: 11400000, guid: 9e60acdf9027bff47bd1c1f835fa0b65, type: 2}
 --- !u!4 &810102320
 Transform:
   m_ObjectHideFlags: 0
@@ -22779,6 +22795,7 @@ GameObject:
   - component: {fileID: 1958238568}
   - component: {fileID: 1958238567}
   - component: {fileID: 1958238566}
+  - component: {fileID: 1958238569}
   m_Layer: 5
   m_Name: Btn_RoleA
   m_TagString: Untagged
@@ -22850,10 +22867,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 891695741}
-        m_TargetAssemblyTypeName: RoleSelector, Assembly-CSharp
-        m_MethodName: SelectRoleAndStart
-        m_Mode: 5
+      - m_Target: {fileID: 1958238569}
+        m_TargetAssemblyTypeName: RoleButton, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -22900,6 +22917,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1958238564}
   m_CullTransparentMesh: 1
+--- !u!114 &1958238569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958238564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d4af30eaf905c8478abd3ad1e3656df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoleButton
+  role: 0
+  selector: {fileID: 891695741}
 --- !u!1001 &1964388055
 PrefabInstance:
   m_ObjectHideFlags: 0
