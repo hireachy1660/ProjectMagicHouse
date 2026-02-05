@@ -1,82 +1,80 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Photon.Pun; // 추가 [cite: 2025-12-19]
 
-public class Teleporter : MonoBehaviour
+public class Teleporter : MonoBehaviourPun // 상속 변경 [cite: 2025-12-24]
 {
     public Transform receiver;
     public Transform playerRig;
     public Transform mainCamera;
-    public Renderer playerRenderer;
 
     [Header("Settings")]
-    public float exitOffset = -0.01f;
-    public float cooldownTime = 0.5f; // [추가] 텔레포트 후 재발동 방지 시간
+    public float exitOffset = 0.2f;
+    public float threshold = 0.15f;
+    public float cooldownTime = 0.5f;
 
     private bool playerIsOverlapping = false;
     private bool isLocked = false;
-    private bool inCooldown = false; // [추가] 쿨타임 체크
+    private bool inCooldown = false;
     private float lastLocalZ = 0f;
 
     void Update()
     {
-        // 쿨타임 중이면 로직 건너뜀
-        if (playerIsOverlapping && !inCooldown)
+        // 업데이트 로직은 로컬 플레이어가 중첩되었을 때만 실행됩니다.
+        if (playerIsOverlapping && !inCooldown && mainCamera != null)
         {
             Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
 
             if (isLocked)
             {
-                if (Mathf.Abs(localCamPos.z) > exitOffset * 0.8f)
+                if (Mathf.Abs(localCamPos.z) > threshold)
                 {
                     isLocked = false;
-                    Debug.Log($"<color=cyan><b>[Lock 해제]</b> {gameObject.name}</color>");
                 }
             }
-
-            if (!isLocked)
+            else
             {
-                if (Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z) && Mathf.Abs(lastLocalZ) < 0.5f)
+                bool crossed = Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z);
+                if (crossed && Mathf.Abs(lastLocalZ) < 0.5f)
                 {
-                    ExecuteTeleport();
+                    ExecuteTeleport(localCamPos.z);
                     return;
                 }
             }
-
             lastLocalZ = localCamPos.z;
-            UpdateClippingProperties();
         }
     }
 
-    void ExecuteTeleport()
+    void ExecuteTeleport(float currentZ)
     {
         if (receiver == null || playerRig == null) return;
 
+        // 이동은 각자의 클라이언트에서 본인의 캐릭터만 옮깁니다. [cite: 2025-12-19]
+        Quaternion halfTurn = Quaternion.Euler(0, 180f, 0);
+        Quaternion relativeRot = receiver.rotation * halfTurn * Quaternion.Inverse(transform.rotation);
+
         Vector3 relativePos = transform.InverseTransformPoint(playerRig.position);
-        Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * playerRig.rotation;
+        relativePos = halfTurn * relativePos;
+
+        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
+        playerRig.rotation = relativeRot * playerRig.rotation;
 
         var recScript = receiver.GetComponent<Teleporter>();
         if (recScript != null)
         {
-            recScript.playerIsOverlapping = true;
             recScript.isLocked = true;
+            recScript.playerIsOverlapping = true;
+            recScript.inCooldown = true;
             recScript.lastLocalZ = exitOffset;
-            recScript.StartCooldown(); // [추가] 도착지 포탈에 쿨타임 부여
+            recScript.StartCooldown();
         }
 
-        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
-        playerRig.rotation = receiver.rotation * relativeRot;
-
         playerIsOverlapping = false;
-
-        if (playerRenderer != null)
-            playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
+        inCooldown = true;
+        StartCooldown();
     }
 
-    public void StartCooldown()
-    {
-        StartCoroutine(CooldownRoutine());
-    }
-
+    public void StartCooldown() => StartCoroutine(CooldownRoutine());
     IEnumerator CooldownRoutine()
     {
         inCooldown = true;
@@ -84,46 +82,26 @@ public class Teleporter : MonoBehaviour
         inCooldown = false;
     }
 
-    void UpdateClippingProperties()
-    {
-        if (playerRenderer == null) return;
-        playerRenderer.material.SetVector("_PlanePosition", transform.position);
-        playerRenderer.material.SetVector("_PlaneNormal", transform.forward);
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
+        // [네트워크 핵심] 충돌한 물체가 내(Local Player) 것인지 확인합니다. [cite: 2025-12-19]
+        PhotonView pv = other.GetComponent<PhotonView>();
+        if (pv != null && pv.IsMine)
         {
+            // 플레이어 태그나 특정 레이어 확인 로직 병행 권장
             playerIsOverlapping = true;
-            Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
-
-            // [개선] 진입 시에는 무조건 락을 걸지 않습니다. 
-            // 락은 오직 '반대편에서 넘어왔을 때'만 걸려 있어야 합니다.
-            if (!isLocked)
-            {
-                isLocked = false;
-                Debug.Log($"<color=white><b>[진입 성공]</b> {gameObject.name}: 전송 대기 중 (Z:{localCamPos.z:F3})</color>");
-            }
-            else
-            {
-                Debug.Log($"<color=orange><b>[진입 유지]</b> {gameObject.name}: 이미 Lock 상태 (순간이동 도착 직후)</color>");
-            }
-
-            lastLocalZ = localCamPos.z;
+            if (mainCamera != null)
+                lastLocalZ = transform.InverseTransformPoint(mainCamera.position).z;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
+        PhotonView pv = other.GetComponent<PhotonView>();
+        if (pv != null && pv.IsMine)
         {
             playerIsOverlapping = false;
             isLocked = false;
-            Debug.Log($"<color=white><b>[퇴장]</b> {gameObject.name}: 상태 초기화</color>");
-
-            if (playerRenderer != null)
-                playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
         }
     }
 }

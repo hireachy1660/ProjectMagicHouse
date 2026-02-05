@@ -181,7 +181,6 @@ GameObject:
   - component: {fileID: 7216716124733024886}
   - component: {fileID: 2563800927159728414}
   - component: {fileID: 4733626268868141656}
-  - component: {fileID: 9212500602956694097}
   - component: {fileID: 4933441543566685446}
   - component: {fileID: 3466689234453047269}
   - component: {fileID: -1034683122382025233}
@@ -409,20 +408,6 @@ MonoBehaviour:
   ItemType: 2
   rigidbody: {fileID: 6185267588032285079}
   collider: {fileID: 4868183532792117734}
---- !u!114 &9212500602956694097
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7357533261991924507}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19b09f54878f0dc4aba77041681e1a78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GrabSync
-  rb: {fileID: 6185267588032285079}
-  interactable: {fileID: 2156709485805285500}
 --- !u!114 &4933441543566685446
 MonoBehaviour:
   m_ObjectHideFlags: 0
