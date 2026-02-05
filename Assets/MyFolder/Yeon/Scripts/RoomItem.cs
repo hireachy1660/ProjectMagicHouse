@@ -33,4 +33,14 @@ public class RoomItem : MonoBehaviour
         Debug.Log($"{roomName} 방에 입장을 시도합니다.");
         manager.JoinRoom(roomName); // Login매니저를 통해 방 입장 실행
     }
+
+    //디버그용 가짜방의 정보를 세팅
+    public void SetManagerOnly(LoginManager loginManager, string fakeName)
+    {
+        manager = loginManager;
+        roomName = fakeName;
+        // 테스트 시 버튼 클릭 이벤트를 명확히 하기 위해 리스너 재설정
+        JoinButton.onClick.RemoveAllListeners();
+        JoinButton.onClick.AddListener(onClickRoom);
+    }
 }

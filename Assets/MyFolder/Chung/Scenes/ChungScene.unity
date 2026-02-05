@@ -8768,6 +8768,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 510545878}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &701669406
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 701669408}
+  - component: {fileID: 701669407}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &701669407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701669406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f04221577e4f3c840b5babfd0cdd405f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSceneManager
+  gameStatus: {fileID: 11400000, guid: 9e60acdf9027bff47bd1c1f835fa0b65, type: 2}
+  gameProgress: {fileID: 11400000, guid: 991689c1bd0e403448d08e2a89c4e2d1, type: 2}
+--- !u!4 &701669408
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701669406}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.47468, y: 0.35175, z: 4.56833}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &702486755
 GameObject:
   m_ObjectHideFlags: 0
@@ -22502,6 +22548,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f1bd99489c94ce4082cbef8d845fea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameStartManager
+  gameStatus: {fileID: 0}
   startButton: {fileID: 0}
 --- !u!114 &1647350243
 MonoBehaviour:
@@ -22510,7 +22557,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1647350241}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e361023aec57dd947a6612044dfa20b0, type: 3}
   m_Name: 
@@ -41712,6 +41759,7 @@ MonoBehaviour:
   uiEvidenceSlot:
   - {fileID: 1541703108}
   burnEffect: {fileID: 0}
+  gameProgress: {fileID: 11400000, guid: 991689c1bd0e403448d08e2a89c4e2d1, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -41737,3 +41785,4 @@ SceneRoots:
   - {fileID: 1897767572}
   - {fileID: 1115729665}
   - {fileID: 1845960294}
+  - {fileID: 701669408}

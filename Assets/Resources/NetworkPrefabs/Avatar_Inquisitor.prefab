@@ -174,7 +174,7 @@ GameObject:
   - component: {fileID: 3430449372793281993}
   - component: {fileID: 5908397474392425319}
   m_Layer: 0
-  m_Name: Player_B
+  m_Name: Avatar_Inquisitor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -253,6 +253,9 @@ MonoBehaviour:
   avatarHead: {fileID: 6232836412054820477}
   avatarLeftHand: {fileID: 1424749457675188871}
   avatarRightHand: {fileID: 5308801427004989527}
+  vrHead: {fileID: 0}
+  vrLeftHand: {fileID: 0}
+  vrRightHand: {fileID: 0}
 --- !u!1 &2131014411964082513
 GameObject:
   m_ObjectHideFlags: 0

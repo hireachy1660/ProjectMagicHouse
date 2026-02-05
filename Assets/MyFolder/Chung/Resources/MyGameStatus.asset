@@ -14,3 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameStatusSO
   currentState: 0
   myRole: Pathfinder
+  lobbyScene: ChungLobbyScene
+  gameScene: ChungScene
+  endingScene: EndingScene

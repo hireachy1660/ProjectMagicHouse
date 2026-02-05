@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 
 public enum GameState { Login, Lobby, RoleSelect, InGame, GameOver }
+public enum Role { Pathfinder, Inquisitor}
 
 [CreateAssetMenu(fileName = "GameStatus", menuName = "Detective/SO/GameStatus")]
 public class GameStatusSO : ScriptableObject
@@ -14,6 +15,11 @@ public class GameStatusSO : ScriptableObject
     [Header("Events")]
     public Action<GameState> OnStateChanged;
     public Action OnAllPlayersReady; // 모든 인원이 MyRole을 설정했을 때
+
+    [Header("Scenes Configuration")]
+    public string lobbyScene = "LobbyScene";
+    public string gameScene = "GameScene";
+    public string endingScene = "EndingScene";
 
     public void ChangeState(GameState newState)
     {

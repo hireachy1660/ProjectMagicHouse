@@ -174,7 +174,7 @@ GameObject:
   - component: {fileID: 3430449372793281993}
   - component: {fileID: -2528708251481806257}
   m_Layer: 0
-  m_Name: Player_A
+  m_Name: Avatar_Pathfinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
