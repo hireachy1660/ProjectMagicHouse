@@ -24918,7 +24918,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1650974492}
   m_Layer: 0
-  m_Name: TargerPos_2
+  m_Name: TargetPos_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42902,6 +42902,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 409287883710243118, guid: a046f37479e056f40811746d8656bc01, type: 3}
+      propertyPath: sceneViewId
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 928181402845806292, guid: a046f37479e056f40811746d8656bc01, type: 3}
       propertyPath: m_Name
       value: PortalSet
