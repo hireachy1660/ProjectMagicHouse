@@ -10798,6 +10798,7 @@ MonoBehaviour:
   uiEvidenceSlot:
   - {fileID: 1242753345}
   burnEffect: {fileID: 0}
+  gameProgress: {fileID: 0}
 --- !u!65 &762713728
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -22272,7 +22273,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1484601559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22294,7 +22295,7 @@ VFXRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1484601558}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -26051,6 +26052,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f1bd99489c94ce4082cbef8d845fea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameStartManager
+  gameStatus: {fileID: 0}
   startButton: {fileID: 0}
 --- !u!114 &1728032581
 MonoBehaviour:
@@ -26096,7 +26098,7 @@ PrefabInstance:
       objectReference: {fileID: 1194414066}
     - target: {fileID: 245280254278318016, guid: c1169c491bf16434eb06603a20c4e086, type: 3}
       propertyPath: m_VersionIndex
-      value: 61
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 4770770113527014637, guid: c1169c491bf16434eb06603a20c4e086, type: 3}
       propertyPath: m_Name
