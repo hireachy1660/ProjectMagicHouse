@@ -26,6 +26,10 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     public GameObject lobbyPanel;
     public GameObject roleSelectPanel;
 
+    [Header("So")]
+    [SerializeField]
+    private GameStatusSO gameStatus;
+        
     private void Start()
     {
         // 인스펙터 연결 확인(방어 코드)
@@ -56,6 +60,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             {"MyRole", selectedRoleName }
         };
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        gameStatus.myRole = selectedRoleName;
         confirmPanel.SetActive(false);
     }
 
@@ -206,7 +211,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     {
         if(PhotonNetwork.IsMasterClient)
         {
-            PhotonNetwork.LoadLevel("GameScene");
+            PhotonNetwork.LoadLevel(gameStatus.gameScene);
         }
     }
     public void ClickReadyButton()
