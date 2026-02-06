@@ -1,11 +1,15 @@
-using UnityEngine;
-using Photon.Pun;
-using UnityEngine.UI;
 using ExitGames.Client.Photon;
+using Photon.Pun;
 using Photon.Realtime;  // Hashtable 사용
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class GameStartManager : MonoBehaviourPunCallbacks
 {
+    [SerializeField]
+    private GameStatusSO gameStatus;
+
     public Button startButton;  // 시작 버튼
 
     private void Start()
@@ -43,30 +47,38 @@ public class GameStartManager : MonoBehaviourPunCallbacks
             startButton.gameObject.SetActive(false);
         }
     }
-
+    ////////////////////////////수정된 코드/////////////////////////////////////////
     private bool CheckAllPlayersReady()
     {
-        // 방에 2명이 안 들어왔으면 시작 불가
-        //if (PhotonNetwork.CurrentRoom.PlayerCount < 2) return false;
+        // 1. 인원 체크
+        if (PhotonNetwork.CurrentRoom.PlayerCount < 2) return false;
 
-        // 방에 있는 모든 플레이어를 검사
-        foreach(var player in PhotonNetwork.PlayerList)
+        // 2. 역할 선점 및 중복 체크
+        HashSet<string> selectedRoles = new HashSet<string>();
+
+        foreach (var player in PhotonNetwork.PlayerList)
         {
-            // 한 명이라도 가방에 "MyRole"이 없으면 false
-            if(!player.CustomProperties.ContainsKey("MyRole"))
+            if (player.CustomProperties.TryGetValue("MyRole", out object role))
             {
-                return false;
+                string roleStr = (string)role;
+                // 이미 누군가 선택한 역할이라면 중복!
+                if (selectedRoles.Contains(roleStr)) return false;
+
+                selectedRoles.Add(roleStr);
+            }
+            else
+            {
+                return false; // 아직 안 고른 사람 있음
             }
         }
 
-        // 모두가 "MyRole"를 가지고 있다면 true!
-        return true;
+        return true; // 2명이 서로 다른 역할을 골랐음
     }
 
     public void ClickStartButton()
     {
         // 모든 준비가 끝났을 때만 씬 이동
         Debug.Log("모두 준비 완료! 게임씬으로 이동한다.");
-        PhotonNetwork.LoadLevel("GameScene");
+        PhotonNetwork.LoadLevel(gameStatus.gameScene);
     }
 }

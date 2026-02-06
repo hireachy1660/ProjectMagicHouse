@@ -6,77 +6,90 @@ public class Teleporter : MonoBehaviour
     public Transform receiver;
     public Transform playerRig;
     public Transform mainCamera;
-    public Renderer playerRenderer;
 
     [Header("Settings")]
-    public float exitOffset = -0.01f;
-    public float cooldownTime = 0.5f; // [추가] 텔레포트 후 재발동 방지 시간
+    public float exitOffset = 0.2f;  // 전송 후 나타날 지점
+    public float threshold = 0.15f; // 이 거리보다 멀어지면 '빠져나왔다'고 판단 (Lock 해제)
+    public float cooldownTime = 0.5f;
 
     private bool playerIsOverlapping = false;
     private bool isLocked = false;
-    private bool inCooldown = false; // [추가] 쿨타임 체크
+    private bool inCooldown = false;
     private float lastLocalZ = 0f;
 
     void Update()
     {
-        // 쿨타임 중이면 로직 건너뜀
-        if (playerIsOverlapping && !inCooldown)
+        if (playerIsOverlapping && !inCooldown && mainCamera != null)
         {
+            // 포탈의 중심점을 기준으로 카메라의 상대적 위치 계산
             Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
 
             if (isLocked)
             {
-                if (Mathf.Abs(localCamPos.z) > exitOffset * 0.8f)
+                // [의도 판별 1: 빠져나오기] 
+                // 전송되어 온 후, 포탈 면에서 충분히 멀어지면 락을 해제합니다.
+                if (Mathf.Abs(localCamPos.z) > threshold)
                 {
                     isLocked = false;
-                    Debug.Log($"<color=cyan><b>[Lock 해제]</b> {gameObject.name}</color>");
+                    Debug.Log($"<color=cyan><b>[Lock 해제]</b> {gameObject.name} - 이제 다시 통과 가능</color>");
                 }
             }
-
-            if (!isLocked)
+            else
             {
-                if (Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z) && Mathf.Abs(lastLocalZ) < 0.5f)
+                // [의도 판별 2: 통과하기 또는 되돌아가기]
+                // 로컬 Z값의 부호가 바뀌었다는 것은 '면'을 가로질렀다는 뜻입니다.
+                bool crossed = Mathf.Sign(lastLocalZ) != Mathf.Sign(localCamPos.z);
+
+                if (crossed && Mathf.Abs(lastLocalZ) < 0.5f)
                 {
-                    ExecuteTeleport();
+                    ExecuteTeleport(localCamPos.z); // 현재 Z값을 전달
                     return;
                 }
             }
 
             lastLocalZ = localCamPos.z;
-            UpdateClippingProperties();
         }
     }
 
-    void ExecuteTeleport()
+    void ExecuteTeleport(float currentZ)
     {
         if (receiver == null || playerRig == null) return;
 
-        Vector3 relativePos = transform.InverseTransformPoint(playerRig.position);
-        Quaternion relativeRot = Quaternion.Inverse(transform.rotation) * playerRig.rotation;
+        // 1. 회전 계산 (상대적 회전 + 180도 반전으로 정면 응시)
+        Quaternion halfTurn = Quaternion.Euler(0, 180f, 0);
+        Quaternion relativeRot = receiver.rotation * halfTurn * Quaternion.Inverse(transform.rotation);
 
+        // 2. 위치 계산
+        Vector3 relativePos = transform.InverseTransformPoint(playerRig.position);
+        relativePos = halfTurn * relativePos; // 위치도 180도 반전
+
+        // 3. 물리적 이동
+        // 상대방 포탈의 면 앞(exitOffset)으로 이동시킵니다.
+        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
+        playerRig.rotation = relativeRot * playerRig.rotation;
+
+        // 4. 출구 포탈(receiver) 설정
         var recScript = receiver.GetComponent<Teleporter>();
         if (recScript != null)
         {
+            recScript.isLocked = true;          // 🔴 출구에 도착하자마자 락을 걸어 재전송 방지
             recScript.playerIsOverlapping = true;
-            recScript.isLocked = true;
+            recScript.inCooldown = true;
+
+            // 출구 입장에서 플레이어는 이미 면을 통과한 상태(Z가 exitOffset인 지점)로 설정
             recScript.lastLocalZ = exitOffset;
-            recScript.StartCooldown(); // [추가] 도착지 포탈에 쿨타임 부여
+            recScript.StartCooldown();
         }
 
-        playerRig.position = receiver.TransformPoint(relativePos) + (receiver.forward * exitOffset);
-        playerRig.rotation = receiver.rotation * relativeRot;
-
+        // 5. 내 상태 초기화
         playerIsOverlapping = false;
+        inCooldown = true;
+        StartCooldown();
 
-        if (playerRenderer != null)
-            playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
+        Debug.Log($"<color=lime><b>[전송 완료]</b> {gameObject.name} -> {receiver.name}</color>");
     }
 
-    public void StartCooldown()
-    {
-        StartCoroutine(CooldownRoutine());
-    }
-
+    public void StartCooldown() => StartCoroutine(CooldownRoutine());
     IEnumerator CooldownRoutine()
     {
         inCooldown = true;
@@ -84,33 +97,13 @@ public class Teleporter : MonoBehaviour
         inCooldown = false;
     }
 
-    void UpdateClippingProperties()
-    {
-        if (playerRenderer == null) return;
-        playerRenderer.material.SetVector("_PlanePosition", transform.position);
-        playerRenderer.material.SetVector("_PlaneNormal", transform.forward);
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
         {
             playerIsOverlapping = true;
-            Vector3 localCamPos = transform.InverseTransformPoint(mainCamera.position);
-
-            // [개선] 진입 시에는 무조건 락을 걸지 않습니다. 
-            // 락은 오직 '반대편에서 넘어왔을 때'만 걸려 있어야 합니다.
-            if (!isLocked)
-            {
-                isLocked = false;
-                Debug.Log($"<color=white><b>[진입 성공]</b> {gameObject.name}: 전송 대기 중 (Z:{localCamPos.z:F3})</color>");
-            }
-            else
-            {
-                Debug.Log($"<color=orange><b>[진입 유지]</b> {gameObject.name}: 이미 Lock 상태 (순간이동 도착 직후)</color>");
-            }
-
-            lastLocalZ = localCamPos.z;
+            if (mainCamera != null)
+                lastLocalZ = transform.InverseTransformPoint(mainCamera.position).z;
         }
     }
 
@@ -119,11 +112,7 @@ public class Teleporter : MonoBehaviour
         if (other.CompareTag("Player") || other.name.Contains("Anchor") || other.name.Contains("Camera"))
         {
             playerIsOverlapping = false;
-            isLocked = false;
-            Debug.Log($"<color=white><b>[퇴장]</b> {gameObject.name}: 상태 초기화</color>");
-
-            if (playerRenderer != null)
-                playerRenderer.material.SetVector("_PlanePosition", Vector3.up * -9999f);
+            isLocked = false; // 트리거를 아예 나가면 락은 무조건 해제
         }
     }
 }

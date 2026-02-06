@@ -19,6 +19,9 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
     [Header("Effects")]
     [SerializeField] private ParticleSystem burnEffect; // 태울 때 나올 파티클 (선택)
 
+    [Header("Progress So")]
+    [SerializeField] private GameProgressSO gameProgress;
+
     private int _currentIndex = 0; // 현재 채워야 할 슬롯 번호
     private bool _isProcessing = false; // 중복 실행 방지 플래그
 
@@ -28,6 +31,11 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
         {
             slot.SetActive(false);
         }
+    }
+
+    private void Start()
+    {
+        gameProgress.requiredEvidenceCount = evidenceSlots.Count;
     }
 
     public void OnReceiveItem(IItem _item)
@@ -93,7 +101,7 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
     // --- 내부 로직 ---  PunRPC 호출해줘야 함
 
     [PunRPC]
-    private void AttachEvidence(int _viewID, int _trIndex)
+    private void AttachEvidence(int _viewID, int _trIndex)  //  물건을 지정된 위치에 배치하는 메소드
     {
         PhotonView targetView = PhotonView.Find(_viewID);
         if (targetView == null) return;
@@ -102,11 +110,11 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
         if (item == null) return;
         item.OnPlaced();
 
-        // 부모 설정 및 위치 초기화 
-        targetView.transform.SetParent(evidenceSlots[_trIndex].placePoint);
-        targetView.transform.localPosition = Vector3.zero;
-        targetView.transform.localRotation = Quaternion.identity;
+        //targetView.transform.Set Parent(evidenceSlots[_trIndex].placePoint);
+        //targetView.transform.localPosition = Vector3.zero;
+        //targetView.transform.localRotation = Quaternion.identity;
 
+        // 부모 설정 및 위치 초기화 
         item.Transform.SetParent(evidenceSlots[_trIndex].placePoint);
         item.Transform.localPosition = Vector3.zero;
         item.Transform.localRotation = Quaternion.identity;
@@ -114,12 +122,8 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
         SetUI(_trIndex);
 
         _currentIndex++; // 다음 단계로 진행
+        gameProgress.AddEvidence();
 
-        if (_currentIndex >= evidenceSlots.Count)
-        {
-            HaveAllEvidence();
-        }
-        _isProcessing = false;
     }
 
     // [수정] 소각 로직을 RPC로 변경
@@ -157,8 +161,4 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
         uiEvidenceSlot[_curUIIndex].SetActive(true);
     }
 
-    private void HaveAllEvidence()
-    {
-        Debug.Log(" 사건 해결! 모든 증거를 모았습니다.");
-    }
 }
