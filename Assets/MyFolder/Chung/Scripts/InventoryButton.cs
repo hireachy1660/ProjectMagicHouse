@@ -2,14 +2,28 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InventoryButton : MonoBehaviour
+public class InventoryButton : MonoBehaviour,IReceiver
 {
-    private IItem myIItem;
     private EvidenceData myData;
+    [SerializeField]
+    private GameObject itemInfoPanel;
     [SerializeField]
     private Image itemImage;
     [SerializeField]
     private TextMeshProUGUI titleTextTMP = null;
+
+
+    private IItem myIItem;
+
+    public delegate void InvenButtonvoidIItemdelegate(IItem _item, InventoryButton _btnScript = null);
+    private InvenButtonvoidIItemdelegate UseCallback;
+    private InvenButtonvoidIItemdelegate AddCallback;
+    public InvenButtonvoidIItemdelegate OnInvenButtonUseCallback
+    { set { UseCallback = value; } } 
+    public InvenButtonvoidIItemdelegate OnInvenButtonAddCallback
+    { set { AddCallback = value; } }
+
+
 
 
     public void SetButton(IItem _item, EvidenceData _data)
@@ -20,24 +34,34 @@ public class InventoryButton : MonoBehaviour
         itemImage.sprite = myData.icon;
         titleTextTMP.text = myData.title;
 
-        myIItem.Transform.position = new Vector3(0, 100f, 0);
     }
 
-    public void OnClickInvenButton()
+    public void OnReceiveItem(IItem _item)
     {
-        myIItem.Transform.position = transform.position;
-        this.gameObject.SetActive(false);
 
+            AddCallback?.Invoke(myIItem,this);
+            SetPanelActive(true);
     }
 
-    public void UseItem()
+    public void OnActivate()
     {
+        if (myIItem == null || itemInfoPanel.activeSelf) return;
 
+        UseCallback?.Invoke(myIItem, this);
+        SetPanelActive(false);
     }
 
-    private void AddItem()
+    public void SetPanelActive(bool _panelActive)
     {
+        itemInfoPanel.SetActive(_panelActive);
+    }
 
+    public void ClearMyInfo()
+    {
+        myIItem = null;
+        myData = null;
+        itemImage.sprite = null;
+        titleTextTMP.text = string.Empty;
     }
 
 }
