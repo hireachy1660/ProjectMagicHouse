@@ -111,6 +111,8 @@ public class LoginManager : MonoBehaviourPunCallbacks
     // ----- 포톤 연결 관련 -----
     private void ConnectToPhoton()
     {
+        PhotonNetwork.AutomaticallySyncScene = true;
+
         Debug.Log("포톤 서버 접속 중..");
         // 설정한 AppID를 기반으로 마스터 서버에 접속
         PhotonNetwork.ConnectUsingSettings();

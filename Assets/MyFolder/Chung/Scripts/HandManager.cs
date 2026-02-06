@@ -7,10 +7,14 @@ using System.Runtime.CompilerServices;
 public class HandManager : MonoBehaviour
 {
     // [설정] 인스펙터에서 인터렉터를 미리 넣어둡니다.
-    [SerializeField] private RayInteractor rayInteractor;
-    [SerializeField] private GrabInteractor handInteractor;
+    [SerializeField] 
+    private RayInteractor rayInteractor;
+    [SerializeField] 
+    private GrabInteractor handInteractor;
     [SerializeField]
     private HandGrabUseInteractor UseInteractor = null;
+    //[SerializeField]
+
 
 
     // 이 함수를 인터렉터의 [Select Entered] 또는 [Activate] 이벤트에 연결합니다.

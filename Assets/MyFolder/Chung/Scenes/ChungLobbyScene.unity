@@ -4435,6 +4435,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoleSelector
   gameStatus: {fileID: 0}
+  InfoText: {fileID: 0}
 --- !u!114 &379522575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12089,7 +12090,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &891695740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12117,6 +12118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoleSelector
   gameStatus: {fileID: 11400000, guid: 9e60acdf9027bff47bd1c1f835fa0b65, type: 2}
+  InfoText: {fileID: 142497712}
 --- !u!224 &891695742
 RectTransform:
   m_ObjectHideFlags: 0
@@ -16123,7 +16125,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1354268969
 RectTransform:
   m_ObjectHideFlags: 0
@@ -19900,7 +19902,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1662105098
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23445,7 +23447,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2016740973
 Transform:
   m_ObjectHideFlags: 0

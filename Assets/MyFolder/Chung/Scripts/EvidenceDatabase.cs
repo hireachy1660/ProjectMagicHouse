@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "EvidenceDatabase", menuName = "Detective/So/Database")]
+[CreateAssetMenu(fileName = "EvidenceDatabase", menuName = "Detective/SO/Database")]
 public class EvidenceDatabase : ScriptableObject
 {
     public List<EvidenceData> allEvidence;
