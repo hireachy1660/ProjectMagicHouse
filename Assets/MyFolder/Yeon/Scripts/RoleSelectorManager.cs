@@ -77,7 +77,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         confirmPanel.SetActive(true);
     }
 
-    // 팝업창에서 '예' 확정
+    // 팝업창에서 '예' 확정C
     public void ConfirmSelection()
     {
         Hashtable props = new Hashtable
@@ -188,14 +188,12 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     // 모두 준비되었는지 확인하는 조건
     private bool CheckAllPlayersReady()
     {
-        Debug.Log($"[RoleSelectManager] Now Player Count : {PhotonNetwork.CurrentRoom.PlayerCount}");
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2) return false;
         foreach(Player p in PhotonNetwork.PlayerList)
         {
             // 역할이 없는 사람이 있으면 안됨
             if (!p.CustomProperties.ContainsKey("MyRole") || p.CustomProperties["MyRole"] == null )
             {
-                Debug.Log($"[RoleSelectManager] !p.CustomProperties.ContainsKey : {p.CustomProperties.ContainsKey("MyRole")} || p.CustomProperties[MyRole] == null");
                 return false;
             }
 

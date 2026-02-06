@@ -32,9 +32,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
     private bool isJoiningRoom = false;
     private void Start()
     {
-        // 게임이 시작되자마자 자동로그인을 시도한다.
-        // Login();
-
         loginPanel.SetActive(true);
         lobbyPanel.SetActive(false);
 
@@ -151,20 +148,12 @@ public class LoginManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("포톤 로비 입장 완료! 이제 멀티플레이 준비가 끝났습니다.");
         UpdateStatus("Photon good");
-        // 테스트를 위해 바로 방을 만들거나 들어가고 싶다면 아래 주석을 해제.
-        //PhotonNetwork.JoinOrCreateRoom("Room1", new RoomOptions { MaxPlayers = 2 }, TypedLobby.Default);
-
-        // "MyRoom"이라는 이름의 방을 접속하거나, 없으면 만든다.
-        //PhotonNetwork.JoinOrCreateRoom("MyRoom", new RoomOptions { MaxPlayers = 2}, TypedLobby.Default);
 
         gameStatus.ChangeState(GameState.Lobby);
 
         // UI 패널 교체
         loginPanel.SetActive(false);
         lobbyPanel.SetActive(true);
-
-        // [[[[테스트후 지우기]]] 가짜 방 목록 생성 (개발용 테스트)
-        CreateFakeRoomList();
 
     }
 
@@ -174,13 +163,13 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         // 기존 UI 아이템들 삭제 - 미리만튼프리팹 볼려고 , 테스끝나고 주석 지우기
-        //foreach(Transform child in roomListContent)
-        //{
-        //    Destroy(child.gameObject);
-        //}
+        foreach (Transform child in roomListContent)
+        {
+            Destroy(child.gameObject);
+        }
 
         // 새로운 목록 생성
-        if(roomList.Count == 0) 
+        if (roomList.Count == 0) 
         {
             UpdateStatus("Room Zero");
         }
@@ -339,23 +328,7 @@ public class LoginManager : MonoBehaviourPunCallbacks
 
     // ----- 뒤로가기, 새로고침 버튼 관련 -----
 
-    // [뒤로가기 버튼] 방 만들기 화면 -> 로그인 화면으로 
-    // 종류 1번째 - 닉네임 증발
-    //public void BackToLogin()
-    //{
-    //    // 서버 연결 끊기 - 닉네임 정보 증발
-    //    if (PhotonNetwork.IsConnected)
-    //    {
-    //        // 닉네임 다시 설정해야하는 코드
-    //        PhotonNetwork.Disconnect();
-
-    //    }
-    //    // 패널 전환
-    //    lobbyPanel.SetActive(false);
-    //    loginPanel.SetActive(true);
-    //}
-
-    // 종류 2번째 - 로그인 정보 유지
+    //  로그인 정보 유지
     public void BackToLogin()
     {
         //로비를 나갑니다.( 방목록 업데이트 중단 )
