@@ -8,7 +8,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/MyFolder/Yeon/Scenes/Login.unity
     guid: 56161e153b1e3f146bfe37a2a439349b
-  - enabled: 1
+  - enabled: 0
     path: Assets/MyFolder/Chung/Scenes/ChungLobbyScene.unity
     guid: 39a64eba6b56a95409c2e8d3e372df67
   - enabled: 1
