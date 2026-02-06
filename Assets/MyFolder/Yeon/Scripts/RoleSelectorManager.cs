@@ -42,6 +42,31 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         {
             RefreshUI();
         }
+
+        StartCoroutine(PropUpdate());
+
+    }
+
+    // 2. 매 프레임 감시자 (Update 추가)
+    private System.Collections.IEnumerator PropUpdate()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+            // 방장이고, 아직 시작 버튼이 꺼져있을 때만 감시
+            if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient && !startButton.interactable)
+            {
+                if (CheckAllPlayersReady())
+                {
+                    Debug.Log(" 모든 조건 충족! 시작 버튼 활성화.");
+                    startButton.interactable = true;
+                    yield break;
+                    // (선택사항) 게스트의 준비 버튼을 꺼주고 싶다면 RPC를 써야 하지만, 
+                    // 일단 UI 갱신을 위해 RefreshUI를 한 번 호출해주는 것도 좋습니다.
+                    // RefreshUI(); 
+                }
+            }
+        }
     }
 
     // 역할 버튼 클릭 (팝업 띄우기)
@@ -141,6 +166,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
 
         // 방장/게스트 버튼 제어
         bool allReady = CheckAllPlayersReady();
+        Debug.Log($"[RoleSelectManager] Is AllReady : {allReady}");
         if(PhotonNetwork.IsMasterClient)
         {
             startButton.gameObject.SetActive(true);     // 항상보이게
@@ -156,25 +182,31 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             // 역할을 선택했고, 아직 준비 버튼을 안눌렀을 때만 준비 버튼 활성화
             readyButton.interactable = iHaveRole && !iAmReady;
         }
+
     }
 
     // 모두 준비되었는지 확인하는 조건
     private bool CheckAllPlayersReady()
     {
+        Debug.Log($"[RoleSelectManager] Now Player Count : {PhotonNetwork.CurrentRoom.PlayerCount}");
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2) return false;
         foreach(Player p in PhotonNetwork.PlayerList)
         {
             // 역할이 없는 사람이 있으면 안됨
             if (!p.CustomProperties.ContainsKey("MyRole") || p.CustomProperties["MyRole"] == null )
             {
+                Debug.Log($"[RoleSelectManager] !p.CustomProperties.ContainsKey : {p.CustomProperties.ContainsKey("MyRole")} || p.CustomProperties[MyRole] == null");
                 return false;
             }
 
             // 게스트인데 준비 완료를 안 눌렀으면 안됨
-            if(!p.IsMasterClient)
+            if (!p.IsMasterClient)
             {
-                if(!p.CustomProperties.ContainsKey("IsReady") || !(bool)p.CustomProperties["IsReady"])
+                object readyObj;
+                if (!p.CustomProperties.TryGetValue("IsReady", out readyObj) || readyObj == null || !(bool)readyObj)
                 {
+                    // 여기서 안전하게 로그를 찍음
+                    Debug.Log($"[RoleSelectManager] {p.NickName} 게스트가 아직 레디 안 함");
                     return false;
                 }
             }
