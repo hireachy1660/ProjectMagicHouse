@@ -1499,6 +1499,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SoundManager
   allEvents:
   - {fileID: 11400000, guid: f0fdd21f6c4ee5343a82177e6f634955, type: 2}
+  - {fileID: 11400000, guid: bac0f32e564e8804f8c2fc61cff18c16, type: 2}
+  - {fileID: 11400000, guid: 10e3500e66b266c43a6a87a7d22b16c8, type: 2}
   audioSource: {fileID: 123398535}
 --- !u!4 &123398537
 Transform:
@@ -23884,6 +23886,8 @@ MonoBehaviour:
   vfxStayDuration: 3
   vfxFadeOutDuration: 1.5
   portalVFXHandler: {fileID: 1055800874}
+  attachSound: {fileID: 0}
+  portalOpenSound: {fileID: 0}
 --- !u!114 &863184167
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28735,6 +28739,8 @@ MonoBehaviour:
   vfxStayDuration: 3
   vfxFadeOutDuration: 1.5
   portalVFXHandler: {fileID: 175581530}
+  attachSound: {fileID: 0}
+  portalOpenSound: {fileID: 0}
 --- !u!114 &1172046113
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33456,6 +33462,14 @@ PrefabInstance:
       propertyPath: playerRig
       value: 
       objectReference: {fileID: 1224210760}
+    - target: {fileID: 3133613229386530236, guid: a046f37479e056f40811746d8656bc01, type: 3}
+      propertyPath: attachSound
+      value: 
+      objectReference: {fileID: 11400000, guid: 10e3500e66b266c43a6a87a7d22b16c8, type: 2}
+    - target: {fileID: 3133613229386530236, guid: a046f37479e056f40811746d8656bc01, type: 3}
+      propertyPath: portalOpenSound
+      value: 
+      objectReference: {fileID: 11400000, guid: bac0f32e564e8804f8c2fc61cff18c16, type: 2}
     - target: {fileID: 3133613229386530236, guid: a046f37479e056f40811746d8656bc01, type: 3}
       propertyPath: destinations.Array.size
       value: 3
