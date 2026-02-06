@@ -26,8 +26,9 @@ public class InventoryButton : MonoBehaviour,IReceiver
 
 
 
-    public void SetButton(EvidenceData _data)
+    public void SetButton(IItem _item, EvidenceData _data)
     {
+        myIItem = _item;
         myData = _data;
 
         itemImage.sprite = myData.icon;
@@ -37,7 +38,7 @@ public class InventoryButton : MonoBehaviour,IReceiver
 
     public void OnReceiveItem(IItem _item)
     {
-            myIItem = _item;
+
             AddCallback?.Invoke(myIItem,this);
             SetPanelActive(true);
     }

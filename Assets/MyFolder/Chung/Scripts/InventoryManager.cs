@@ -28,7 +28,7 @@ public class InventoryManager : MonoBehaviourPun
     {
         if (_item.Type != IItem.ItemType.Door)
         {
-            _btnScripts.SetButton(Database.Get(_item.ItemID));
+            _btnScripts.SetButton(_item, Database.Get(_item.ItemID));
 
             InventoryButton btn = null;
 
@@ -37,9 +37,19 @@ public class InventoryManager : MonoBehaviourPun
                 invenItems.Add(_item.ItemID, _btnScripts);
             }
         }
+        else 
+        if(invenItems.ContainsKey(_item.ItemID))
+        {
+            invenItems[_item.ItemID].SetPanelActive(true);
+        }
+        else
+        {
+            _btnScripts.SetButton(_item, Database.Get(_item.ItemID));
+            invenItems.Add(_item.ItemID, _btnScripts);
+        }
 
-        //_btnScripts.enabled = true;
-        photonView.RPC(nameof(DisSpawnItem), RpcTarget.AllBuffered, _item.PhotonViewID);
+            //_btnScripts.enabled = true;
+            photonView.RPC(nameof(DisSpawnItem), RpcTarget.AllBuffered, _item.PhotonViewID);
 
     }
 
@@ -75,5 +85,9 @@ public class InventoryManager : MonoBehaviourPun
         Transform tr = PhotonView.Find(_ViewID).transform;
         tr.position = itemParent.transform.position;
     }
+
+    
     
 }
+
+
