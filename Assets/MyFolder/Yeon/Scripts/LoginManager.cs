@@ -18,7 +18,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
 
     [Header("Login UI")]
     public TMP_InputField idInputField;
-    public TextMeshProUGUI statusText;
 
     [Header("Lobby UI")]
     public TMP_InputField roomNameInputField;   // 방 이름 입력칸
@@ -47,12 +46,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
             
         }
     }
-    // 메세지 업데이트하는 공용 함수
-    private void UpdateStatus(string message)
-    {
-        if(statusText != null) statusText.text = message;
-        Debug.Log(message);
-    }
     public void Login()
     {
         // InputField에서 사용자 ID를 가져온다.
@@ -68,7 +61,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // 이미 완전히 연결되어 로비에 있다면 바로 패널 교체
         if (PhotonNetwork.InLobby)
         {
-            UpdateStatus("이미 로비에 접속되어 있습니다.");
             loginPanel.SetActive(false);
             lobbyPanel.SetActive(true);
             return;
@@ -76,7 +68,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // 서버 연결은 되어있지만 로비만 나간 상태 (LeaveLobby)
         else if (PhotonNetwork.IsConnectedAndReady)
         {
-            UpdateStatus("로비에 다시 장합니다...");
             PhotonNetwork.JoinLobby();
         }
         // 아예 처음 접속이라면 (서버 연결 끊고 재접속)
@@ -147,8 +138,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     {
         Debug.Log("포톤 로비 입장 완료! 이제 멀티플레이 준비가 끝났습니다.");
-        UpdateStatus("Photon good");
-
         gameStatus.ChangeState(GameState.Lobby);
 
         // UI 패널 교체
@@ -171,7 +160,7 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // 새로운 목록 생성
         if (roomList.Count == 0) 
         {
-            UpdateStatus("Room Zero");
+            Debug.Log("생성된 방이 없습니다.");
         }
         else
         {
@@ -205,7 +194,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
             return;
         }
 
-        UpdateStatus($"방 생성 중: {roomName}");
         RoomOptions roomOptions = new RoomOptions { MaxPlayers = 2 };
         PhotonNetwork.CreateRoom(roomName, roomOptions);
     }
@@ -233,7 +221,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
         }
 
         isJoiningRoom = true; // 잠금 시작
-        UpdateStatus($"{roomName} 입장 시도 중...");
 
         RoomOptions roomOptions = new RoomOptions { MaxPlayers = 2 };
         PhotonNetwork.JoinOrCreateRoom(roomName, roomOptions, TypedLobby.Default);
@@ -243,7 +230,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         isJoiningRoom = false; // 잠금 해제
-        UpdateStatus("입장 실패: " + message);
     }
 
     // 입장 성공 시 잠금 해제
@@ -292,7 +278,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
             roleSelectPanel.SetActive(false);
         }
 
-        UpdateStatus("연결이 끊겼습니다. 다시 로그인해주세요.");
     }
 
     // [[[ 테스트 후 지우기 ]]] - 가짜방 만들기
@@ -340,7 +325,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // 패널 전환
         lobbyPanel.SetActive(false);
         loginPanel.SetActive(true);
-        UpdateStatus("로그인 화면으로 돌아왔습니다..");
     }
 
     // [새로고침 버튼]
@@ -351,7 +335,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
             // 로비를 잠시 나갔다들어오는 방식으로 목록을 강제 갱신
             // OnLeftLobby 콜백에서 자동으로 JoinLobby를 호출함.
             PhotonNetwork.LeaveLobby();
-            UpdateStatus("방 목록 새로고침 중...");
         }
     }
 
