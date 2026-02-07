@@ -17789,6 +17789,8 @@ MonoBehaviour:
   vfxStayDuration: 3
   vfxFadeOutDuration: 1.5
   portalVFXHandler: {fileID: 1484601559}
+  attachSound: {fileID: 0}
+  portalOpenSound: {fileID: 0}
 --- !u!114 &1157311197
 MonoBehaviour:
   m_ObjectHideFlags: 0
