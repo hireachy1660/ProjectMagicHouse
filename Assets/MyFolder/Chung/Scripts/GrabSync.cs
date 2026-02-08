@@ -33,7 +33,7 @@ public class GrabSync : MonoBehaviourPun
         photonView.RPC(nameof(OnGrab), RpcTarget.OthersBuffered);
     }
 
-    public void DisGrabEvent()
+    public virtual void DisGrabEvent()
     {
 
         photonView.RPC(nameof(DisGrab), RpcTarget.OthersBuffered);
@@ -41,7 +41,7 @@ public class GrabSync : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void OnGrab()
+    protected virtual void OnGrab()
     {
         rb.isKinematic = true;
         interactable.Disable();
@@ -53,7 +53,7 @@ public class GrabSync : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void DisGrab()
+    protected virtual void DisGrab()
     {
         if (rb.useGravity == true)
         {

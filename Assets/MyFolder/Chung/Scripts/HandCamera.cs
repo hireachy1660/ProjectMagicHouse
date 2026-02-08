@@ -70,6 +70,7 @@ public class HandCamera : MonoBehaviourPun
         {
             GameObject go = targetView.gameObject;
             soundEventSOs[0].PlayLocal(photonView.ViewID);
+            soundEventSOs[1].PlayLocal(photonView.ViewID);
             StartCoroutine(PhotoAnim(go));
         }
     }
