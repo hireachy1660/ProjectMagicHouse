@@ -24,6 +24,11 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public Transform roomListContent;           // scroll view의 방 리스트
     public GameObject roomItemPrefab;           // 방 버튼 프리팹
 
+    [Header("Sound Events")]
+    public SoundEventSO BGMSound;
+    public SoundEventSO BtnSoundA;
+    public SoundEventSO BtnSoundB;
+
     [Header("GameStateSo")]
     [SerializeField]
     private GameStatusSO gameStatus;
@@ -31,6 +36,9 @@ public class LoginManager : MonoBehaviourPunCallbacks
     private bool isJoiningRoom = false;
     private void Start()
     {
+
+        BGMSound?.PlayLocal(-1);
+
         loginPanel.SetActive(true);
         lobbyPanel.SetActive(false);
 
@@ -152,10 +160,11 @@ public class LoginManager : MonoBehaviourPunCallbacks
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         // 기존 UI 아이템들 삭제 - 미리만튼프리팹 볼려고 , 테스끝나고 주석 지우기
-        foreach (Transform child in roomListContent)
-        {
-            Destroy(child.gameObject);
-        }
+        //foreach (Transform child in roomListContent)
+        //{
+        //    Destroy(child.gameObject);
+        //}
+        Debug.Log("여기는 온룸리스트업데이트입니다.");
 
         // 새로운 목록 생성
         if (roomList.Count == 0) 
@@ -170,7 +179,7 @@ public class LoginManager : MonoBehaviourPunCallbacks
                 if (room.RemovedFromList) continue;
 
                 // 방 프리팹 생성
-                GameObject item = Instantiate(roomItemPrefab, roomListContent);
+                GameObject item = Instantiate(roomItemPrefab, roomListContent, false);
                 // RoomItem 스크립트가 프리팹에 있어야함
                 item.GetComponent<RoomItem>().SetInfo(room, this);
             }
@@ -292,7 +301,7 @@ public class LoginManager : MonoBehaviourPunCallbacks
         // 가짜 데이터 3개 생성
         for (int i = 1; i <= 3; i++)
         {
-            GameObject item = Instantiate(roomItemPrefab, roomListContent);
+            GameObject item = Instantiate(roomItemPrefab, roomListContent,false);
 
             // RoomItem 스크립트를 가져와서 수동으로 텍스트 설정
             // (SetInfo 대신 직접 텍스트 컴포넌트에 접근하는 방식이 테스트에 편합니다)
@@ -374,6 +383,22 @@ public class LoginManager : MonoBehaviourPunCallbacks
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
+    }
+
+    // 버튼 사운드
+    public void PlayButtonSoundA()
+    {
+        if(BtnSoundA != null)
+        {
+            BtnSoundA.PlayLocal(-1);
+        }
+    }
+    public void PlayButtonSoundB()
+    {
+        if (BtnSoundB != null)
+        {
+            BtnSoundB.PlayLocal(-1);
+        }
     }
 
 }
