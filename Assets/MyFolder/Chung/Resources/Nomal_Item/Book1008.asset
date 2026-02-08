@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 087501967d200c44cb5a7311914d0c61, type: 3}
-  m_Name: Paper1301
+  m_Name: Book1008
   m_EditorClassIdentifier: Assembly-CSharp::EvidenceData
-  id: 1301
-  title: "\uB5BC\uC5B4\uB0B8 \uC885\uC774"
-  description: "\uC544\uBB34\uAC83\uB3C4 \uC801\uD600\uC788\uC9C0\uC54A\uB2E4."
+  id: 1008
+  title: "\uB9C8\uBC95 \uACE0\uC11C"
+  description: "\uB9C8\uBC95 \uBB38\uC591\uC758 \uC885\uB958\uC5D0 \uB530\uB978 \uB9C8\uBC95\uB4E4\uC774
+    \uC801\uD600\uC788\uB2E4."
   icon: {fileID: 0}

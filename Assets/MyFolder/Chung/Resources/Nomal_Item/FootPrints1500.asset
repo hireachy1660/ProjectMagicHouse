@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 087501967d200c44cb5a7311914d0c61, type: 3}
-  m_Name: Paper1301
+  m_Name: FootPrints1500
   m_EditorClassIdentifier: Assembly-CSharp::EvidenceData
-  id: 1301
-  title: "\uB5BC\uC5B4\uB0B8 \uC885\uC774"
-  description: "\uC544\uBB34\uAC83\uB3C4 \uC801\uD600\uC788\uC9C0\uC54A\uB2E4."
+  id: 1500
+  title: "\uC2E0\uBC1C\uC790\uAD6D"
+  description: "\uB204\uAD70\uAC00\uC758 \uC2E0\uBC1C\uC790\uAD6D\uC774\uB2E4. \uB204\uAD6C\uC758
+    \uAC83\uC778\uC9C0 \uD655\uC778\uD574 \uBCFC \uD544\uC694\uAC00 \uC788\uC744\uAC70
+    \uAC19\uB2E4."
   icon: {fileID: 0}

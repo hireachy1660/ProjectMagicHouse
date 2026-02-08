@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 087501967d200c44cb5a7311914d0c61, type: 3}
-  m_Name: Paper1301
+  m_Name: Potion1400
   m_EditorClassIdentifier: Assembly-CSharp::EvidenceData
-  id: 1301
-  title: "\uB5BC\uC5B4\uB0B8 \uC885\uC774"
-  description: "\uC544\uBB34\uAC83\uB3C4 \uC801\uD600\uC788\uC9C0\uC54A\uB2E4."
+  id: 1400
+  title: "\uBB3C\uC57D\uBCD1"
+  description: "\uC2E0\uBE44\uB85C\uC6B4 \uCD08 \uBE5B\uC774 \uB3C4\uB294 \uC561\uCCB4\uAC00
+    \uB2F4\uAE34 \uBCD1\uC774\uB2E4. \uB9C8\uAC1C\uB294 \uB2E8\uB2E8\uD788 \uB2EB\uD600
+    \uC788\uB2E4."
   icon: {fileID: 0}

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 087501967d200c44cb5a7311914d0c61, type: 3}
-  m_Name: Paper1301
+  m_Name: Candle1205
   m_EditorClassIdentifier: Assembly-CSharp::EvidenceData
-  id: 1301
-  title: "\uB5BC\uC5B4\uB0B8 \uC885\uC774"
-  description: "\uC544\uBB34\uAC83\uB3C4 \uC801\uD600\uC788\uC9C0\uC54A\uB2E4."
+  id: 1205
+  title: "\uCD1B\uB300"
+  description: "\uCD1B\uB18D\uC774 \uAE38\uAC8C \uB298\uC5B4\uC9C4 \uCD1B\uB300\uB2E4."
   icon: {fileID: 0}
