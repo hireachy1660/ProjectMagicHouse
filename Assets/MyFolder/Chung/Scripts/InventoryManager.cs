@@ -26,64 +26,59 @@ public class InventoryManager : MonoBehaviourPun
 
     private void AddItem(IItem _item, InventoryButton _btnScripts)
     {
+        EvidenceData data = Database != null ? Database.Get(_item.ItemID) : null;
+
         if (_item.Type != IItem.ItemType.Door)
         {
-            _btnScripts.SetButton(_item, Database.Get(_item.ItemID));
-
-            InventoryButton btn = null;
-
-            if (!invenItems.TryGetValue(_item.ItemID, out btn))
-            {
+            if (data != null) _btnScripts.SetButton(_item, data);
+            if (!invenItems.ContainsKey(_item.ItemID))
                 invenItems.Add(_item.ItemID, _btnScripts);
-            }
         }
-        else 
-        if(invenItems.ContainsKey(_item.ItemID))
+        else if (invenItems.ContainsKey(_item.ItemID))
         {
             invenItems[_item.ItemID].SetPanelActive(true);
         }
         else
         {
-            _btnScripts.SetButton(_item, Database.Get(_item.ItemID));
+            if (data != null) _btnScripts.SetButton(_item, data);
             invenItems.Add(_item.ItemID, _btnScripts);
         }
 
-            //_btnScripts.enabled = true;
-            photonView.RPC(nameof(DisSpawnItem), RpcTarget.AllBuffered, _item.PhotonViewID);
-
+        photonView.RPC(nameof(DisSpawnItem), RpcTarget.AllBuffered, _item.PhotonViewID);
     }
 
-    private void UseItem(IItem _item, InventoryButton _btnScrits)
+    private void UseItem(IItem _item, InventoryButton _btnScripts)
     {
-        InventoryButton btn = null;
-        if (invenItems.TryGetValue(_item.ItemID, out btn))
+        if (!invenItems.TryGetValue(_item.ItemID, out InventoryButton btn)) return;
+
+        Vector3 pos = btn.transform.position;
+        photonView.RPC(nameof(SpawnItem), RpcTarget.AllBuffered, _item.PhotonViewID, pos.x, pos.y, pos.z);
+
+        // Door 타입: 버튼 유지 → 몇 번이든 스폰 가능한 자판기처럼 동작
+        if (_item.Type != IItem.ItemType.Door)
         {
-            photonView.RPC(nameof(SpawnItem), RpcTarget.AllBuffered, _item.PhotonViewID, _item.ItemID);
-            if(_item.Type != IItem.ItemType.Door)
-            {
-                invenItems.Remove(_item.ItemID);
-                invenItems[_item.ItemID].ClearMyInfo();
-            }
-            //btn.enabled = false;
+            btn.ClearMyInfo();
+            invenItems.Remove(_item.ItemID);
         }
-        
     }
 
     [PunRPC]
-    public void SpawnItem(int _ViewID,string _DicKey)
+    public void SpawnItem(int _ViewID, float _posX, float _posY, float _posZ)
     {
-        Transform tr = PhotonView.Find(_ViewID).transform;
-        tr.position = invenItems[_DicKey].transform.position;
-
-        Rigidbody rb = tr.GetComponent<Rigidbody>();
+        PhotonView pv = PhotonView.Find(_ViewID);
+        if (pv == null) return;
+        pv.transform.position = new Vector3(_posX, _posY, _posZ);
+        Rigidbody rb = pv.GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
     }
 
     [PunRPC]
     public void DisSpawnItem(int _ViewID)
     {
-        Transform tr = PhotonView.Find(_ViewID).transform;
-        tr.position = itemParent.transform.position;
+        PhotonView pv = PhotonView.Find(_ViewID);
+        if (pv == null) return;
+        if (itemParent == null) return;
+        pv.transform.position = itemParent.position;
     }
 
     

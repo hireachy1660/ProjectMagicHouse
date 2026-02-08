@@ -8,6 +8,8 @@ public class GrabSync : MonoBehaviourPun
     protected Rigidbody rb = null;
     [SerializeField]
     protected GrabInteractable interactable = null;
+    [SerializeField]
+    private SoundEventSO grabSound = null;
 
     protected virtual void Start()
     {
@@ -24,6 +26,10 @@ public class GrabSync : MonoBehaviourPun
         {
             photonView.RequestOwnership();
         }
+        if (rb.useGravity)
+        {
+            rb.isKinematic = false;
+        }
         photonView.RPC(nameof(OnGrab), RpcTarget.OthersBuffered);
     }
 
@@ -31,6 +37,7 @@ public class GrabSync : MonoBehaviourPun
     {
 
         photonView.RPC(nameof(DisGrab), RpcTarget.OthersBuffered);
+
     }
 
     [PunRPC]
@@ -38,6 +45,11 @@ public class GrabSync : MonoBehaviourPun
     {
         rb.isKinematic = true;
         interactable.Disable();
+
+        if (grabSound != null)
+        {
+            grabSound.PlayLocal(photonView.ViewID);
+        }
     }
 
     [PunRPC]

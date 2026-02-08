@@ -30,17 +30,16 @@ public class InventoryButton : MonoBehaviour,IReceiver
     {
         myIItem = _item;
         myData = _data;
-
-        itemImage.sprite = myData.icon;
-        titleTextTMP.text = myData.title;
-
+        if (_data == null) return;
+        if (itemImage != null) itemImage.sprite = _data.icon;
+        if (titleTextTMP != null) titleTextTMP.text = _data.title;
     }
 
     public void OnReceiveItem(IItem _item)
     {
-
-            AddCallback?.Invoke(myIItem,this);
-            SetPanelActive(true);
+        // 받은 아이템(_item)을 매니저에 전달해야 함. myIItem은 이 슬롯에 기존에 있던 아이템이라 넣을 때는 null
+        AddCallback?.Invoke(_item, this);
+        SetPanelActive(true);
     }
 
     public void OnActivate()
