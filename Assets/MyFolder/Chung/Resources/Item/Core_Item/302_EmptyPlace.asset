@@ -10,8 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 087501967d200c44cb5a7311914d0c61, type: 3}
-  m_Name: Key
+  m_Name: 302_EmptyPlace
   m_EditorClassIdentifier: Assembly-CSharp::EvidenceData
-  id: 101
-  title: Key
-  description: "\uC774\uAC83\uC740 '\uD0A4'\uC785\uB2C8\uB2E4"
+  id: 302
+  title: "\uACF5\uD130 \uC0AC\uC9C4"
+  description: "2X26-02-07 / 23:40\n\uC0B4\uD574\uD604\uC7A5\uC778 \uBC24\uC758 \uACF5\uD130\uC774\uB2E4.
+    \uB2E4\uC591\uD55C \uC791\uC5C5\uB3C4\uAD6C\uB4E4\uC774 \uB110\uB824\uC788\uB2E4.
+    \uBABB\uCC3E\uC740 \uB2E8\uC11C\uAC00 \uC788\uC5C8\uB294\uC9C0 \uD655\uC778\uD574\uBCF4\uC790."
+  icon: {fileID: 0}
