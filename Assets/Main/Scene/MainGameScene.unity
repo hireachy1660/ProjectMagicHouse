@@ -4043,7 +4043,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _buttonClickActions:
   - Title: TurnOnInven
-    Button: 4
+    Button: 1
     ButtonMode: 1
     InputActionReference: {fileID: 0}
     CallbackWithContext:
@@ -4065,7 +4065,7 @@ MonoBehaviour:
             m_BoolArgument: 1
           m_CallState: 2
   - Title: TurnOffInven
-    Button: 264
+    Button: 1
     ButtonMode: 0
     InputActionReference: {fileID: 0}
     CallbackWithContext:
