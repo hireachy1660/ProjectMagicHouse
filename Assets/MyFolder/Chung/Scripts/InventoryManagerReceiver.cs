@@ -13,6 +13,7 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
 {
     [SerializeField] private GameObject slotPrefab;
     [SerializeField] private EvidenceDatabase database;
+    [SerializeField] private GameStatusSO gameStatus;
 
     [Header("SetActives")]
     [SerializeField] private GameObject invenUIs;
@@ -28,6 +29,7 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
 
     private Dictionary<string, InventorySlot> _invenItems = new Dictionary<string, InventorySlot>();
     private InventorySlot _lastActiveSlot;
+    private IItem.ItemType myItemType;
 
     private void Start()
     {
@@ -39,7 +41,15 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
                 slot.SetManager(this);
         }
 
-        TurnUI(false);
+        if(gameStatus.myRole == Role.Pathfinder.ToString())
+        {
+            myItemType = IItem.ItemType.Door;
+        }
+        else
+        {
+            myItemType = IItem.ItemType.Evidence;
+        }
+            TurnUI(false);
     }
 
     public void TurnUI(bool _isTurnOn)
@@ -80,7 +90,7 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
     public void OnReceiveItem(IItem item)
     {
         if (item == null) return;
-        if (_lastActiveSlot == null) return;
+        if (_lastActiveSlot == null || item.Type != myItemType) return;
 
         AddItem(item, _lastActiveSlot);
         _lastActiveSlot.SetPanelActive(true);
