@@ -58,14 +58,9 @@ public class LeftHandManager : MonoBehaviour
 
     private IEnumerator UILookAtPlayer()
     {
-        while (CameraRig != null && infoPanel.activeSelf)
+        while(CameraRig != null)
         {
-            // 1. 먼저 카메라를 바라보게 합니다.
             infoPanel.transform.LookAt(CameraRig.transform.position);
-
-            // 2. UI 텍스트가 정면으로 보이도록 Y축으로 180도 추가 회전시킵니다.
-            infoPanel.transform.Rotate(0, 180, 0);
-
             yield return null;
         }
     }

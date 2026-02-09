@@ -35,10 +35,6 @@ public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상�
     private GameObject activePortalA;
     private GameObject activePortalB;
 
-    [Header("Sound Events")]
-    public SoundEventSO attachSound;      // 사진이 문에 붙는 소리 (Magnet snap)
-    public SoundEventSO portalOpenSound;  // 포탈이 커지는 소리 (Energy swell)
-
     public void OnReceiveItem(IItem item)
     {
         if (isPortalOpened) return;
@@ -71,14 +67,9 @@ public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상�
         GameObject itemObj = GameObject.Find(itemID); // 아이템 이름이 ID와 같다고 가정
         Transform itemTF = itemObj ? itemObj.transform : null;
 
-        if (itemTF)
-        {
-            attachSound?.PlayLocal(photonView.ViewID);
-            yield return StartCoroutine(AttachPhotoSequence(itemTF));
-        }
+        if (itemTF) yield return StartCoroutine(AttachPhotoSequence(itemTF));
         yield return new WaitForSeconds(photoFadeDelay);
 
-        portalOpenSound?.PlayLocal(photonView.ViewID);
         ExecutePortalOpening(itemID);
 
         GameObject displayMesh = null;
