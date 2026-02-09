@@ -405,7 +405,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyObject
   _itemID: 400
-  ItemType: 2
+  ItemType: 0
   rigidbody: {fileID: 6185267588032285079}
   collider: {fileID: 4868183532792117734}
 --- !u!114 &4933441543566685446

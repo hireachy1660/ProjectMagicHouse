@@ -37,4 +37,14 @@ public class WorldSynchronizer : MonoBehaviour
             }
         }
     }
+
+    public void RefreshObjectList()
+    {
+        realObjects.Clear();
+        foreach (Transform child in realWorldParent)
+        {
+            if (!realObjects.ContainsKey(child.name))
+                realObjects.Add(child.name, child);
+        }
+    }
 }
