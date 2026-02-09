@@ -30,10 +30,9 @@ public class InteractionHandler : MonoBehaviour
     void CheckForInteractable()
     {
         RaycastHit hit;
-        // 1. 카메라 정면으로 레이를 쏨 (시선 체크)
+        // 1. 시선 체크
         if (Physics.Raycast(mainCam.position, mainCam.forward, out hit, maxDistance, interactableLayer))
         {
-            // 찾은 물체에서 Outline 컴포넌트를 가져옴
             Outline currentOutline = hit.collider.GetComponent<Outline>();
 
             if (currentOutline != null)
@@ -42,26 +41,15 @@ public class InteractionHandler : MonoBehaviour
                 {
                     ClearLastHighlight();
 
-                    // [핵심 수정] 
-                    // 1. 색상: RGB 값을 조금 더 연하게(White에 가깝게) 섞고 
-                    // 2. 투명도(Alpha): 0.5f 정도로 낮춰서 '푸르스름한' 느낌 연출
-                    Color softBluePurple = new Color(0.6f, 0.6f, 1f, 0.5f);
-
-                    currentOutline.OutlineColor = softBluePurple;
-
-                    // 두께를 5.0보다 조금 낮추면(3.0~4.0) 경계선이 더 부드러워집니다.
-                    currentOutline.OutlineWidth = 3.5f;
-
-                    // OutlineAll 대신 OutlineVisible을 쓰면 물체 뒤에 가려진 부분은 안 나와서 더 깔끔합니다.
-                    currentOutline.OutlineMode = Outline.Mode.OutlineVisible;
+                    // [수정] 코드로 색상/두께/모드를 정하지 않습니다.
+                    // 이제 인스펙터(Outline 컴포넌트)에 설정된 값이 그대로 적용됩니다.
 
                     currentOutline.enabled = true;
                     lastHighlighted = currentOutline;
                 }
+                return;
             }
         }
-
-        // 아무것도 안 맞았거나 거리가 멀어지면 하이라이트 해제
         ClearLastHighlight();
     }
 
