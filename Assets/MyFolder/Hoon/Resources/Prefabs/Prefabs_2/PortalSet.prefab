@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5403972423923854483}
   - component: {fileID: 6438936797740473956}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -555,7 +555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 76a013d1-7c16-4a60-9c1b-79b3691c0438
-  instanceId: 4a2e08e8-cc96-4231-b002-70ff24961fd9
+  instanceId: 5eb1f2c8-084b-42e7-b915-cf327e2a8e08
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 4a33ce4b-b595-477f-a346-d7cf7af0ef27
@@ -663,7 +663,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 7358e191-33b7-43ca-b066-b2f00531ac66
-  instanceId: e9ce1189-641c-4011-ab97-a64957ccb2b3
+  instanceId: 14d067ee-3f22-4f31-a6d5-4060411a1812
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 
@@ -739,3 +739,5 @@ MonoBehaviour:
   vfxStayDuration: 3
   vfxFadeOutDuration: 1.5
   portalVFXHandler: {fileID: 4284683192939830695}
+  attachSound: {fileID: 0}
+  portalOpenSound: {fileID: 0}

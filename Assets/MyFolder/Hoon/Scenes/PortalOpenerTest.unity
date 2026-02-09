@@ -1123,6 +1123,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1217910025352724752, guid: 6c430e2339b04d49a5ca113f066609b8, type: 3}
+      propertyPath: sceneViewId
+      value: 21
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2271,8 +2275,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7357533261991924507, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 205233094}
   m_SourcePrefab: {fileID: 100100000, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
+--- !u!1 &205233093 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7357533261991924507, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
+  m_PrefabInstance: {fileID: 205233092}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &205233094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205233093}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Outline
+  outlineMode: 1
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &206019984
 GameObject:
   m_ObjectHideFlags: 0
@@ -2552,6 +2582,10 @@ PrefabInstance:
     - target: {fileID: 424098, guid: 197a3bf124274ac5a1dd23cf272a9a3a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165480271494075079, guid: 197a3bf124274ac5a1dd23cf272a9a3a, type: 3}
+      propertyPath: sceneViewId
+      value: 19
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12825,6 +12859,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7564066970194871216, guid: b29b15951e3f4f2f83b65c4b43aff9d2, type: 3}
+      propertyPath: sceneViewId
+      value: 18
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -16902,6 +16940,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8818698141978552722, guid: d8c1ecd27d8b494f99c904bd9a3be8bf, type: 3}
+      propertyPath: sceneViewId
+      value: 20
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -17417,6 +17459,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5897057355027978013, guid: 95df6f7f30e343db95014a0a7537ce7d, type: 3}
+      propertyPath: sceneViewId
+      value: 12
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -17789,6 +17835,8 @@ MonoBehaviour:
   vfxStayDuration: 3
   vfxFadeOutDuration: 1.5
   portalVFXHandler: {fileID: 1484601559}
+  attachSound: {fileID: 0}
+  portalOpenSound: {fileID: 0}
 --- !u!114 &1157311197
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20129,6 +20177,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1013025824331296777, guid: 525d19f14f3748b0b2fa10caecab6b1c, type: 3}
+      propertyPath: sceneViewId
+      value: 24
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -20785,6 +20837,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 480187470838681351, guid: 147f183af15640289aa7154f0ea2de5c, type: 3}
+      propertyPath: sceneViewId
+      value: 23
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -21173,6 +21229,10 @@ PrefabInstance:
     - target: {fileID: 422276, guid: 131a112cf67c4e98af44b350b210ef43, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7617399333858341667, guid: 131a112cf67c4e98af44b350b210ef43, type: 3}
+      propertyPath: sceneViewId
+      value: 16
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -27680,6 +27740,55 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1760499511}
   m_Mesh: {fileID: -1400888638184400698, guid: bcdaad633e98c344fafef62165623042, type: 3}
+--- !u!1 &1762810976
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1762810978}
+  - component: {fileID: 1762810977}
+  m_Layer: 0
+  m_Name: InteractionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1762810977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762810976}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7402c8740746bb94084ec2ae6a047bcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractionHandler
+  maxDistance: 2.5
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 1073741824
+  checkInterval: 0.1
+--- !u!4 &1762810978
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762810976}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.08213, y: -0.5, z: -3.0024}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1773641429
 GameObject:
   m_ObjectHideFlags: 0
@@ -28865,6 +28974,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4165480271494075079, guid: 197a3bf124274ac5a1dd23cf272a9a3a, type: 3}
+      propertyPath: sceneViewId
+      value: 14
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -28954,6 +29067,10 @@ PrefabInstance:
     - target: {fileID: 469992, guid: f92572ee929e4eb7a01d7dfecc063a29, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1984455476763945367, guid: f92572ee929e4eb7a01d7dfecc063a29, type: 3}
+      propertyPath: sceneViewId
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -29106,6 +29223,10 @@ PrefabInstance:
     - target: {fileID: 425266, guid: 374b0997db81407ca6f741e55d078c80, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7392439467183904044, guid: 374b0997db81407ca6f741e55d078c80, type: 3}
+      propertyPath: sceneViewId
+      value: 22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -29853,6 +29974,10 @@ PrefabInstance:
     - target: {fileID: 433132, guid: 6c430e2339b04d49a5ca113f066609b8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1217910025352724752, guid: 6c430e2339b04d49a5ca113f066609b8, type: 3}
+      propertyPath: sceneViewId
+      value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -31916,6 +32041,10 @@ PrefabInstance:
     - target: {fileID: 427188, guid: ec9920e44a9241b0bed559c0b9d90d5c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4970864651765922202, guid: ec9920e44a9241b0bed559c0b9d90d5c, type: 3}
+      propertyPath: sceneViewId
+      value: 13
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -42999,3 +43128,4 @@ SceneRoots:
   - {fileID: 2045707474}
   - {fileID: 1338162861}
   - {fileID: 5851969395182620872}
+  - {fileID: 1762810978}
