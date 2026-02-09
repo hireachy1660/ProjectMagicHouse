@@ -65,6 +65,9 @@ public class LoginManager : MonoBehaviourPunCallbacks
             Debug.LogWarning("아이디가 비어있습니다!");
             return;
         }
+        //포톤 닉네임을 사용자가 입력한 ID로 설정
+        PhotonNetwork.NickName = userCustomID;
+        Debug.Log($"포톤 닉네임 설정 완료: {PhotonNetwork.NickName}");
 
         // 이미 완전히 연결되어 로비에 있다면 바로 패널 교체
         if (PhotonNetwork.InLobby)

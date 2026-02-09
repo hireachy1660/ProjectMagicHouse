@@ -29,6 +29,9 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     public GameObject lobbyPanel;
     public GameObject roleSelectPanel;
 
+    [Header("Player Status UI")]
+    public TMP_Text playerStatusListText;   // 역할패널에서 접속 상태 메세지
+
     [Header("So")]
     [SerializeField]
     private GameStatusSO gameStatus;
@@ -80,7 +83,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         confirmPanel.SetActive(true);
     }
 
-    // 팝업창에서 '예' 확정C
+    // 팝업창에서 '예' 확정
     public void ConfirmSelection()
     {
         Hashtable props = new Hashtable
@@ -143,13 +146,37 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         bool iHaveRole = !string.IsNullOrEmpty(myRole);
         bool iAmReady = PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("IsReady")
             && (bool)PhotonNetwork.LocalPlayer.CustomProperties["IsReady"];
-        
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        sb.AppendLine("<현재 접속자 상태>");
+
         foreach(Player p in PhotonNetwork.PlayerList)
         {
+            string role = "선택 중...";    // 기본 상태
+
             if (p.CustomProperties.ContainsKey("MyRole") && p.CustomProperties["MyRole"] != null)
             {
                 takenRoles.Add((string)p.CustomProperties["MyRole"]);
             }
+
+            // 준비 상태 확인
+            string readyStatus = "";
+            if(!p.IsMasterClient)   // 게스트일 경우
+            {
+                bool isReady = p.CustomProperties.ContainsKey("IsReady") && (bool)p.CustomProperties["IsReady"];
+                readyStatus = isReady ? "<color=green>[준비완료]</color>" : "<color=yellow>[준비중]</color>";
+            }
+            else
+            {
+                readyStatus = "<color=cyan>[준비완료 기다리는중..]</color>";
+            }
+
+            // 텍스트 한 줄 완성 : ex) user1 : Pathfinder [준비완료]
+            sb.AppendLine($"-{p.NickName}{(p.IsLocal ? "(나)" : "")} : {role}{readyStatus}");
+        }
+        // 최종 텍스트 적용
+        if(playerStatusListText != null)
+        {
+            playerStatusListText.text = sb.ToString();
         }
 
         // 버튼 활성화 규칙
@@ -302,6 +329,18 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         Debug.Log($"방장이 변경되었습니다! 새로운 방장: {newMasterClient.NickName}");
     
         // 방장이 바뀌었으니 UI다시 그리기 - 레디버튼 대신 스타트 버튼으로 
+        RefreshUI();
+    }
+
+    // 입장, 퇴장 텍스트
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        Debug.Log("${newPlayer.NicName} 입장");
+        RefreshUI();
+    }
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        Debug.Log("{otherPlayer.NickName} 퇴장");
         RefreshUI();
     }
 }
