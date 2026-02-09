@@ -172,7 +172,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1764439038636731971}
-  m_LocalRotation: {x: -0.16699432, y: -0.000000043097586, z: -0.0000000072995534, w: -0.98595786}
+  m_LocalRotation: {x: -0.053126253, y: -0.008270112, z: 0.0004399918, w: -0.9985535}
   m_LocalPosition: {x: 0, y: 0, z: 2000}
   m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
   m_ConstrainProportionsScale: 0
@@ -866,7 +866,7 @@ GameObject:
   - component: {fileID: 4963537290057016406}
   - component: {fileID: 5441620115226075895}
   m_Layer: 0
-  m_Name: '@SettingManager'
+  m_Name: '@SettingManager22'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
