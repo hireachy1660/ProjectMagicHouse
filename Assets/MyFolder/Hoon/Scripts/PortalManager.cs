@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun; // 추가 [cite: 2025-12-24]
+using Photon.Pun;
 
-public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상속 [cite: 2025-12-24]
+public class PortalManager : MonoBehaviourPun, IReceiver
 {
     [System.Serializable]
     public struct DestinationData
@@ -36,9 +36,10 @@ public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상�
     private GameObject activePortalB;
 
     [Header("Sound Events")]
-    public SoundEventSO attachSound;      // 사진이 문에 붙는 소리 (Magnet snap)
-    public SoundEventSO portalOpenSound;  // 포탈이 커지는 소리 (Energy swell)
+    public SoundEventSO attachSound;
+    public SoundEventSO portalOpenSound;
 
+    // 1. 아이템 수신 (RPC 호출 시 viewID 추가 전송)
     public void OnReceiveItem(IItem item)
     {
         if (isPortalOpened) return;
@@ -49,33 +50,37 @@ public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상�
             return;
         }
 
-        // [네트워크 핵심] 방에 있는 모든 사람에게 포탈 생성을 명령합니다. [cite: 2025-12-24]
-        photonView.RPC("RPC_StartPortalSequence", RpcTarget.All, item.ItemID);
+        // itemID(목적지 식별)와 item.PhotonViewID(물체 식별)를 함께 보냄
+        photonView.RPC("RPC_StartPortalSequence", RpcTarget.All, item.ItemID, item.PhotonViewID);
     }
 
-    [PunRPC] // 모든 클라이언트에서 실행될 함수 [cite: 2025-12-24]
-    private void RPC_StartPortalSequence(string itemID)
+    // 2. RPC 함수 (인자 2개 받도록 수정)
+    [PunRPC]
+    private void RPC_StartPortalSequence(string itemID, int viewID)
     {
-        // 네트워크 환경에서는 item 오브젝트가 각자 다를 수 있으므로 ID로 처리하거나
-        // 씬 내의 아이템을 찾아야 합니다. 여기선 연출을 위해 아이템 태그 등으로 찾거나
-        // 상호작용한 아이템을 특정하는 로직이 필요할 수 있습니다.
-        // 우선 기존 로직을 최대한 유지하며 시퀀스를 실행합니다.
-        StartCoroutine(PortalOpeningSequenceByNet(itemID));
+        // ViewID로 네트워크상의 정확한 오브젝트 찾기
+        PhotonView targetPV = PhotonView.Find(viewID);
+        GameObject itemObj = targetPV != null ? targetPV.gameObject : null;
+
+        // 찾은 오브젝트를 시퀀스로 전달
+        StartCoroutine(PortalOpeningSequenceByNet(itemID, itemObj));
     }
 
-    private IEnumerator PortalOpeningSequenceByNet(string itemID)
+    // 3. 메인 시퀀스 (GameObject 직접 받아서 처리)
+    private IEnumerator PortalOpeningSequenceByNet(string itemID, GameObject itemObj)
     {
         isPortalOpened = true;
-
-        // 실제 아이템 오브젝트를 씬에서 찾아 연출에 사용 (간단한 예시)
-        GameObject itemObj = GameObject.Find(itemID); // 아이템 이름이 ID와 같다고 가정
         Transform itemTF = itemObj ? itemObj.transform : null;
 
         if (itemTF)
         {
+            // [중요] 아이템의 물리와 그랩을 먼저 꺼야 문으로 날아갑니다.
+            itemObj.GetComponent<IItem>()?.OnPlaced();
+
             attachSound?.PlayLocal(photonView.ViewID);
             yield return StartCoroutine(AttachPhotoSequence(itemTF));
         }
+
         yield return new WaitForSeconds(photoFadeDelay);
 
         portalOpenSound?.PlayLocal(photonView.ViewID);
@@ -103,12 +108,56 @@ public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상�
         }
     }
 
-    // ... [FadeOutPhotoOnly, GetMaterialsFromObj, ApplyAlphaToMats, AttachPhotoSequence 코드는 기존과 동일] ...
-
-    private IEnumerator ExpandRoutineForManager(float duration, GameObject mesh)
+    private IEnumerator AttachPhotoSequence(Transform itemTF)
     {
-        portalVFXHandler.PlayExpand(duration, mesh);
-        yield return new WaitForSeconds(duration);
+        float heightOffset = 0.5f;
+        float distanceOffset = -0.02f;
+        Vector3 targetPos = entranceSpawnPoint.position
+                            + (entranceSpawnPoint.forward * distanceOffset)
+                            + (entranceSpawnPoint.up * heightOffset);
+
+        Vector3 startPos = itemTF.position;
+        Quaternion startRot = itemTF.rotation;
+        float elapsed = 0f;
+
+        while (elapsed < attachDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / attachDuration;
+            itemTF.position = Vector3.Lerp(startPos, targetPos, t);
+            itemTF.rotation = Quaternion.Slerp(startRot, entranceSpawnPoint.rotation, t);
+            yield return null;
+        }
+    }
+
+    private void ExecutePortalOpening(string photoID)
+    {
+        DestinationData data = destinations.Find(x => x.photoID == photoID);
+        if (data.targetPos == null) return;
+
+        if (activePortalA) Destroy(activePortalA);
+        if (activePortalB) Destroy(activePortalB);
+
+        activePortalA = Instantiate(portalPrefab, entranceSpawnPoint.position, entranceSpawnPoint.rotation);
+        activePortalB = Instantiate(portalPrefab, data.targetPos.position, data.targetPos.rotation);
+
+        LinkPortals(activePortalA, activePortalB);
+    }
+
+    private void LinkPortals(GameObject a, GameObject b)
+    {
+        ModernPortal vA = a.GetComponentInChildren<ModernPortal>();
+        ModernPortal vB = b.GetComponentInChildren<ModernPortal>();
+        Teleporter tA = a.GetComponentInChildren<Teleporter>();
+        Teleporter tB = b.GetComponentInChildren<Teleporter>();
+
+        if (vA && vB) { vA.Link(vB, playerRig); vB.Link(vA, playerRig); }
+        if (tA && tB)
+        {
+            tA.receiver = tB.transform; tB.receiver = tA.transform;
+            tA.playerRig = tB.playerRig = playerRig;
+            tA.mainCamera = tB.mainCamera = Camera.main.transform;
+        }
     }
 
     private IEnumerator FadeOutPhotoOnly(Transform photoTF, float duration)
@@ -159,59 +208,14 @@ public class PortalManager : MonoBehaviourPun, IReceiver // MonoBehaviourPun 상�
         }
     }
 
-    private IEnumerator AttachPhotoSequence(Transform itemTF)
+    private IEnumerator ExpandRoutineForManager(float duration, GameObject mesh)
     {
-        float heightOffset = 0.5f;
-        float distanceOffset = -0.02f;
-        Vector3 targetPos = entranceSpawnPoint.position
-                            + (entranceSpawnPoint.forward * distanceOffset)
-                            + (entranceSpawnPoint.up * heightOffset);
-        Vector3 startPos = itemTF.position;
-        Quaternion startRot = itemTF.rotation;
-        float elapsed = 0f;
-        while (elapsed < attachDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / attachDuration;
-            itemTF.position = Vector3.Lerp(startPos, targetPos, t);
-            itemTF.rotation = Quaternion.Slerp(startRot, entranceSpawnPoint.rotation, t);
-            yield return null;
-        }
-    }
-
-    private void ExecutePortalOpening(string photoID)
-    {
-        DestinationData data = destinations.Find(x => x.photoID == photoID);
-        if (data.targetPos == null) return;
-
-        if (activePortalA) Destroy(activePortalA);
-        if (activePortalB) Destroy(activePortalB);
-
-        activePortalA = Instantiate(portalPrefab, entranceSpawnPoint.position, entranceSpawnPoint.rotation);
-        activePortalB = Instantiate(portalPrefab, data.targetPos.position, data.targetPos.rotation);
-
-        LinkPortals(activePortalA, activePortalB);
-    }
-
-    private void LinkPortals(GameObject a, GameObject b)
-    {
-        ModernPortal vA = a.GetComponentInChildren<ModernPortal>();
-        ModernPortal vB = b.GetComponentInChildren<ModernPortal>();
-        Teleporter tA = a.GetComponentInChildren<Teleporter>();
-        Teleporter tB = b.GetComponentInChildren<Teleporter>();
-
-        if (vA && vB) { vA.Link(vB, playerRig); vB.Link(vA, playerRig); }
-        if (tA && tB)
-        {
-            tA.receiver = tB.transform; tB.receiver = tA.transform;
-            tA.playerRig = tB.playerRig = playerRig;
-            tA.mainCamera = tB.mainCamera = Camera.main.transform;
-        }
+        portalVFXHandler.PlayExpand(duration, mesh);
+        yield return new WaitForSeconds(duration);
     }
 
     public void ResetPortal()
     {
-        // 리셋도 필요하다면 RPC로 동기화해야 합니다. [cite: 2025-12-24]
         if (PhotonNetwork.IsMasterClient)
             photonView.RPC("RPC_ResetPortal", RpcTarget.All);
     }
