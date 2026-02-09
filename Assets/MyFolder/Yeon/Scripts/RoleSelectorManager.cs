@@ -146,8 +146,9 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         bool iHaveRole = !string.IsNullOrEmpty(myRole);
         bool iAmReady = PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("IsReady")
             && (bool)PhotonNetwork.LocalPlayer.CustomProperties["IsReady"];
+        
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine("<현재 접속자 상태>");
+        sb.AppendLine("<color=white><b>[플레이어 목록]</b></color>");
 
         foreach(Player p in PhotonNetwork.PlayerList)
         {
@@ -167,7 +168,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             }
             else
             {
-                readyStatus = "<color=cyan>[준비완료 기다리는중..]</color>";
+                readyStatus = "<color=blue>[준비완료 기다리는중..]</color>";
             }
 
             // 텍스트 한 줄 완성 : ex) user1 : Pathfinder [준비완료]

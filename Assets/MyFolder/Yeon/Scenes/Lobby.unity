@@ -9261,7 +9261,7 @@ MonoBehaviour:
   confirmText: {fileID: 822183667}
   lobbyPanel: {fileID: 1018845304}
   roleSelectPanel: {fileID: 230971259}
-  playerStatusListText: {fileID: 0}
+  playerStatusListText: {fileID: 1789699479}
   gameStatus: {fileID: 11400000, guid: 9e60acdf9027bff47bd1c1f835fa0b65, type: 2}
 --- !u!4 &1544562203
 Transform:
