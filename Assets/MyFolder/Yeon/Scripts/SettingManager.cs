@@ -10,6 +10,8 @@ public class SettingManager : MonoBehaviour
     public GameObject settingCanvas;    // 환경설정 UI
     public Slider bgmSlider;
     public Slider sfxSlider;
+    public Button closeBtn;
+    public Button ExitBtn;
 
     public void Awake()
     {
@@ -31,53 +33,87 @@ public class SettingManager : MonoBehaviour
         // 저장된 소리 값 불러오기 (없으면 1.0)
         bgmSlider.value = PlayerPrefs.GetFloat("BGM_Volume", 1.0f);
         sfxSlider.value = PlayerPrefs.GetFloat("SFX_Volume", 1.0f);
+
+        // 이벤트 연결
+        bgmSlider.onValueChanged.AddListener(SetBGM);
+        sfxSlider.onValueChanged.AddListener(SetSFX);
+        closeBtn.onClick.AddListener(CloseSetting);   // 닫기 버튼 누르면 토글
+        ExitBtn.onClick.AddListener(QuitGame);
+
     }
-    // [상황 1] 로그인 패널 버튼을 눌렀을 때 (화면 중앙 소환)
-    public void OpenSettingUI()
+
+    private void Update()
     {
-        settingCanvas.SetActive(true);
-        // 로그인 씬에서는 보통 카메라 정면 적당한 곳에 배치
-        settingCanvas.transform.position = new Vector3(0, 1, 2); // 예시 위치
-        settingCanvas.transform.LookAt(Camera.main.transform);
+        // 왼쪽 컨트롤러의 Y버튼 감지
+        if(OVRInput.GetDown(OVRInput.RawButton.Y))
+            {
+            if(settingCanvas.activeSelf)
+            {
+                CloseSetting();
+            }
+            else
+            {
+                OpenSetting();
+                // VR에서는 창이 눈앞에 나타나는 것이 중요하다.
+                PositionCanvasInFront();
+            }
+
+        }
+    }
+    
+    // 캔버스를 카메라 앞으로 소호나하는 함수
+    private void PositionCanvasInFront()
+    {
+        // OVRCameraRig 내의 CenterEyeAnchor를 찾는다.
+        Transform camTransform = Camera.main.transform;
+
+        // 카메라 앞 1.2m 지점에 배치
+        Vector3 targetPos = camTransform.position + (camTransform.forward * 1.2f);
+        settingCanvas.transform.position = targetPos;
+
+        // UI가 사용자를 정면으로 바라보게 회전
+        settingCanvas.transform.LookAt(camTransform.position);
         settingCanvas.transform.Rotate(0, 180, 0);
     }
 
-    // [상황 2] VR 컨트롤러 버튼을 눌렀을 때 (손앞에 소환)
-    public void OpenSettingVR(Transform controllerTransform)
+    // 외부 로그인 버튼, 조이스틱 버튼에서 호출할 함수
+    public void OpenSetting()
     {
-        settingCanvas.SetActive(true);
-        // 컨트롤러 위치 기준 앞쪽 0.5m
-        Vector3 spawnPos = controllerTransform.position + (controllerTransform.forward * 0.5f);
-        settingCanvas.transform.position = spawnPos;
+        Debug.Log("버튼 눌림!");        // 이 글자가 콘솔창에 뜨는지 확인
 
-        // 유저를 바라보게 회전
-        settingCanvas.transform.LookAt(Camera.main.transform);
-        settingCanvas.transform.Rotate(0, 180, 0);
+        // 꺼져있든 켜져있든 무조건 킨다.
+        if (settingCanvas != null)
+        {
+            settingCanvas.SetActive(true);
+            Debug.Log("환경설정 창 활성화");
+        }
     }
 
-
-    public void CloseSetting() => settingCanvas.SetActive(false);
-
-    public void OnBGMChanged(float value)
+    public void CloseSetting()
     {
-        //ApplyVolume(value);
+        // 무조건 끈다.
+        if(settingCanvas != null)
+        {
+            settingCanvas.SetActive(false);
+            Debug.Log("환경설정 창 비활성화");
+        }
+    }
+
+    private void SetBGM(float value)
+    {
         PlayerPrefs.SetFloat("BGM_Volume", value);
     }
-    public void OnSFXChanged(float value)
+    private void SetSFX(float value)
     {
-        // 효과음 볼륨 저장
         PlayerPrefs.SetFloat("SFX_Volume", value);
-
-        // 실제 효과음 오디오 소스들에 적용 (AudioMixer 사용 시)
-        // mixer.SetFloat("SFXVolume", Mathf.Log10(value) * 20 );
     }
 
-    private void ApplyVolume(float volume)
+    public void QuitGame()
     {
-        // 실제 오디오 믹서나 오디오 소스에 불륨 적용하는 로직
-        AudioListener.volume = volume;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
-
-
-
 }

@@ -16,6 +16,9 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     public Button startButton;  // 방장 전용 시작 버튼
     public Button readyButton;  // 게스트 전용 준비 버튼
     public Button leaveRoomButton;  // 방 나가기 버튼
+    public TMP_Text readyBtnText;     // 준비버튼 텍스트
+    public TMP_Text startBtnText;     // 시작버튼 텍스트
+    public TMP_Text roleCancleBtnText;  // 역활 취소 버튼 텍스트
 
     [Header("Confirm UI")]
     public GameObject confirmPanel; // 역할 선택 확정 UI 팝업창
@@ -77,7 +80,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         confirmPanel.SetActive(true);
     }
 
-    // 팝업창에서 '예' 확정
+    // 팝업창에서 '예' 확정C
     public void ConfirmSelection()
     {
         Hashtable props = new Hashtable
@@ -162,6 +165,13 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             cancelConfirmedBtn.gameObject.SetActive(true);
             // 내가 역할을 골랐을 때만 클릭 가능
             cancelConfirmedBtn.interactable = iHaveRole;
+
+            // 버튼의 자식 텍스트 색상 제어
+            TMP_Text cancelText = cancelConfirmedBtn.GetComponentInChildren<TMP_Text>();
+            if (cancelText != null)
+            {
+                cancelText.color = iHaveRole ? Color.white : new Color32(48, 80, 80, 255); // 비활성 시 #305050
+            }
         }
 
         // 방장/게스트 버튼 제어
@@ -173,6 +183,12 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             readyButton.gameObject.SetActive(false);    // 방장은 레이버튼 없으니 꺼둠
             // 모든 사람이 역할 선택 + 게스트 준비 완료 버튼 시 스타트 버튼 활성화
             startButton.interactable = allReady;
+
+            TMP_Text startText = startButton.GetComponentInChildren<TMP_Text>();
+            if (startText != null)
+            {
+                startText.color = allReady ? Color.white : new Color32(48, 80, 80, 255);
+            }
         }
         else
         {
@@ -180,7 +196,14 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             startButton.gameObject.SetActive(false);
             readyButton.gameObject.SetActive(true);
             // 역할을 선택했고, 아직 준비 버튼을 안눌렀을 때만 준비 버튼 활성화
-            readyButton.interactable = iHaveRole && !iAmReady;
+            bool canReady = iHaveRole && !iAmReady;
+            readyButton.interactable = canReady;
+
+            TMP_Text readyText = readyButton.GetComponentInChildren<TMP_Text>();
+            if (readyText != null)
+            {
+                readyText.color = canReady ? Color.white : new Color32(48, 80, 80, 255);
+            }
         }
 
     }
@@ -188,14 +211,12 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     // 모두 준비되었는지 확인하는 조건
     private bool CheckAllPlayersReady()
     {
-        Debug.Log($"[RoleSelectManager] Now Player Count : {PhotonNetwork.CurrentRoom.PlayerCount}");
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2) return false;
         foreach(Player p in PhotonNetwork.PlayerList)
         {
             // 역할이 없는 사람이 있으면 안됨
             if (!p.CustomProperties.ContainsKey("MyRole") || p.CustomProperties["MyRole"] == null )
             {
-                Debug.Log($"[RoleSelectManager] !p.CustomProperties.ContainsKey : {p.CustomProperties.ContainsKey("MyRole")} || p.CustomProperties[MyRole] == null");
                 return false;
             }
 
