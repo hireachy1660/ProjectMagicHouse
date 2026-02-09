@@ -54,8 +54,6 @@ MonoBehaviour:
   - RPC_StartPortalSequence
   - DisSpawnItem
   - SpawnItem
-  - RPC_ShoeOnGrab
-  - RPC_ShoeOnStop
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
