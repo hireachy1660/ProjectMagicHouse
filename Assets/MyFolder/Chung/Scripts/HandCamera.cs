@@ -16,6 +16,8 @@ public class HandCamera : MonoBehaviourPun
     private Transform photoSpawnPoint = null;
     [SerializeField]
     private float animDuration = 1f;
+    [SerializeField]
+    private float photoMoveDistance = 0.17f;
 
     [Header("PicturesPrefabs")]
     [SerializeField]
@@ -114,7 +116,7 @@ public class HandCamera : MonoBehaviourPun
 
         // 이동 범위 설정 (로컬 좌표 기준)
         Vector3 startPos = Vector3.zero;
-        Vector3 endPos = Vector3.forward * 0.2f; // 앞으로 0.2m 이동
+        Vector3 endPos = Vector3.forward * photoMoveDistance; // 앞으로 0.2m 이동
 
         PhotonTransformView myView = _go.GetComponent<PhotonTransformView>();
         Rigidbody rb = _go.GetComponent<Rigidbody>();
