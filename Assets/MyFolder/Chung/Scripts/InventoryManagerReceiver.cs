@@ -28,7 +28,7 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
     [SerializeField] private Transform addedItemPosition;
 
     private Dictionary<string, InventorySlot> _invenItems = new Dictionary<string, InventorySlot>();
-    private InventorySlot _lastActiveSlot;
+    private InventorySlot lastActiveSlot;
     private IItem.ItemType myItemType;
 
     private void Start()
@@ -84,25 +84,33 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
     /// <summary> InventorySlot에서 포인터 엔터 시 호출. 이 슬롯을 마지막 활성 슬롯으로 저장. </summary>
     public void SetLastActiveSlot(InventorySlot slot)
     {
-        _lastActiveSlot = slot;
+        lastActiveSlot = slot;
+    }
+
+    public void ClearLastActiveSlot(InventorySlot slot)
+    {
+        if (lastActiveSlot == slot)
+        {
+            lastActiveSlot = null; // 내가 가리키던 슬롯에서 나갈 때만 정확히 비움
+        }
     }
 
     public void OnReceiveItem(IItem item)
     {
         if (item == null) return;
-        if (_lastActiveSlot == null || item.Type != myItemType) return;
+        if (lastActiveSlot == null || item.Type != myItemType) return;
 
-        AddItem(item, _lastActiveSlot);
-        _lastActiveSlot.SetPanelActive(true);
+        AddItem(item, lastActiveSlot);
+        lastActiveSlot.SetPanelActive(true);
     }
 
     public void OnActivate()
     {
-        if (_lastActiveSlot == null) return;
-        if (_lastActiveSlot.CurrentItem == null) return;
+        if (lastActiveSlot == null) return;
+        if (lastActiveSlot.CurrentItem == null) return;
 
-        UseItem(_lastActiveSlot.CurrentItem, _lastActiveSlot);
-        _lastActiveSlot.SetPanelActive(false);
+        UseItem(lastActiveSlot.CurrentItem, lastActiveSlot);
+        lastActiveSlot.SetPanelActive(false);
     }
 
     private void AddItem(IItem item, InventorySlot slot)
@@ -147,10 +155,17 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
     {
         PhotonView pv = PhotonView.Find(viewID);
         if (pv == null) return;
-        pv.gameObject.SetActive(true);
         pv.transform.position = new Vector3(posX, posY, posZ);
-        var rb = pv.GetComponent<Rigidbody>();
-        if (rb != null) rb.isKinematic = true;
+        pv.gameObject.SetActive(true);
+
+        // 최적화를 위해 꺼져 있던 자식 객체들을 다시 활성화
+        foreach (Transform child in pv.transform)
+        {
+            child.gameObject.SetActive(true);
+        }
+
+        //var rb = pv.GetComponent<Rigidbody>();
+        //if (rb != null) rb.isKinematic = true;
     }
 
     [PunRPC]
@@ -158,7 +173,21 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
     {
         PhotonView pv = PhotonView.Find(viewID);
         if (pv == null || addedItemPosition == null) return;
+
+        // 그랩인터렉터블을 포함한 컴포넌트를 꺼서 그랩을 해제
         pv.gameObject.SetActive(false);
         pv.transform.position = addedItemPosition.position;
+
+        // 메쉬 랜더러가 있는 자식 객체를 끔
+        foreach (Transform child in pv.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+
+        var rb = pv.GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
+
+        // 최적화 및 안전처리 후 다시 켬
+        pv.gameObject.SetActive(true);
     }
 }
