@@ -117,21 +117,11 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
     {
         EvidenceData data = database != null ? database.Get(item.ItemID) : null;
 
-        if (item.Type != IItem.ItemType.Door)
-        {
             if (data != null) slot.SetButton(item, data);
+
             if (!_invenItems.ContainsKey(item.ItemID))
                 _invenItems.Add(item.ItemID, slot);
-        }
-        else if (_invenItems.ContainsKey(item.ItemID))
-        {
-            _invenItems[item.ItemID].SetPanelActive(true);
-        }
-        else
-        {
-            if (data != null) slot.SetButton(item, data);
-            _invenItems.Add(item.ItemID, slot);
-        }
+
 
         photonView.RPC(nameof(DisSpawnItem), RpcTarget.AllBuffered, item.PhotonViewID);
     }
@@ -143,11 +133,9 @@ public class InventoryManagerReceiver : MonoBehaviourPun, IReceiver
         Vector3 pos = btn.transform.position;
         photonView.RPC(nameof(SpawnItem), RpcTarget.AllBuffered, item.PhotonViewID, pos.x, pos.y, pos.z);
 
-        if (item.Type != IItem.ItemType.Door)
-        {
+
             btn.ClearMyInfo();
             _invenItems.Remove(item.ItemID);
-        }
     }
 
     [PunRPC]
