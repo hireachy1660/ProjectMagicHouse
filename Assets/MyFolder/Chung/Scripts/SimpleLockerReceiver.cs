@@ -8,21 +8,23 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
     [SerializeField] private string _requiredKeyID; // 예: "Key_Locker"
     [SerializeField] private Transform _doorObject; // 움직일 오브젝트
     [SerializeField] private Transform attachPoint;
-    [SerializeField] private Vector3 _moveOffset = new Vector3(0.5f, 0, 0); // 열릴 때 이동할 거리/방향
+    [SerializeField] private float opneAngle = -75f;
     [SerializeField] private float _moveSpeed = 2.0f; // 열리는 속도
 
 
-    private Vector3 _closedPosition;
-    private Vector3 _openPosition;
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
     private bool isOpen = false;
 
     private void Awake()
     {
+        Vector3 openRot = new Vector3(0f, opneAngle, 0f);
+
         // 시작 시점의 위치를 '닫힌 위치'로 저장
         if (_doorObject != null)
         {
-            _closedPosition = _doorObject.localPosition;
-            _openPosition = _closedPosition + _moveOffset;
+            closedRotation = _doorObject.localRotation;
+            openRotation = Quaternion.Euler(0f, opneAngle, 0f);
         }
     }
 
@@ -77,13 +79,15 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
         item.Transform.localPosition = Vector3.zero;
         item.Transform.rotation = Quaternion.identity;
 
-        float elapcedTime = 0f;
+        float elapsedTime = 0f;
 
         // 에니메이션 재생
-        while ( elapcedTime <= _moveSpeed)
+        while (elapsedTime < 1.0f)
         {
-            _doorObject.localPosition = Vector3.Lerp(_doorObject.localPosition, _openPosition, Time.deltaTime * _moveSpeed);
-            elapcedTime += Time.deltaTime;
+            elapsedTime += Time.deltaTime * (1.0f / _moveSpeed);
+
+            _doorObject.localRotation = Quaternion.Lerp(closedRotation, openRotation, elapsedTime);
+
             yield return null;
         }
 
