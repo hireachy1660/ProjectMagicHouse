@@ -13141,7 +13141,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3630627366653332821, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 4733626268868141656, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: _itemID
@@ -13149,7 +13149,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5754054736942844530, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 7216716124733024886, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: sceneViewId
@@ -13161,11 +13161,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7357533261991924507, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 7450271942037148761, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 7603760971581817233, guid: 2641bddf3f47a124191d452384a7b0e0, type: 3}
       propertyPath: instanceId
@@ -26621,7 +26621,7 @@ MonoBehaviour:
   maxDistance: 2.5
   interactableLayer:
     serializedVersion: 2
-    m_Bits: 1073741825
+    m_Bits: 1073741824
   checkInterval: 0.1
 --- !u!4 &1242096749
 Transform:
