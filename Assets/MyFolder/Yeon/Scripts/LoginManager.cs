@@ -162,11 +162,11 @@ public class LoginManager : MonoBehaviourPunCallbacks
     // 방목록이 업데이트될 때 포톤이 호출하는 유일한 함수
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        // 기존 UI 아이템들 삭제 - 미리만튼프리팹 볼려고 , 테스끝나고 주석 지우기
-        //foreach (Transform child in roomListContent)
-        //{
-        //    Destroy(child.gameObject);
-        //}
+        //기존 UI 아이템들 삭제 -미리만튼프리팹 볼려고 , 테스끝나고 주석 지우기
+        foreach (Transform child in roomListContent)
+        {
+            Destroy(child.gameObject);
+        }
         Debug.Log("여기는 온룸리스트업데이트입니다.");
 
         // 새로운 목록 생성

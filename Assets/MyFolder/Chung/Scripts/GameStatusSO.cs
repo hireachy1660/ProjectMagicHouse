@@ -18,7 +18,7 @@ public class GameStatusSO : ScriptableObject
 
     [Header("Scenes Configuration")]
     public string lobbyScene = "LobbyScene";
-    public string gameScene = "ChungScene";
+    public string gameScene = "Test2";
     public string endingScene = "EndingScene";
 
     public void ChangeState(GameState newState)

@@ -36,7 +36,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     [Header("So")]
     [SerializeField]
     private GameStatusSO gameStatus;
-        
+
     private void Start()
     {
         // 인스펙터 연결 확인(방어 코드)
@@ -59,19 +59,16 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     {
         while (true)
         {
-            yield return new WaitForSeconds(1f);
-            // 방장이고, 아직 시작 버튼이 꺼져있을 때만 감시
-            if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient && !startButton.interactable)
+            yield return new WaitForSeconds(0.5f);
+
+            if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
             {
                 if (CheckAllPlayersReady())
                 {
-                    Debug.Log(" 모든 조건 충족! 시작 버튼 활성화.");
-                    startButton.interactable = true;
-                    yield break;
-                    // (선택사항) 게스트의 준비 버튼을 꺼주고 싶다면 RPC를 써야 하지만, 
-                    // 일단 UI 갱신을 위해 RefreshUI를 한 번 호출해주는 것도 좋습니다.
-                    // RefreshUI(); 
+                    // 직접 버튼을 건드리지 말고 RefreshUI에 맡긴다.
+                    RefreshUI();
                 }
+
             }
         }
     }
@@ -119,15 +116,18 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     // 서버 가방 업데이트 시 호출
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
-       if(changedProps.ContainsKey("MyRole"))
+        // 역할이나 준비상태 둘 중 하나만 바뀌어도 무조건 RefreshUI 갱신,실행
+        if (changedProps.ContainsKey("MyRole") || changedProps.ContainsKey("IsReady"))
         {
             RefreshUI();
-
+        }
+        if (changedProps.ContainsKey("MyRole"))
+        {
             // 내가 역활 확정 팝업을 띄워놨는데 상대가 그 역할을 확정했다면?
-            if(confirmPanel.activeSelf && selectedRoleName == (string)changedProps["MyRole"])
+            if (confirmPanel.activeSelf && selectedRoleName == (string)changedProps["MyRole"])
             {
                 // 상대방이 먼저 선택 했다면
-                if(!targetPlayer.IsLocal)
+                if (!targetPlayer.IsLocal)
                 {
                     Debug.Log("상대방이 먼저 선점했습니다!");
                     CancelSelection();      // 내 팝업 닫기
@@ -146,7 +146,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         bool iHaveRole = !string.IsNullOrEmpty(myRole);
         bool iAmReady = PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("IsReady")
             && (bool)PhotonNetwork.LocalPlayer.CustomProperties["IsReady"];
-        
+
         // 플레이어 목록 텍스트 생성 및 중복 역할 체크
         HashSet<string> takenRoles = new HashSet<string>();
         playerStatusListText.text = BuildPlayerList(takenRoles);
@@ -178,8 +178,8 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             string roleName = "역할 선택 중..";
             string colorTag = "#FFFFFF";
 
-            if(rolekey == "Pathfinder") { roleName = "패스파인더"; colorTag = "#FFD700"; }
-            else if(rolekey == "Inquisitor") { roleName = "인쿼지터"; colorTag = "#FF4500"; }
+            if (rolekey == "Pathfinder") { roleName = "패스파인더"; colorTag = "#FFD700"; }
+            else if (rolekey == "Inquisitor") { roleName = "인쿼지터"; colorTag = "#FF4500"; }
 
             // 역할이 비어있다면 "역할선택 중.. "유지
             if (string.IsNullOrEmpty(rolekey)) roleName = "선택 중..";
@@ -199,7 +199,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             // 텍스트 한 줄 완성 : ex) user1 : Pathfinder [준비완료]
             sb.AppendLine($"-{p.NickName}{(p.IsLocal ? "(나)" : "")} : <color={colorTag}>{roleName}</color>{readyStatus}");
         }
-        
+
         return sb.ToString();   // 결과값만 반환
     }
 
@@ -233,6 +233,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     private void UpdateMasterGuestButtons(bool iHaveRole, bool iAmReady)
     {
         bool allReady = CheckAllPlayersReady();
+
         Debug.Log($"[RoleSelectManager] Is AllReady : {allReady}");
 
         if (PhotonNetwork.IsMasterClient)
@@ -248,8 +249,9 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             {
                 if (allReady)
                 {
-                    // 모든 플레이어가 준비되었을 때
+                    // 모든 플레이어가 준비되었을 때 - 파란색
                     startText.color = new Color32(0, 128, 255, 255);
+                    Debug.Log("방장 버튼 색상 변경: 파란색");
                 }
                 else
                 {
@@ -273,13 +275,18 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             {
                 if (iAmReady)
                 {
-                    // 준비 완료 했을 때
+                    // 준비 완료 했을 때 - 파란색
                     readyText.color = new Color32(0, 128, 255, 255);
+                }
+                else if (iHaveRole)
+                {
+                    // 아직 준비 전일 때: 역할을 선택했으면 흰색
+                    readyText.color = Color.white;
                 }
                 else
                 {
-                    // 아직 준비 전일 때: 역할을 선택했으면 흰색, 아니면 어두운 회색
-                    readyText.color = canReady ? Color.white : new Color32(48, 80, 80, 255);
+                    // 역할도 선택 안 했을 때 - 어두운 회색
+                    readyText.color = new Color32(48, 80, 80, 255);
                 }
 
             }
@@ -291,10 +298,10 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     private bool CheckAllPlayersReady()
     {
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2) return false;
-        foreach(Player p in PhotonNetwork.PlayerList)
+        foreach (Player p in PhotonNetwork.PlayerList)
         {
             // 역할이 없는 사람이 있으면 안됨
-            if (!p.CustomProperties.ContainsKey("MyRole") || p.CustomProperties["MyRole"] == null )
+            if (!p.CustomProperties.ContainsKey("MyRole") || p.CustomProperties["MyRole"] == null)
             {
                 return false;
             }
@@ -324,16 +331,16 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("방에서 퇴장하였습니다. 로비UI 정리합니다.");
         // 모든 패널을 끈다. - 확실한 초기화를 하기 위해 한번 더 끈다.
-        if(roleSelectPanel != null)
+        if (roleSelectPanel != null)
         {
             roleSelectPanel.SetActive(false);
         }
-        if(confirmPanel != null)
+        if (confirmPanel != null)
         {
             confirmPanel.SetActive(false);
         }
         // 로기 패널 켜기
-        if( lobbyPanel != null)
+        if (lobbyPanel != null)
         {
             lobbyPanel.SetActive(true);
         }
@@ -341,7 +348,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     }
     public void ClickStartButton()
     {
-        if(PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.IsMasterClient)
         {
             PhotonNetwork.LoadLevel(gameStatus.gameScene);
         }
@@ -379,7 +386,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
         Debug.Log($"방장이 변경되었습니다! 새로운 방장: {newMasterClient.NickName}");
-    
+
         // 방장이 바뀌었으니 UI다시 그리기 - 레디버튼 대신 스타트 버튼으로 
         RefreshUI();
     }
