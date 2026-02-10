@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using ExitGames.Client.Photon;
 using System.Collections.Generic;
 using TMPro;
+using System.Text;
 
 // 역할패널의 UI담당
 public class RoleSelectionManager : MonoBehaviourPunCallbacks
@@ -140,46 +141,71 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         // 방에 없거나 버튼이 하나라도 연결 안되어 있다면 실행 중단
         if (!PhotonNetwork.InRoom || PathfinderBtn == null || InquisitorBtn == null) return;
 
-        // 누가 어떤 역할을 가져갔는지 확인
-        HashSet<string> takenRoles = new HashSet<string>();
+        // 내 데이터 상태 파악
         string myRole = (string)PhotonNetwork.LocalPlayer.CustomProperties["MyRole"];
         bool iHaveRole = !string.IsNullOrEmpty(myRole);
         bool iAmReady = PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("IsReady")
             && (bool)PhotonNetwork.LocalPlayer.CustomProperties["IsReady"];
         
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine("<color=white><b>[플레이어 목록]</b></color>");
+        // 플레이어 목록 텍스트 생성 및 중복 역할 체크
+        HashSet<string> takenRoles = new HashSet<string>();
+        playerStatusListText.text = BuildPlayerList(takenRoles);
 
-        foreach(Player p in PhotonNetwork.PlayerList)
+        // 역할 선택 버튼 및 취소 버튼 업데이트
+        UpdateRoleButtons(takenRoles, iHaveRole);
+
+        // 방장(시작) 및 게스트(준비) 버튼 업데이트
+        UpdateMasterGuestButtons(iHaveRole, iAmReady);
+    }
+
+    // 플레이어 목록 문자열을 만드는 별도 함수
+    private string BuildPlayerList(HashSet<string> takenRoles)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("<color=#FFFFFF><b>[플레이어 목록]</b></color>");
+
+        foreach (Player p in PhotonNetwork.PlayerList)
         {
-            string role = "선택 중...";    // 기본 상태
-
-            if (p.CustomProperties.ContainsKey("MyRole") && p.CustomProperties["MyRole"] != null)
+            // 데이터 추출
+            string rolekey = p.CustomProperties.ContainsKey("MyRole") ? p.CustomProperties["MyRole"]?.ToString() : "";
+            // 중복 체크 리스트에 추가
+            if (!string.IsNullOrEmpty(rolekey))
             {
-                takenRoles.Add((string)p.CustomProperties["MyRole"]);
+                takenRoles.Add(rolekey);
             }
+
+            // 역할 텍스트 및 색상 설정
+            string roleName = "역할 선택 중..";
+            string colorTag = "#FFFFFF";
+
+            if(rolekey == "Pathfinder") { roleName = "패스파인더"; colorTag = "#FFD700"; }
+            else if(rolekey == "Inquisitor") { roleName = "인쿼지터"; colorTag = "#FF4500"; }
+
+            // 역할이 비어있다면 "역할선택 중.. "유지
+            if (string.IsNullOrEmpty(rolekey)) roleName = "선택 중..";
 
             // 준비 상태 확인
             string readyStatus = "";
-            if(!p.IsMasterClient)   // 게스트일 경우
+            if (!p.IsMasterClient)   // 게스트일 경우
             {
                 bool isReady = p.CustomProperties.ContainsKey("IsReady") && (bool)p.CustomProperties["IsReady"];
-                readyStatus = isReady ? "<color=green>[준비완료]</color>" : "<color=yellow>[준비중]</color>";
+                readyStatus = isReady ? "<color=#00FF00>[준비완료]</color>" : "<color=#FFFF00>[준비중]</color>";
             }
             else
             {
-                readyStatus = "<color=blue>[준비완료 기다리는중..]</color>";
+                readyStatus = "<color=#0080FF>[준비완료 기다리는중..]</color>";
             }
 
             // 텍스트 한 줄 완성 : ex) user1 : Pathfinder [준비완료]
-            sb.AppendLine($"-{p.NickName}{(p.IsLocal ? "(나)" : "")} : {role}{readyStatus}");
+            sb.AppendLine($"-{p.NickName}{(p.IsLocal ? "(나)" : "")} : <color={colorTag}>{roleName}</color>{readyStatus}");
         }
-        // 최종 텍스트 적용
-        if(playerStatusListText != null)
-        {
-            playerStatusListText.text = sb.ToString();
-        }
+        
+        return sb.ToString();   // 결과값만 반환
+    }
 
+    // 역할 관련 버튼 상태 업데이트
+    private void UpdateRoleButtons(HashSet<string> takenRoles, bool iHaveRole)
+    {
         // 버튼 활성화 규칙
         // 1. 상대가 고르지 않은 역할이어야 함( !takenRoles.Contains )
         // 2. 나도 아직 아무 역할을 고르지 않은 상태여야 함( !iHaveRole )
@@ -187,7 +213,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
         InquisitorBtn.interactable = !takenRoles.Contains("Inquisitor") && !iHaveRole;
 
         // 확정 취소 버튼 : 내가 역할을 골랐을 때만 활성화
-        if(cancelConfirmedBtn != null)
+        if (cancelConfirmedBtn != null)
         {
             // 버튼은 항상 보이게 유지
             cancelConfirmedBtn.gameObject.SetActive(true);
@@ -201,21 +227,35 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
                 cancelText.color = iHaveRole ? Color.white : new Color32(48, 80, 80, 255); // 비활성 시 #305050
             }
         }
+    }
 
-        // 방장/게스트 버튼 제어
+    // 방장,게스트 전용 버튼 업데이트
+    private void UpdateMasterGuestButtons(bool iHaveRole, bool iAmReady)
+    {
         bool allReady = CheckAllPlayersReady();
         Debug.Log($"[RoleSelectManager] Is AllReady : {allReady}");
-        if(PhotonNetwork.IsMasterClient)
+
+        if (PhotonNetwork.IsMasterClient)
         {
             startButton.gameObject.SetActive(true);     // 항상보이게
-            readyButton.gameObject.SetActive(false);    // 방장은 레이버튼 없으니 꺼둠
+            readyButton.gameObject.SetActive(false);    // 방장은 레디버튼 없으니 꺼둠
+
             // 모든 사람이 역할 선택 + 게스트 준비 완료 버튼 시 스타트 버튼 활성화
             startButton.interactable = allReady;
 
             TMP_Text startText = startButton.GetComponentInChildren<TMP_Text>();
             if (startText != null)
             {
-                startText.color = allReady ? Color.white : new Color32(48, 80, 80, 255);
+                if (allReady)
+                {
+                    // 모든 플레이어가 준비되었을 때
+                    startText.color = new Color32(0, 128, 255, 255);
+                }
+                else
+                {
+                    // 아직 준비가 덜 되었을 때 : 어두운 회색
+                    startText.color = new Color32(48, 80, 80, 255);
+                }
             }
         }
         else
@@ -223,6 +263,7 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             // 게스트
             startButton.gameObject.SetActive(false);
             readyButton.gameObject.SetActive(true);
+
             // 역할을 선택했고, 아직 준비 버튼을 안눌렀을 때만 준비 버튼 활성화
             bool canReady = iHaveRole && !iAmReady;
             readyButton.interactable = canReady;
@@ -230,11 +271,21 @@ public class RoleSelectionManager : MonoBehaviourPunCallbacks
             TMP_Text readyText = readyButton.GetComponentInChildren<TMP_Text>();
             if (readyText != null)
             {
-                readyText.color = canReady ? Color.white : new Color32(48, 80, 80, 255);
+                if (iAmReady)
+                {
+                    // 준비 완료 했을 때
+                    readyText.color = new Color32(0, 128, 255, 255);
+                }
+                else
+                {
+                    // 아직 준비 전일 때: 역할을 선택했으면 흰색, 아니면 어두운 회색
+                    readyText.color = canReady ? Color.white : new Color32(48, 80, 80, 255);
+                }
+
             }
         }
-
     }
+
 
     // 모두 준비되었는지 확인하는 조건
     private bool CheckAllPlayersReady()

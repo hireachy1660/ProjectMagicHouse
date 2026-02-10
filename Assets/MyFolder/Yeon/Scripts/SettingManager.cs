@@ -16,7 +16,7 @@ public class SettingManager : MonoBehaviour
     public void Awake()
     {
         // 씬이 바뀌어도 이 오브젝트를 파괴하지말라~
-        if(Instance == null)
+        if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);  // 씬이 바뀌어도 유지
@@ -45,9 +45,9 @@ public class SettingManager : MonoBehaviour
     private void Update()
     {
         // 왼쪽 컨트롤러의 Y버튼 감지
-        if(OVRInput.GetDown(OVRInput.RawButton.Y))
-            {
-            if(settingCanvas.activeSelf)
+        if (OVRInput.GetDown(OVRInput.RawButton.Y))
+        {
+            if (settingCanvas.activeSelf)
             {
                 CloseSetting();
             }
@@ -60,7 +60,7 @@ public class SettingManager : MonoBehaviour
 
         }
     }
-    
+
     // 캔버스를 카메라 앞으로 소호나하는 함수
     private void PositionCanvasInFront()
     {
@@ -92,7 +92,7 @@ public class SettingManager : MonoBehaviour
     public void CloseSetting()
     {
         // 무조건 끈다.
-        if(settingCanvas != null)
+        if (settingCanvas != null)
         {
             settingCanvas.SetActive(false);
             Debug.Log("환경설정 창 비활성화");
