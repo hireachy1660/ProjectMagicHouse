@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 /// PointableCanvas + 매니저 IReceiver 구조용. IReceiver는 구현하지 않고 정보만 담는다.
 /// 포인터가 들어오면 매니저에 "마지막 활성 슬롯 = 나"로 등록한다.
 /// </summary>
-public class InventorySlot : MonoBehaviour, IPointerEnterHandler
+public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private GameObject itemInfoPanel;
     [SerializeField] private Image itemImage;
@@ -25,30 +25,35 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler
     }
 
     /// <summary> 매니저가 슬롯 생성 시 설정. 포인터 엔터 시 이 매니저에 나를 마지막 활성 슬롯으로 알린다. </summary>
-    public void SetManager(InventoryManagerReceiver manager)
+    public void SetManager(InventoryManagerReceiver _manager)
     {
-        _manager = manager;
+        this._manager = _manager;
     }
 
     private InventoryManagerReceiver _manager;
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public void OnPointerEnter(PointerEventData _eventData)
     {
         _manager?.SetLastActiveSlot(this);
     }
 
-    public void SetButton(IItem item, EvidenceData data)
+    public void OnPointerExit(PointerEventData _eventData)
     {
-        _currentItem = item;
-        _currentData = data;
-        if (data == null) return;
-        if (itemImage != null) itemImage.sprite = data.icon;
-        if (titleTextTMP != null) titleTextTMP.text = data.title;
+        _manager.ClearLastActiveSlot(this);
     }
 
-    public void SetPanelActive(bool active)
+    public void SetButton(IItem _item, EvidenceData _data)
     {
-        if (itemInfoPanel != null) itemInfoPanel.SetActive(active);
+        _currentItem = _item;
+        _currentData = _data;
+        if (_data == null) return;
+        if (itemImage != null) itemImage.sprite = _data.icon;
+        if (titleTextTMP != null) titleTextTMP.text = _data.title;
+    }
+
+    public void SetPanelActive(bool _active)
+    {
+        if (itemInfoPanel != null) itemInfoPanel.SetActive(_active);
     }
 
     public void ClearMyInfo()
