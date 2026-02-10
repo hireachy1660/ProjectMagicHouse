@@ -8,6 +8,8 @@ TagManager:
   - Target Camera
   - Pathfinder
   - Inquisitor
+  - EmptySpacePhoto
+  - StorePhoto
   layers:
   - Default
   - TransparentFX
