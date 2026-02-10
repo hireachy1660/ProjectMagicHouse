@@ -260,6 +260,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrabSync
   rb: {fileID: 1812743871939037967}
   interactable: {fileID: 2004006270596373723}
+  grabSound: {fileID: 0}
 --- !u!114 &5301185856022750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,6 +352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhotoGrabSync
   rb: {fileID: 1812743871939037967}
   interactable: {fileID: 2004006270596373723}
+  grabSound: {fileID: 0}
 --- !u!1 &7513426295190407270
 GameObject:
   m_ObjectHideFlags: 0
