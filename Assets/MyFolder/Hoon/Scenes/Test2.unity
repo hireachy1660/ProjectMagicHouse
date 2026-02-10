@@ -6392,6 +6392,7 @@ GameObject:
   - component: {fileID: 213997771}
   - component: {fileID: 213997773}
   - component: {fileID: 213997772}
+  - component: {fileID: 213997775}
   m_Layer: 0
   m_Name: '[BuildingBlock] Camera Rig'
   m_TagString: Untagged
@@ -6555,6 +6556,22 @@ MonoBehaviour:
   installationRoutineCheckpoint:
     _installationRoutineId: 
     _installationVariants: []
+--- !u!114 &213997775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213997769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55aaac0cc4f8c95419e18095dc9e88fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRPlayerFallHandler
+  deadZoneY: -10
+  cameraRig: {fileID: 213997770}
+  centerEyeAnchor: {fileID: 355637644}
+  checkInterval: 0.5
 --- !u!1 &214603839
 GameObject:
   m_ObjectHideFlags: 0
