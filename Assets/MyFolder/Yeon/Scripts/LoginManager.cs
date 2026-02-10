@@ -65,6 +65,9 @@ public class LoginManager : MonoBehaviourPunCallbacks
             Debug.LogWarning("아이디가 비어있습니다!");
             return;
         }
+        //포톤 닉네임을 사용자가 입력한 ID로 설정
+        PhotonNetwork.NickName = userCustomID;
+        Debug.Log($"포톤 닉네임 설정 완료: {PhotonNetwork.NickName}");
 
         // 이미 완전히 연결되어 로비에 있다면 바로 패널 교체
         if (PhotonNetwork.InLobby)
@@ -159,11 +162,11 @@ public class LoginManager : MonoBehaviourPunCallbacks
     // 방목록이 업데이트될 때 포톤이 호출하는 유일한 함수
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        // 기존 UI 아이템들 삭제 - 미리만튼프리팹 볼려고 , 테스끝나고 주석 지우기
-        //foreach (Transform child in roomListContent)
-        //{
-        //    Destroy(child.gameObject);
-        //}
+        //기존 UI 아이템들 삭제 -미리만튼프리팹 볼려고 , 테스끝나고 주석 지우기
+        foreach (Transform child in roomListContent)
+        {
+            Destroy(child.gameObject);
+        }
         Debug.Log("여기는 온룸리스트업데이트입니다.");
 
         // 새로운 목록 생성

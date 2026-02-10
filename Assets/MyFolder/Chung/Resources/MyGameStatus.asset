@@ -15,5 +15,5 @@ MonoBehaviour:
   currentState: 3
   myRole: Pathfinder
   lobbyScene: ChungLobbyScene
-  gameScene: MainGameScene
+  gameScene: Test2
   endingScene: EndingScene
