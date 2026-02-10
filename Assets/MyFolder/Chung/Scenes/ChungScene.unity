@@ -42454,6 +42454,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7098871249728968286, guid: 8e4be158364634147b99581ea8c738d0, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7536703263233334439, guid: 8e4be158364634147b99581ea8c738d0, type: 3}
       propertyPath: m_Name
       value: '[BuildingBlock] Cube_Locker'
