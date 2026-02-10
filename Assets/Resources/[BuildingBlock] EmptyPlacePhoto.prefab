@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 610846994888019494}
   - component: {fileID: -4910962035212076431}
   m_Layer: 0
-  m_Name: '[BuildingBlock] sucessPhoto'
+  m_Name: '[BuildingBlock] EmptyPlacePhoto'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

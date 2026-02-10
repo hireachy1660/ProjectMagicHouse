@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8e430b3f9ca281418026e66792a024c, type: 3}
   m_Name: MyGameStatus
   m_EditorClassIdentifier: Assembly-CSharp::GameStatusSO
-  currentState: 0
+  currentState: 3
   myRole: Pathfinder
   lobbyScene: ChungLobbyScene
-  gameScene: ChungScene
+  gameScene: MainGameScene
   endingScene: EndingScene
