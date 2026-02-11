@@ -39,6 +39,68 @@ public class PortalManager : MonoBehaviourPun, IReceiver
     public SoundEventSO attachSound;
     public SoundEventSO portalOpenSound;
 
+    [Header("SO Reference")]
+    public GameStatusSO gameStatus; // 인스펙터에서 GameStatusSO 파일을 연결해주세요.
+
+    private void Update()
+    {
+        // 1. 포탈이 열려있고, X 버튼을 눌렀을 때
+        if (isPortalOpened && OVRInput.GetDown(OVRInput.RawButton.X))
+        {
+            // 2. SO에서 현재 나의 직업(myRole)을 확인합니다.
+            if (gameStatus == null)
+            {
+                Debug.LogError("GameStatusSO가 연결되지 않았습니다!");
+                return;
+            }
+
+            // SO의 myRole이 "Pathfinder"인지 확인합니다.
+            if (gameStatus.myRole != "Pathfinder")
+            {
+                Debug.Log($"<color=red>권한 부족: 당신의 직업은 {gameStatus.myRole}입니다. 패스파인더만 포탈을 닫을 수 있습니다.</color>");
+                return;
+            }
+
+            // 3. 시선 체크 로직 실행
+            if (IsPlayerLookingAtPortal())
+            {
+                RequestResetPortal();
+            }
+        }
+    }
+
+    // 시선 체크 로직
+    private bool IsPlayerLookingAtPortal()
+    {
+        if (playerRig == null || entranceSpawnPoint == null) return false;
+
+        // 메인 카메라(플레이어 눈)의 위치와 방향
+        Transform camTF = Camera.main.transform;
+
+        // 1. 플레이어 눈에서 포탈 입구로 향하는 방향 벡터 계산
+        Vector3 dirToPortal = (entranceSpawnPoint.position - camTF.position).normalized;
+
+        // 2. 카메라가 바라보는 방향(Forward)
+        Vector3 lookDir = camTF.forward;
+
+        // 3. 두 벡터 사이의 각도 계산 (0 ~ 180도)
+        float angle = Vector3.Angle(lookDir, dirToPortal);
+
+        // 4. 거리 체크도 추가하면 좋습니다 (너무 멀리서 꺼지는 것 방지)
+        float distance = Vector3.Distance(camTF.position, entranceSpawnPoint.position);
+
+        // [설정] 각도 45도 이내 AND 거리 5미터 이내일 때만 허용
+        if (angle < 45f && distance < 5.0f)
+        {
+            Debug.Log($"<color=cyan>시선 일치! (각도: {angle:F1}, 거리: {distance:F1})</color>");
+            return true;
+        }
+
+        return false;
+    }
+
+
+
     // 1. 아이템 수신 (RPC 호출 시 viewID 추가 전송)
     public void OnReceiveItem(IItem item)
     {
@@ -212,6 +274,13 @@ public class PortalManager : MonoBehaviourPun, IReceiver
     {
         portalVFXHandler.PlayExpand(duration, mesh);
         yield return new WaitForSeconds(duration);
+    }
+
+
+    private void RequestResetPortal()
+    {
+        // 모든 클라이언트에게 포탈 리셋 동기화 요청
+        photonView.RPC("RPC_ResetPortal", RpcTarget.All);
     }
 
     public void ResetPortal()
