@@ -11,6 +11,12 @@ public class AvatarSync : MonoBehaviourPun
     [SerializeField]
     private Transform avatarRightHand;
 
+    [Header("Ghost Visual Floating")]
+    [SerializeField] private Transform ghostVisualRoot; // 부유할 비주얼 메쉬
+    public float floatAmplitude = 0.2f;  // 위아래 이동 범위 (0.1m = 10cm)
+    public float floatFrequency = 1.0f;  // 부유 속도
+    private float startLocalY;           // 기준 높이
+
     // 실제 vr 기기의 위치 정보를 담을 변수
     [Header("Debug/CheckVar")]
     [SerializeField]
@@ -45,7 +51,7 @@ public class AvatarSync : MonoBehaviourPun
         }
         else
         {
-            // [보안 추가] 내가 아닌 '남'의 캐릭터라면, 그 캐릭터에 붙은 카메라와 리스너를 즉시 파괴 
+            //  내가 아닌 '남'의 캐릭터라면, 그 캐릭터에 붙은 카메라와 리스너를 즉시 파괴 
             Camera remoteCam = GetComponentInChildren<Camera>();
             if (remoteCam != null) Destroy(remoteCam);
 
@@ -67,13 +73,32 @@ public class AvatarSync : MonoBehaviourPun
 
     }
 
+    private void ApplyFloatingEffect()
+    {
+        if (ghostVisualRoot == null) return;
+
+        // Sine 함수를 이용한 부드러운 상하 운동
+        // y = sin(Time * speed) * range
+        float newY = startLocalY + Mathf.Sin(Time.time * floatFrequency) * floatAmplitude;
+
+        Vector3 localPos = ghostVisualRoot.localPosition;
+        localPos.y = newY;
+        ghostVisualRoot.localPosition = localPos;
+    }
+
+    private void Update()
+    {
+        // 부유 효과는 네트워크 동기화와 상관없이 '모든 클라이언트'에서 각자 실행
+        ApplyFloatingEffect();
+    }
+
     private void LateUpdate()
     {
         // 내가 소환한 내 캐릭터이고, 연결된 기기 정보가 있을 때만 움직인다.
         if(photonView.IsMine && vrHead != null)
         {
             // 위치와 회전값을 그대로 복사한다.
-            SyncTransform(avatarHead, vrHead);
+            //SyncTransform(avatarHead, vrHead);
             SyncTransform(avatarLeftHand, vrLeftHand);
             SyncTransform(avatarRightHand, vrRightHand);
 

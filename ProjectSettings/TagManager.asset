@@ -8,6 +8,8 @@ TagManager:
   - Target Camera
   - Pathfinder
   - Inquisitor
+  - EmptySpacePhoto
+  - StorePhoto
   layers:
   - Default
   - TransparentFX
@@ -30,7 +32,7 @@ TagManager:
   - Showcase_Hide
   - Camera_Reveal
   - EvidenceTrigger
-  - 
+  - HandCamera
   - 
   - 
   - 

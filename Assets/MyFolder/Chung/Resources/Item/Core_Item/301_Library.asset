@@ -17,4 +17,4 @@ MonoBehaviour:
   description: "2X26-01-01 / 22:15\n\uD3C9\uC628\uD55C \uC11C\uC7AC \uBAA8\uC2B5\uC774\uB2E4.
     \uCC45\uC0C1 \uC704\uC5D0 \uC0AC\uBB34\uC2E4\uC758 \uC7A0\uAE34 \uC11C\uB78D\uC744
     \uC5F4 \uC218 \uC788\uB294 \uC5F4\uC1E0\uAC00 \uBCF4\uC778\uB2E4."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e5b4b1c07354b764b8550c21a20b25ac, type: 3}

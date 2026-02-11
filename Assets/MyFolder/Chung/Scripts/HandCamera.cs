@@ -16,10 +16,14 @@ public class HandCamera : MonoBehaviourPun
     private Transform photoSpawnPoint = null;
     [SerializeField]
     private float animDuration = 1f;
+    [SerializeField]
+    private float photoMoveDistance = 0.17f;
 
     [Header("PicturesPrefabs")]
     [SerializeField]
-    private GameObject sucessPhoto;
+    private GameObject emptySpacePhoto;
+    [SerializeField]
+    private GameObject storePhoto;
     [SerializeField]
     private GameObject failPhoto;
 
@@ -43,17 +47,45 @@ public class HandCamera : MonoBehaviourPun
             return;
         }
 
+        bool isEmptySpace = false;
+        bool isSuccesss = false;
+
+        RaycastHit hit;
         Ray ray = new Ray(angleTr.position, angleTr.forward);
-        bool isSuccess = Physics.Raycast(ray, out _, 5f, targetLayer);
+        if (Physics.Raycast(ray, out hit, 5f, targetLayer))
+        {
+            isSuccesss = true;
 
+            if(hit.transform.gameObject.CompareTag("EmptySpacePhoto"))
+            {
+                isEmptySpace = true;
+            }
+            else
+            {
+                isEmptySpace = false;
+            }
+        }
+        else
+        {
+            isSuccesss = false;
+        }
 
-        // 불 값에 따른 생성 객체 지정
-        CaptureNetworkPhoto(isSuccess);
+            // 불 값에 따른 생성 객체 지정
+            CaptureNetworkPhoto(isSuccesss, isEmptySpace);
     }
 
-    private void CaptureNetworkPhoto(bool isSuccess)
+    private void CaptureNetworkPhoto(bool isSuccess, bool _isEmptySpace)
     {
-        string prefabName = isSuccess ? sucessPhoto.name : failPhoto.name; // Resources 폴더 내 이름
+        string prefabName;
+
+        if (!isSuccess)
+        {
+            prefabName = failPhoto.name;
+        }
+        else
+        {
+            prefabName = _isEmptySpace ? emptySpacePhoto.name : storePhoto.name; // Resources 폴더 내 이름
+        }
 
         // 1. 포톤 네트워크 객체로 생성 (이러면 자동으로 모든 클라이언트에 생성되고 ID가 부여됨)
         GameObject go = PhotonNetwork.Instantiate(prefabName, photoSpawnPoint.position, photoSpawnPoint.rotation);
@@ -84,7 +116,7 @@ public class HandCamera : MonoBehaviourPun
 
         // 이동 범위 설정 (로컬 좌표 기준)
         Vector3 startPos = Vector3.zero;
-        Vector3 endPos = Vector3.forward * 0.2f; // 앞으로 0.2m 이동
+        Vector3 endPos = Vector3.forward * photoMoveDistance; // 앞으로 0.2m 이동
 
         PhotonTransformView myView = _go.GetComponent<PhotonTransformView>();
         Rigidbody rb = _go.GetComponent<Rigidbody>();
