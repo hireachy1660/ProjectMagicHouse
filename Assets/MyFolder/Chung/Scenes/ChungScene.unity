@@ -20511,6 +20511,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecd3ff60155a7df4d8bfc049498339e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalVFXEffectHandler
+  targetMeshScale: {x: 1, y: 2, z: 1}
+  defaultDuration: 1
   portalDisplayMesh: {fileID: 0}
 --- !u!73398921 &1414229560
 VFXRenderer:
@@ -20948,6 +20950,7 @@ MonoBehaviour:
   portalVFXHandler: {fileID: 1414229559}
   attachSound: {fileID: 0}
   portalOpenSound: {fileID: 0}
+  gameStatus: {fileID: 0}
 --- !u!114 &1441942041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21079,6 +21082,7 @@ MonoBehaviour:
   portalVFXHandler: {fileID: 1635214686}
   attachSound: {fileID: 0}
   portalOpenSound: {fileID: 0}
+  gameStatus: {fileID: 0}
 --- !u!114 &1443160531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24072,6 +24076,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecd3ff60155a7df4d8bfc049498339e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortalVFXEffectHandler
+  targetMeshScale: {x: 1, y: 2, z: 1}
+  defaultDuration: 1
   portalDisplayMesh: {fileID: 0}
 --- !u!73398921 &1635214687
 VFXRenderer:
@@ -43107,6 +43113,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4761354949210604175, guid: c8dff3e31d4a3984cb34a2a88a5e6fb6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6937790257631644302, guid: c8dff3e31d4a3984cb34a2a88a5e6fb6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1
