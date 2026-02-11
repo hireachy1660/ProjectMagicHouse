@@ -1,17 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-
-public class SettingManager : MonoBehaviour
+using Photon.Pun;
+public class SettingManager : MonoBehaviourPun
 {
     // 어디서든 접근 가능하게 싱글톤 처리
     public static SettingManager Instance;
 
     public GameObject settingCanvas;    // 환경설정 UI
-    public Slider bgmSlider;
-    public Slider sfxSlider;
+    public Slider soundSlider;
+    //public Slider sfxSlider;
     public Button closeBtn;
+    public Button resetBtn;
     public Button ExitBtn;
+    public GameStatusSO statusSO;
+    public AudioListener audioListner;
+    
 
     public void Awake()
     {
@@ -31,13 +34,14 @@ public class SettingManager : MonoBehaviour
     private void Start()
     {
         // 저장된 소리 값 불러오기 (없으면 1.0)
-        bgmSlider.value = PlayerPrefs.GetFloat("BGM_Volume", 1.0f);
-        sfxSlider.value = PlayerPrefs.GetFloat("SFX_Volume", 1.0f);
+        soundSlider.value = 1f;
+        //sfxSlider.value = PlayerPrefs.GetFloat("SFX_Volume", 1.0f);
 
         // 이벤트 연결
-        bgmSlider.onValueChanged.AddListener(SetBGM);
-        sfxSlider.onValueChanged.AddListener(SetSFX);
+        soundSlider.onValueChanged.AddListener(BGMSliderOnvalueChanged);
+        //sfxSlider.onValueChanged.AddListener(SetSFX);
         closeBtn.onClick.AddListener(CloseSetting);   // 닫기 버튼 누르면 토글
+        resetBtn.onClick.AddListener(OnResetButton);
         ExitBtn.onClick.AddListener(QuitGame);
 
     }
@@ -99,16 +103,25 @@ public class SettingManager : MonoBehaviour
         }
     }
 
-    private void SetBGM(float value)
+    private void BGMSliderOnvalueChanged(float value)
     {
-        PlayerPrefs.SetFloat("BGM_Volume", value);
+    
     }
-    private void SetSFX(float value)
+    //private void SetSFX(float value)
+    //{
+    //    PlayerPrefs.SetFloat("SFX_Volume", value);
+    //}
+
+    public void OnResetButton()
     {
-        PlayerPrefs.SetFloat("SFX_Volume", value);
+        if (!PhotonNetwork.IsMasterClient) return;
+        if(statusSO.currentState == GameState.InGame)
+        {
+        PhotonNetwork.LoadLevel(statusSO.gameScene);
+        }
     }
 
-    public void QuitGame()
+     public void QuitGame()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
