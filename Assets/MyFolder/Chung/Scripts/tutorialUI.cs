@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 public class tutorialUI : MonoBehaviour
 {
-    [SerializeField] Button nextBtn;
-    [SerializeField] Button prevBtn;
+    //[SerializeField] Button nextBtn;
+    //[SerializeField] Button prevBtn;
     [SerializeField] List<GameObject> UIPageList;
     [SerializeField]
     private GameProgressSO gameProgress;
