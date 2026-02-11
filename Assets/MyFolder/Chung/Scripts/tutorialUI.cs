@@ -30,6 +30,7 @@ public class tutorialUI : MonoBehaviour
     {
         UIPageList[curIndex].SetActive(false);
         curIndex = _curProgress;
+        if(UIPageList[curIndex] != null)
         UIPageList[curIndex].SetActive(true);
         
         //if(curIndex > UIPageList.Count - 1)
