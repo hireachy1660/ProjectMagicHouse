@@ -10,6 +10,7 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
     [SerializeField] private Transform attachPoint;
     [SerializeField] private float opneAngle = -75f;
     [SerializeField] private float _moveSpeed = 2.0f; // 열리는 속도
+    [SerializeField] private GameProgressSO progressSO;
 
 
     private Quaternion closedRotation;
@@ -52,6 +53,10 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
         if( isOpen) return;
 
         isOpen = true; // 열림 상태로 전환 -> 코루틴에서 문 이동함
+        if ( progressSO != null )
+        {
+        progressSO.AddEvidence();
+        }
 
         StartCoroutine(StartOpen(_ViewID));
 

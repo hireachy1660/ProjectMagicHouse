@@ -158,7 +158,8 @@ MonoBehaviour:
   - {fileID: 1568751835196209134}
   - {fileID: -8804048885941293553}
   - {fileID: 67536042711103997}
-  m_RendererFeatureMap: ad6b866f10d7b46c9fac66380a7f01d61ace6c4cd17c3c8ae598ba2ff401a45ceeb79c857b53c5150fae4b202fbcd185fdb9544bacefef00
+  - {fileID: 4767592611232133765}
+  m_RendererFeatureMap: ad6b866f10d7b46c9fac66380a7f01d61ace6c4cd17c3c8ae598ba2ff401a45ceeb79c857b53c5150fae4b202fbcd185fdb9544bacefef0085b2445a38e42942
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -271,6 +272,27 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 60
+--- !u!114 &4767592611232133765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1614fc811f8f184697d9bee70ab9fe5, type: 3}
+  m_Name: DecalRendererFeature
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalRendererFeature
+  m_Active: 1
+  m_Settings:
+    technique: 1
+    maxDrawDistance: 1000
+    decalLayers: 1
+    dBufferSettings:
+      surfaceData: 2
+    screenSpaceSettings:
+      normalBlend: 0
 --- !u!114 &6675462695954323685
 MonoBehaviour:
   m_ObjectHideFlags: 0
