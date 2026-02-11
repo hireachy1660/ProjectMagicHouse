@@ -555,6 +555,8 @@ MonoBehaviour:
   avatarLeftHand: {fileID: 1424749457675188871}
   avatarRightHand: {fileID: 5308801427004989527}
   ghostVisualRoot: {fileID: 5083187844237065827}
+  floatAmplitude: 0.2
+  floatFrequency: 1
   vrHead: {fileID: 0}
   vrLeftHand: {fileID: 0}
   vrRightHand: {fileID: 0}

@@ -6,14 +6,19 @@ public class PortalVFXEffectHandler : MonoBehaviour
 {
     private VisualEffect vfx;
     private Vector3 originalHandlerScale;
-    // 포탈 면의 최종 목표 크기 (1, 2, 1)
-    private Vector3 targetMeshScale = new Vector3(1f, 2f, 1f);
+
+    [Header("Portal Settings")]
+    [SerializeField] private Vector3 targetMeshScale = new Vector3(1f, 2f, 1f); // 인스펙터에서 수정 가능
+
+    // 포탈마다 고유의 속도를 주고 싶다면 추가
+    [SerializeField] private float defaultDuration = 1.0f;
 
     [HideInInspector] public GameObject portalDisplayMesh;
 
     private void Awake()
     {
         vfx = GetComponent<VisualEffect>();
+        // 초기 스케일을 저장해두어 나중에 원복할 때 사용
         originalHandlerScale = transform.localScale;
         gameObject.SetActive(false);
     }
@@ -26,7 +31,6 @@ public class PortalVFXEffectHandler : MonoBehaviour
         {
             portalDisplayMesh = displayMesh;
             portalDisplayMesh.SetActive(true);
-            // 연출 시작을 위해 크기 0으로 초기화
             portalDisplayMesh.transform.localScale = Vector3.zero;
         }
 
@@ -39,15 +43,20 @@ public class PortalVFXEffectHandler : MonoBehaviour
         float elapsed = 0;
         vfx.Play();
 
+        // 0으로 시작 보장
+        transform.localScale = Vector3.zero;
+
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
+            // 커브를 넣고 싶다면 t = Mathf.SmoothStep(0, 1, t); 같은 코드를 추가할 수 있습니다.
+
             // 1. VFX 핸들러 본체 확장
             transform.localScale = Vector3.Lerp(Vector3.zero, originalHandlerScale, t);
 
-            // 2. 포탈 면 확장 (0 -> 1, 2, 1)
+            // 2. 포탈 면 확장 (설정된 targetMeshScale 적용)
             if (portalDisplayMesh != null)
             {
                 portalDisplayMesh.transform.localScale = Vector3.Lerp(Vector3.zero, targetMeshScale, t);
@@ -69,6 +78,9 @@ public class PortalVFXEffectHandler : MonoBehaviour
     {
         yield return new WaitForSeconds(stayTime);
         vfx.Stop();
+
+        // 부드럽게 작아지며 사라지는 연출을 원한다면 여기에 Shrink 루틴을 추가할 수도 있습니다.
+
         yield return new WaitForSeconds(fadeTime);
         gameObject.SetActive(false);
     }
