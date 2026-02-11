@@ -6,7 +6,7 @@ public class VerticalRecursion : MonoBehaviourPun
 {
     public Transform giantSpawnPoint;
     public float scaleMultiplier = 10f;
-    public string giantDoorPrefabName = "BigDoor_Prefab";
+    public string giantDoorPrefabName = "BigDoor";
     public bool isDoorSpawned = false; // 문 중복 생성 방지
 
     private void OnTriggerEnter(Collider other)
