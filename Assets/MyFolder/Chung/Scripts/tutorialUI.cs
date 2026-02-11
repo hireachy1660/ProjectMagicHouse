@@ -21,15 +21,20 @@ public class tutorialUI : MonoBehaviour
         }
     }
 
-    public void OnNextBtn()
+    private void Start()
     {
-        UIPageList[curIndex].SetActive(false);
-        curIndex++;
-        if(curIndex > UIPageList.Count - 1)
-        {
-            curIndex = 0;
-        }
-        UIPageList[curIndex].SetActive(true);
+        gameProgress.OnEvidenceAdded = OnNextBtn;
+    }
+
+    public void OnNextBtn(int _)
+    {
+        //UIPageList[curIndex].SetActive(false);
+        //curIndex++;
+        //if(curIndex > UIPageList.Count - 1)
+        //{
+        //    curIndex = 0;
+        //}
+        //UIPageList[curIndex].SetActive(true);
     }
 
     public void OnPrevBtn()
