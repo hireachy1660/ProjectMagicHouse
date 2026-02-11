@@ -6,13 +6,13 @@ using Oculus.Interaction;
 public class PuzzleBoxManager : MonoBehaviourPun
 {
     [Header("퍼즐 정답 순서 (ID와 정확히 일치해야)")]
-    public List<string> correctOrder = new List<string>() { "400", "401", "402" };
+    public List<string> correctOrder = new List<string>() { "400", "401", "404" };
     private List<string> currentOrder = new List<string>();
     private List<ItemKey> placedItems = new List<ItemKey>();
 
     [Header("결과물 설정")]
-    public string doorID = "403";
-    public string doorPrefabName = "SmallDoor"; // Resources 폴더 안
+    public string doorID = "110";
+    public string doorPrefabName = "[BuildingBlock] Cube_Key 1"; // Resources 폴더 안
     public Transform spawnPoint;
 
     private bool puzzleSolved = false;
