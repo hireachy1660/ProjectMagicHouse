@@ -22,7 +22,6 @@ public class GameProgressSO : ScriptableObject
             OnStageClear?.Invoke();
         }
     }
-
     public void ResetProgress()
     {
         currentEvidenceCount = 0;

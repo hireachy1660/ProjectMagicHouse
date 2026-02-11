@@ -80,7 +80,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 76a013d1-7c16-4a60-9c1b-79b3691c0438
-  instanceId: 97eff11d-a2cf-42fa-9d00-13c38a86ffa4
+  instanceId: ac785683-4bc0-4937-ba56-104d13595b1a
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 4a33ce4b-b595-477f-a346-d7cf7af0ef27
@@ -332,7 +332,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 7358e191-33b7-43ca-b066-b2f00531ac66
-  instanceId: aa3f5b42-e16d-493d-979f-0d1549afcaad
+  instanceId: 58557cea-9636-4728-954a-ca7845ad8e97
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 
@@ -373,7 +373,7 @@ MonoBehaviour:
   _requiredKeyID: 101
   _doorObject: {fileID: 45141502275303067}
   attachPoint: {fileID: 2275367403966363280}
-  _moveOffset: {x: 0.5, y: 0, z: 0}
+  opneAngle: -75
   _moveSpeed: 2
 --- !u!114 &7098871249728968286
 MonoBehaviour:
@@ -437,6 +437,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4637544156418211231}
     m_Modifications:
+    - target: {fileID: 5607483028714563664, guid: e48df13a4cc118b4493a990166410e13, type: 3}
+      propertyPath: m_LODs.Array.data[1].screenRelativeHeight
+      value: 0.3337449
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607483028714563664, guid: e48df13a4cc118b4493a990166410e13, type: 3}
+      propertyPath: m_LODs.Array.data[2].screenRelativeHeight
+      value: 0.054561228
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607483028714563664, guid: e48df13a4cc118b4493a990166410e13, type: 3}
+      propertyPath: m_LODs.Array.data[3].screenRelativeHeight
+      value: 0.012890306
+      objectReference: {fileID: 0}
     - target: {fileID: 5827537552749147401, guid: e48df13a4cc118b4493a990166410e13, type: 3}
       propertyPath: m_LocalScale.x
       value: 10
