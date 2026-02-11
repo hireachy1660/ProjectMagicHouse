@@ -35,7 +35,7 @@ public class DetectiveBoardReceiver : MonoBehaviourPun, IReceiver
 
     private void Start()
     {
-        gameProgress.requiredEvidenceCount = evidenceSlots.Count;
+        gameProgress.requiredEvidenceCount = evidenceSlots.Count + 1;
     }
 
     public void OnReceiveItem(IItem _item)
