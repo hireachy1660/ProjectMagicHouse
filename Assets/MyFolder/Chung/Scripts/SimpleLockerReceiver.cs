@@ -10,11 +10,11 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
     [SerializeField] private Transform attachPoint;
     [SerializeField] private float opneAngle = -75f;
     [SerializeField] private float _moveSpeed = 2.0f; // 열리는 속도
+    [SerializeField] private GameProgressSO progressSO;
 
 
     private Quaternion closedRotation;
     private Quaternion openRotation;
-    [SerializeField]
     private bool isOpen = false;
 
     private void Awake()
@@ -53,7 +53,11 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
         if( isOpen) return;
 
         isOpen = true; // 열림 상태로 전환 -> 코루틴에서 문 이동함
-        Debug.Log($"[SimpleLoker] {gameObject.name} is Open is Not Poroblem");
+        if ( progressSO != null )
+        {
+        progressSO.AddEvidence();
+        }
+
         StartCoroutine(StartOpen(_ViewID));
 
 
@@ -67,10 +71,8 @@ public class SimpleLockerReceiver : MonoBehaviourPun, IReceiver
 
         // 포톤 뷰 아이디에서 다시 아이템으로 변환
         PhotonView targetView = PhotonView.Find(_ViewID);
-        Debug.Log($"[SimpleLoker] {gameObject.name} Photon find Sucess");
         if (targetView == null) yield break;
         IItem item = targetView.GetComponent<IItem>();
-        Debug.Log($"[SimpleLoker] {gameObject.name} GetComponent Sucess");
         if (item == null) yield break;
 
         // 아이템의 상호작용 중지 메소드 호출

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 public class tutorialUI : MonoBehaviour
 {
-    [SerializeField] Button nextBtn;
-    [SerializeField] Button prevBtn;
+    //[SerializeField] Button nextBtn;
+    //[SerializeField] Button prevBtn;
     [SerializeField] List<GameObject> UIPageList;
     [SerializeField]
     private GameProgressSO gameProgress;
@@ -23,18 +23,21 @@ public class tutorialUI : MonoBehaviour
 
     private void Start()
     {
-        gameProgress.OnEvidenceAdded = OnNextBtn;
+        gameProgress.OnEvidenceAdded = OnNextPage;
     }
 
-    public void OnNextBtn(int _)
+    public void OnNextPage(int _curProgress)
     {
-        //UIPageList[curIndex].SetActive(false);
-        //curIndex++;
+        UIPageList[curIndex].SetActive(false);
+        curIndex = _curProgress;
+        UIPageList[curIndex].SetActive(true);
+        
         //if(curIndex > UIPageList.Count - 1)
         //{
         //    curIndex = 0;
         //}
         //UIPageList[curIndex].SetActive(true);
+
     }
 
     public void OnPrevBtn()
