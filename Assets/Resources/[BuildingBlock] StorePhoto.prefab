@@ -597,6 +597,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PhotoModel
       objectReference: {fileID: 0}
+    - target: {fileID: 7902874958517804010, guid: fed86ac453fa23641a8dac02f9d46d53, type: 3}
+      propertyPath: m_Layer
+      value: 15
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

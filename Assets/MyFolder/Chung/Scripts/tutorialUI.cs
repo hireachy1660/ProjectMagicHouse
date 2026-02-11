@@ -8,6 +8,9 @@ public class tutorialUI : MonoBehaviour
     [SerializeField] Button nextBtn;
     [SerializeField] Button prevBtn;
     [SerializeField] List<GameObject> UIPageList;
+    [SerializeField]
+    private GameProgressSO gameProgress;
+
     private int curIndex = 0;
 
     private void Awake()
