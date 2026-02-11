@@ -52934,6 +52934,7 @@ MonoBehaviour:
   nextBtn: {fileID: 0}
   prevBtn: {fileID: 0}
   UIPageList: []
+  gameProgress: {fileID: 0}
 --- !u!1 &1786370373
 GameObject:
   m_ObjectHideFlags: 0
