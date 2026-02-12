@@ -8,7 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/MyFolder/Yeon/Scenes/Lobby.unity
     guid: 0027ed47f8ca6a24e8bb8a62722dedba
-  - enabled: 0
+  - enabled: 1
     path: Assets/Main/Scene/MainGameScene.unity
     guid: 007cbc18d7e0e5b44b8e48fe16e26759
   - enabled: 0
@@ -17,9 +17,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/MyFolder/Chung/Scenes/EndingScene.unity
     guid: f1856ed2617c4da43bc9f598bc1dc99d
-  - enabled: 1
+  - enabled: 0
     path: Assets/MyFolder/Hoon/Scenes/Test2.unity
     guid: 7805f85b60cbf3e468eb5c00eb5f3eb3
+  - enabled: 1
+    path: Assets/MyFolder/Hoon/Scenes/Map_1.unity
+    guid: 9729c64ac35b56e4bb095c899d354e13
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: b6fe870337bbe9d4cb4d47610a5c5a86, type: 2}
