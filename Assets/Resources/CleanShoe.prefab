@@ -27,13 +27,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2079589299013875487}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.48377344, y: -0.51571625, z: 0.51571625, w: 0.48377344}
-  m_LocalPosition: {x: -1.056, y: -0.342, z: -0.017}
-  m_LocalScale: {x: 1.0624379, y: 2.9898915, z: 2.3102}
+  m_LocalRotation: {x: 0.5173093, y: -0.4820696, z: 0.4820696, w: 0.5173093}
+  m_LocalPosition: {x: -0.99, y: -0.342, z: -0.12}
+  m_LocalScale: {x: 0.91, y: 2.72, z: 2.3102}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1757549458788304232}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 93.661}
+  m_LocalEulerAnglesHint: {x: 90, y: 7.7, z: 93.661}
 --- !u!33 &2622293001003703819
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -191,13 +191,13 @@ MonoBehaviour:
   - {x: 0.49999312, y: 0.26826704, z: 0.034817442}
   - {x: 0.49999267, y: -0.0000014601416, z: 0.042799193}
   - {x: -0.50000596, y: 0.26826733, z: 0.034817662}
-  - {x: -0.50000846, y: 0.49999717, z: 0.070131384}
-  - {x: 0.49999058, y: 0.49999687, z: 0.07013123}
+  - {x: -0.5000122, y: 0.49999034, z: -0.04322487}
+  - {x: 0.54094404, y: 0.55674964, z: 0.02100837}
   - {x: 0.49999312, y: 0.26826704, z: 0.034817442}
-  - {x: -0.5000075, y: -0.47343755, z: 0.063105956}
+  - {x: -0.50000465, y: -0.4734497, z: -0.007805744}
   - {x: -0.50000376, y: -0.25000483, z: 0.036662348}
   - {x: 0.4999951, y: -0.25000432, z: 0.036662288}
-  - {x: 0.4999939, y: -0.47343674, z: 0.06310576}
+  - {x: 0.49999392, y: -0.47344175, z: 0.0145189855}
   - {x: -0.50000376, y: -0.25000483, z: 0.036662348}
   - {x: -0.50000376, y: -0.0000026935768, z: 0.04279922}
   - {x: 0.49999267, y: -0.0000014601416, z: 0.042799193}
@@ -226,14 +226,14 @@ MonoBehaviour:
   - {x: 1, y: -0.0000002980235, z: -0.00000021979234, w: -1}
   - {x: 1, y: 0.00000046193708, z: -0.00000012293437, w: -1}
   - {x: 1, y: 0.0000012218995, z: -0.000000026077126, w: -1}
-  - {x: 1, y: -0.0000002980235, z: -0.00000018812732, w: -1}
-  - {x: 1, y: -0.0000002980235, z: -0.00000015646235, w: -1}
-  - {x: 1, y: -0.0000002980235, z: -0.00000018812732, w: -1}
-  - {x: 1, y: -0.0000002980235, z: -0.00000021979234, w: -1}
-  - {x: 1, y: 0.00000080466157, z: -0.00000019371483, w: -1}
-  - {x: 1, y: 0.00000065565104, z: -0.00000012665976, w: -1}
-  - {x: 1, y: 0.00000050664005, z: -0.000000059604716, w: -1}
-  - {x: 1, y: 0.00000065565104, z: -0.00000012665976, w: -1}
+  - {x: 0.9990385, y: 0.02818764, z: 0.0335793, w: -1}
+  - {x: 0.9966268, y: 0.054342184, z: 0.06149785, w: -1}
+  - {x: 0.9990385, y: 0.02818764, z: 0.0335793, w: -1}
+  - {x: 1, y: -0.00000029802348, z: -0.00000021979233, w: -1}
+  - {x: 0.9997509, y: 0.000007955613, z: 0.022319198, w: -1}
+  - {x: 0.9999386, y: 0.00001625069, z: 0.01108082, w: -1}
+  - {x: 1, y: 0.00000050664005, z: -0.00000005960471, w: -1}
+  - {x: 0.9999386, y: 0.00001625069, z: 0.01108082, w: -1}
   - {x: 1, y: 0.00000050664005, z: -0.000000059604716, w: -1}
   - {x: 1, y: 0.0000008700394, z: -0.00000004284094, w: -1}
   - {x: 1, y: 0.0000012334397, z: -0.000000026077123, w: -1}
@@ -247,11 +247,11 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 532
+  m_VersionIndex: 1392
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
-  m_SelectedVertices: 
+  m_SelectedVertices: 06000000
 --- !u!1 &4219075735000421090
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,7 +311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 7358e191-33b7-43ca-b066-b2f00531ac66
-  instanceId: 16c7eda7-e9d3-4db1-a81c-7f5b96ab4bbb
+  instanceId: 4a35d54b-e34a-46fb-a770-d70f2662efa9
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 
@@ -739,7 +739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: cf245286-6dcf-4648-a96f-a3f102f90cb6
+  instanceId: 749a3b5c-29a5-4021-9ee8-a97fb17110d4
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8

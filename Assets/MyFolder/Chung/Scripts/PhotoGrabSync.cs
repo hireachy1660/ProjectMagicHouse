@@ -12,7 +12,7 @@ public class PhotoGrabSync : GrabSync
             transform.SetParent(null);
             rb.isKinematic = false;
         }
-
+        this.transform.localScale = Vector3.one;
         // 2. 부모(GrabSync)의 네트워크 동기화 로직 실행
         base.OnGrabEvent();
     }

@@ -57,7 +57,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 7358e191-33b7-43ca-b066-b2f00531ac66
-  instanceId: a52aad86-d868-45e3-97ce-f93eb3c52c3e
+  instanceId: e00cd42b-369c-472a-83e3-4923b1ad6f10
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 
@@ -342,7 +342,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: 64d64b49-1e06-4482-8052-0fd0acc7f1c7
+  instanceId: 589772cc-5310-420c-826b-4a77dc74d5ef
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
@@ -460,6 +460,10 @@ PrefabInstance:
     - target: {fileID: 3237538286469821409, guid: fed86ac453fa23641a8dac02f9d46d53, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3237538286469821409, guid: fed86ac453fa23641a8dac02f9d46d53, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5011296957999664134, guid: fed86ac453fa23641a8dac02f9d46d53, type: 3}
       propertyPath: m_VersionIndex
