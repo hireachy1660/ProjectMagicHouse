@@ -11,6 +11,8 @@ public class tutorialUI : MonoBehaviour
     [SerializeField]
     private GameProgressSO gameProgress;
 
+
+
     private int curIndex = 0;
 
     private void Awake()
@@ -38,6 +40,8 @@ public class tutorialUI : MonoBehaviour
         //    curIndex = 0;
         //}
         //UIPageList[curIndex].SetActive(true);
+
+
 
     }
 
