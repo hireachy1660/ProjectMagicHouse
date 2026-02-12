@@ -5,6 +5,11 @@ using Oculus.Interaction;
 
 public class PuzzleBoxManager : MonoBehaviourPun
 {
+    [Header("Sound Events")]
+    public SoundEventSO failsound;
+    public SoundEventSO successound;
+
+
     [Header("퍼즐 정답 순서 (ID와 정확히 일치해야)")]
     public List<string> correctOrder = new List<string>() { "400", "401", "404" };
     private List<string> currentOrder = new List<string>();
@@ -79,6 +84,7 @@ public class PuzzleBoxManager : MonoBehaviourPun
         }
         else
         {
+            failsound?.PlayLocal(photonView.ViewID);
             Debug.Log($"<color=red> 순서 틀림!</color> {nextIndex + 1}번째는 '{correctOrder[nextIndex]}'여야 하는데 '{id}' 들어옴");
             Debug.Log("<color=orange> 순서 리셋! 다시 넣으세요</color>");
             currentOrder.Clear();
@@ -103,8 +109,10 @@ public class PuzzleBoxManager : MonoBehaviourPun
 
     void SolvePuzzle()
     {
+
         puzzleSolved = true;
         Debug.Log("<color=cyan> 문 소환 시도!</color>");
+        successound?.PlayLocal(photonView.ViewID);
 
         GameObject doorPrefab = Resources.Load<GameObject>(doorPrefabName);
 

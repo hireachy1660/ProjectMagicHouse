@@ -18,7 +18,6 @@ public class WorldSynchronizer : MonoBehaviour
                 realObjects.Add(child.name, child);
         }
     }
-
     void Update()
     {
         // 미니어처 안에 있는 모든 자식 물건들의 움직임을 실제 물건에 복사
