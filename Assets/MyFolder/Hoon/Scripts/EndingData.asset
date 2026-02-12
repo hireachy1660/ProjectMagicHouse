@@ -12,14 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbe18cdba034f1740ac7cd7d9bf80b5a, type: 3}
   m_Name: EndingData
   m_EditorClassIdentifier: Assembly-CSharp::EndingDataSO
-  snapshots:
-  - locationName: 
-    achievement: "\uD14C\uC2A4\uD2B81"
-    photo: {fileID: 21300000, guid: 5971774a6bf65c6419bf12fee261485c, type: 3}
-  - locationName: 
-    achievement: "\uD14C\uC2A4\uD2B82"
-    photo: {fileID: 21300000, guid: e5b4b1c07354b764b8550c21a20b25ac, type: 3}
-  - locationName: 
-    achievement: "\uD14C\uC2A4\uD2B83"
-    photo: {fileID: 21300000, guid: d95676c368b5f844a84e8433089df96a, type: 3}
-  isEvidenceFound: 0
+  snapshots: []
+  isEvidenceFound: 1

@@ -3,47 +3,48 @@ using System.Collections;
 
 public class ScreenshotHelper : MonoBehaviour
 {
-    public GameProgressSO gameProgress; // 기존 사용하던 SO
-    public EndingDataSO endingData;     // 새로 만든 엔딩 SO
+    public GameProgressSO gameProgress;
+    public EndingDataSO endingData;
 
-    // 각 진행도(index)에 매칭될 텍스트들
     private string[] progressTexts = {
-        "사건의 시작, 사무실에서 첫 단서를 찾았습니다.",
-        "과거의 서재에서 비밀 열쇠를 확보했습니다.",
-        "시장의 혼란 속에서 범인의 흔적을 쫓았습니다.",
-        "범인의 은신처, 금고를 열어 결정적 증거를 찾았습니다!"
+        "서재의 유산을 깨우고 금고를 열어 새로운 좌표를 확보했습니다.",
+        "공터에서 범인의 유일한 흔적인 발자국을 기록했습니다.",
+        "수많은 흔적 속에서 일치하는 증거(신발)를 찾아냈습니다.",
+        "피 묻은 신발을 화이트보드에 새겨 진실을 완성했습니다!"
     };
 
     private void Start()
     {
-        // 페이지가 넘어갈 때마다 Capture 함수 실행
+        // 화이트보드 등록(진행도 상승) 시 자동 캡처
         gameProgress.OnEvidenceAdded += (progressIndex) => {
             StartCoroutine(CaptureRoutine(progressIndex));
         };
     }
 
+    // A. 진행도 기반 캡처 (화이트보드용)
     IEnumerator CaptureRoutine(int index)
     {
-        // UI가 바뀌고 화면이 갱신될 시간을 아주 잠깐 줌 (0.1초)
         yield return new WaitForEndOfFrame();
+        CaptureAndSave("사무실", progressTexts[Mathf.Clamp(index, 0, progressTexts.Length - 1)]);
+    }
 
-        // 1. 화면 캡처
+    // B. 아이템 발견 시 직접 호출할 캡처 함수 (아이템 잡기용)
+    public IEnumerator CaptureRoutineCustom(string location, string desc)
+    {
+        yield return new WaitForEndOfFrame();
+        CaptureAndSave(location, desc);
+    }
+
+    // 공통 저장 로직
+    private void CaptureAndSave(string location, string desc)
+    {
         Texture2D screenShot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
         screenShot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
         screenShot.Apply();
 
-        // 2. Sprite로 변환 (UI 표시용)
         Sprite photoSprite = Sprite.Create(screenShot, new Rect(0, 0, screenShot.width, screenShot.height), new Vector2(0.5f, 0.5f));
-
-        // 3. EndingDataSO에 저장
-        string location = "사건 현장"; // 필요시 index에 따라 분기 처리 가능
-        string desc = (index < progressTexts.Length) ? progressTexts[index] : "중요한 단서를 기록했습니다.";
-
         endingData.AddSnapshot(location, desc, photoSprite);
 
-        // 마지막 인덱스라면 증거 발견 플래그 세움
-        if (index >= 3) endingData.isEvidenceFound = true;
-
-        Debug.Log($"<color=cyan>[Capture]</color> {index}번 진행도 사진 저장 완료!");
+        Debug.Log($"<color=cyan>[저장완료]</color> {location}: {desc}");
     }
 }

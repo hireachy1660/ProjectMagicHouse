@@ -36,30 +36,25 @@ public class EndingCinemaManager : MonoBehaviour
         StartCoroutine(PlayEndingSequence());
     }
 
+    // PlayEndingSequence 코루틴 내부만 수정
     IEnumerator PlayEndingSequence()
     {
-        yield return new WaitForSeconds(1.5f); // 성당 분위기 잡는 시간
+        yield return new WaitForSeconds(1.5f);
 
-        // 1. 범인의 행방 (인트로)
-        string introText = endingData.isEvidenceFound
-            ? "범인은 시공간의 틈새로 달아났으나, 당신의 추리가 결정적 증거를 남겼습니다."
-            : "범인은 종적을 감췄고, 진실은 다시 시간의 저편으로 사라지려 합니다.";
-
+        // 1. 인트로 (추리 완료 상황 설명)
+        string introText = "추리가 완료되었습니다. 당신이 화이트보드에 새긴 마지막 증거로 인해 범인은 달아났으나, 이 시대의 인과관계는 제자리를 찾았습니다.";
         yield return StartCoroutine(TypeAndFade(introText, null));
 
-        // 2. 플레이어의 행적 (기록된 스냅샷 루프)
+        // 2. 플레이어의 행적 (회상 - 발견과 등록이 섞여서 나옴)
         foreach (var shot in endingData.snapshots)
         {
             string content = $"[{shot.locationName}] {shot.achievement}";
             yield return StartCoroutine(TypeAndFade(content, shot.photo));
         }
 
-        // 3. 마지막 마무리 문구 (로아식 낭만)
-        string outroText = "사건 번호 #2026-02. 우리의 추격은 여기서 멈추지 않습니다.";
+        // 3. 아웃트로 (여운)
+        string outroText = "비록 범인의 실체는 잡지 못했으나, 당신의 기록은 진실을 비추는 등불이 될 것입니다. 탐정단의 수사는 계속됩니다.";
         yield return StartCoroutine(TypeAndFade(outroText, null));
-
-        // 4. 모든 연출 종료 후 처리 (예: 타이틀로 돌아가기)
-        Debug.Log("엔딩 시네마 종료");
     }
 
     // 사진을 갈아끼우고 텍스트를 타이핑하는 핵심 루틴
