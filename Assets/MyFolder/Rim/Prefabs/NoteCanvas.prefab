@@ -139,7 +139,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: 81d0318f-0980-4c87-b426-dc532e703ae6
+  instanceId: a9bb90c6-b33d-4bb3-8677-d75a2fcae979
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
@@ -413,7 +413,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Meta.XR.BuildingBlocks::Meta.XR.BuildingBlocks.BuildingBlock
   blockId: 7358e191-33b7-43ca-b066-b2f00531ac66
-  instanceId: dd7644d4-3229-46a0-9640-5d79abee0887
+  instanceId: 1690442f-229f-4160-ae03-226e8fb10da3
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 
@@ -985,8 +985,8 @@ MonoBehaviour:
     \uB358\uC84C\uB2E4.\n2<color=red>\uCE7C</color> : \uD53C\uB97C \uC53B\uC5B4\uB0B4\uACE0
     \uBD80\uC5CC \uCC2C\uC7A5\uC5D0 \uC228\uACBC\uB2E4. \n3<color=red>\uC2E0\uBC1C</color>
     : \uACF5\uD130\uC5D0 \uB0A8\uAE34 \uD754\uC801\uC744 \uC9C0\uC6B0\uACE0 \uD558\uC597\uAC8C
-    \uB2E6\uC544 \uCE68\uC2E4 \uCE68\uB300 \uBC11\uC5D0 \uC228\uACBC\uB2E4.\n\uC7A0\uB4E4
-    \uB54C \uB9C8\uB2E4 \uADF8 \uB0A0\uC758 \uC545\uBABD\uC744 \uAFBC\uB2E4."
+    \uB2E6\uC544 \uC5B4\uB518\uAC00\uC5D0 \uC228\uAE34\uAC83 \uAC19\uB2E4 \uD654\uBD84\uC774
+    \uC218\uC0C1\uD574\uBCF4\uC778\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 64aa26a0c4d8db94ca4cbbfe770c4385, type: 2}
   m_sharedMaterial: {fileID: 2589397841067315335, guid: 64aa26a0c4d8db94ca4cbbfe770c4385, type: 2}

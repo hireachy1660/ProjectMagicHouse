@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Arch_44__047_13_Stencil
-  m_Shader: {fileID: 4800000, guid: f687cc1e39825d94d97e6d36c2cc6ec5, type: 3}
+  m_Shader: {fileID: 4800000, guid: fb36bc4ad11146b419ac155b0ecea00e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -120,7 +120,7 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.73406404, g: 0.73406404, b: 0.73406404, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 0.73406404, g: 0.73406404, b: 0.73406404, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}

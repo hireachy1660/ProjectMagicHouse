@@ -6990,6 +6990,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1423082059}
   m_CullTransparentMesh: 1
+--- !u!114 &1446191487 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2076311673438814456, guid: c63969f38c513094cadf930f3f81617c, type: 3}
+  m_PrefabInstance: {fileID: 5889050937893155487}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
 --- !u!1 &1462441675
 GameObject:
   m_ObjectHideFlags: 0
@@ -12686,6 +12697,14 @@ PrefabInstance:
       propertyPath: statusSO
       value: 
       objectReference: {fileID: 11400000, guid: 9e60acdf9027bff47bd1c1f835fa0b65, type: 2}
+    - target: {fileID: 3289560732649263877, guid: c63969f38c513094cadf930f3f81617c, type: 3}
+      propertyPath: soundSlider
+      value: 
+      objectReference: {fileID: 1446191487}
+    - target: {fileID: 3289560732649263877, guid: c63969f38c513094cadf930f3f81617c, type: 3}
+      propertyPath: audioListner
+      value: 
+      objectReference: {fileID: 1676316470}
     - target: {fileID: 4071644119778512578, guid: c63969f38c513094cadf930f3f81617c, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
